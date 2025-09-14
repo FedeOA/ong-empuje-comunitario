@@ -4,10 +4,19 @@ import servers_pb2_grpc
 import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from servers import EventDonation  # Import the EventDonation model
+from servers.services import EventDonation  # Import the EventDonation model
 
 # Database setup for verification
-engine = create_engine('mysql+mysqlconnector://root:1234@localhost:3306/ong-empuje-comunitario', echo=False)
+DB_USER = "root"
+DB_PASS = ""
+DB_HOST = "127.0.0.1"
+DB_PORT = "3306"
+DB_NAME = "ong-empuje-comunitario"
+
+DB_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+
+engine = create_engine(DB_URL, echo=True)
+Session = sessionmaker(bind=engine)
 Session = sessionmaker(bind=engine)
 
 def test_user_service(stub, auth_stub):
