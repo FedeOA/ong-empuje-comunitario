@@ -7,7 +7,7 @@ import bcrypt
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv # pip install python-dotenv
+from dotenv import load_dotenv 
 import os
 import secrets
 import string

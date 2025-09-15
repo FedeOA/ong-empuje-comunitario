@@ -1,8 +1,3 @@
-# posicionarse en el directorio 'ong-empuje-comunitario/'
-# para generar los archivos a partir del .proto:
-# python -m grpc_tools.protoc -I servers --python_out=servers --grpc_python_out=servers servers/servers.proto
-# ejecutar: python -m servers.main
-
 import os
 import sys
 import time
