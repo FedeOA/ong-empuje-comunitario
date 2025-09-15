@@ -1,35 +1,65 @@
 from servers.servers_pb2 import Response, UserList
 from servers import servers_pb2_grpc
 from servers.db.dbManager import get_session
-from servers.db.models import UserEvent, Donation, User
+from servers.db.models import UserEvent, Donation, User, Role
 from sqlalchemy import or_
 import bcrypt
+from servers.services.AuthService import AuthService
 
-
-
-class UserService( servers_pb2_grpc.UserServiceServicer):
+class UserService(servers_pb2_grpc.UserServiceServicer):
     def CreateUser(self, request, context):
+        # Validaciones básicas
+        if not request.last_name or not request.role_id or not request.username or not request.email or not request.phone:
+            return Response(success=False, message="Missing a required fields")
+        
         session = get_session()
         try:
-            password = "default_password"
+            # Verificar que el role exista
+            role = session.get(Role, request.role_id)
+            if not role:
+                return Response(success=False, message="Role does not exist")
+            
+            # Verificar que el usuario no exista
+            existing_user = session.query(User).filter_by(username=request.username).first()
+            if existing_user:
+                return Response(success=False, message="Username already exists")
+
+            existing_email = session.query(User).filter_by(email=request.email).first()
+            if existing_email:
+                return Response(success=False, message="Email already exists")
+            
+            #generar contraseña aleatoria
+            auth_service = AuthService()
+            password = auth_service.generateRandomPassword()
+            auth_service.sendPassword(request.email, request.username, password)
+
+            
+            # Hashear la contraseña
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+            # Crear usuario
             new_user = User(
                 username=request.username,
                 first_name=request.first_name,
                 last_name=request.last_name,
                 phone=request.phone,
                 email=request.email,
+                role_id=request.role_id,
                 is_active=request.is_active,
                 password_hash=hashed_password
             )
+
             session.add(new_user)
             session.commit()
+
             return Response(success=True, message="User created successfully")
+
         except Exception as e:
             session.rollback()
-            return Response(success=False, message=str(e))
+            return Response(success=False, message=f"Unexpected error: {str(e)}")
         finally:
             session.close()
+
 
     def UpdateUser(self, request, context):
         session = get_session()

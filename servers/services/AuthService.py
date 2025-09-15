@@ -4,9 +4,18 @@ from servers.db.dbManager import get_session
 from servers.db.models import User
 from sqlalchemy import or_
 import bcrypt
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv # pip install python-dotenv
+import os
+import secrets
+import string
 
+load_dotenv()  # Carga las variables de entorno del archivo .env
 
 class AuthService(servers_pb2_grpc.AuthServiceServicer):
+
     def Login(self, request, context):
         session = get_session()
         try:
@@ -27,9 +36,11 @@ class AuthService(servers_pb2_grpc.AuthServiceServicer):
                         id=user.id,
                         username=user.username,
                         first_name=user.first_name,
+                        last_name=user.last_name,
                         phone=user.phone,
                         email=user.email,
-                        is_active=user.is_active
+                        is_active=user.is_active,
+                        role_id=user.role_id
                     )
                 )
             else:
@@ -46,3 +57,35 @@ class AuthService(servers_pb2_grpc.AuthServiceServicer):
             )
         finally:
             session.close()
+
+    def generateRandomPassword(self, length=12):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(secrets.choice(characters) for _ in range(length))
+        return password
+
+    def sendPassword(self, to_email, username, password):
+        sender_email = os.getenv("SENDER_EMAIL")
+        sender_password = os.getenv("SENDER_PASSWORD")
+
+        if not sender_email or not sender_password:
+            print("Error: SENDER_EMAIL or SENDER_PASSWORD not set in .env")
+            return
+
+        subject = "Your account password"
+        body = f"Hello {username},\n\nYour account has been created. Your password is:\n\n{password}\n\n"
+
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = to_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
+
+        try:
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+            print(f"Password email sent to {to_email}")
+        except Exception as e:
+            print(f"Error sending email: {str(e)}")
