@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_package = "com.grpc.demo.service";
+
+package authorize;
+
+import "user.proto";
+
+message Empty{}
+
+message LoginRequest {
+    string username_or_email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string message = 2;
+    user.User user = 3;
+}
+
+message Response {
+    bool success = 1;
+    string message = 2;
+}
+
+// Login 
+service AuthService {
+    rpc Login(LoginRequest) returns (LoginResponse);
+}
+
