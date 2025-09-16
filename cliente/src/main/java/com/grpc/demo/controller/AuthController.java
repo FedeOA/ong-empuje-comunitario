@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.grpc.demo.dto.LoginRequestDTO;
 import com.grpc.demo.service.AuthClient;
-import com.grpc.demo.service.Service.LoginResponse;
+import com.grpc.demo.service.authorize.LoginResponse;
 
 
 @RestController

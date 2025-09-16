@@ -2,6 +2,8 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import com.grpc.demo.service.event.Event;
+import com.grpc.demo.service.event.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,10 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grpc.demo.service.EventClient;
-import com.grpc.demo.service.Service.Event;
-import com.grpc.demo.service.Service.Response;
-
-
 
 @RestController
 @RequestMapping("/api/events")

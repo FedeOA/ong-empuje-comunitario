@@ -2,14 +2,10 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
+import com.grpc.demo.service.donation.*;
 import org.springframework.stereotype.Service;
 
 import com.grpc.demo.exception.GrpcClientException;
-import com.grpc.demo.service.DonationServiceGrpc.DonationServiceBlockingStub;
-import com.grpc.demo.service.Service.Donation;
-import com.grpc.demo.service.Service.DonationList;
-import com.grpc.demo.service.Service.Empty;
-import com.grpc.demo.service.Service.Response;
 
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
@@ -17,7 +13,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 public class DonationClient {
 
     @GrpcClient("donation-service")
-    private DonationServiceBlockingStub stub;
+    private DonationServiceGrpc.DonationServiceBlockingStub stub;
     
     public Response createDonation(Donation donation){
         try {

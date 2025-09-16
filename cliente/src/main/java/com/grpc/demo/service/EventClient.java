@@ -2,24 +2,17 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
+import com.grpc.demo.service.event.*;
 import org.springframework.stereotype.Service;
 
 import com.grpc.demo.exception.GrpcClientException;
-import com.grpc.demo.service.EventServiceGrpc.EventServiceBlockingStub;
-import com.grpc.demo.service.Service.DonationEventRequest;
-import com.grpc.demo.service.Service.Empty;
-import com.grpc.demo.service.Service.Event;
-import com.grpc.demo.service.Service.EventList;
-import com.grpc.demo.service.Service.Response;
-import com.grpc.demo.service.Service.UserEventRequest;
-
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 @Service
 public class EventClient {
      
     @GrpcClient("event-sevice")
-    private EventServiceBlockingStub stub;
+    private EventServiceGrpc.EventServiceBlockingStub stub;
 
     public Response createEvent(Event event){
         try {

@@ -4,9 +4,9 @@ import org.springframework.stereotype.Service;
 
 import com.grpc.demo.dto.LoginRequestDTO;
 import com.grpc.demo.exception.GrpcClientException;
-import com.grpc.demo.service.AuthServiceGrpc.AuthServiceBlockingStub;
-import com.grpc.demo.service.Service.LoginRequest;
-import com.grpc.demo.service.Service.LoginResponse;
+import com.grpc.demo.service.authorize.AuthServiceGrpc;
+import com.grpc.demo.service.authorize.LoginRequest;
+import com.grpc.demo.service.authorize.LoginResponse;
 
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
@@ -16,7 +16,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 public class AuthClient {
  
     @GrpcClient("auth-service")
-    private AuthServiceBlockingStub stub;
+    private AuthServiceGrpc.AuthServiceBlockingStub stub;
 
     public LoginResponse login(LoginRequestDTO loginRequest){
         try {

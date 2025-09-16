@@ -2,22 +2,17 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
+import com.grpc.demo.service.user.*;
 import org.springframework.stereotype.Service;
 
 import com.grpc.demo.exception.GrpcClientException;
-import com.grpc.demo.service.Service.Empty;
-import com.grpc.demo.service.Service.Response;
-import com.grpc.demo.service.Service.User;
-import com.grpc.demo.service.Service.UserList;
-import com.grpc.demo.service.UserServiceGrpc.UserServiceBlockingStub;
-
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 @Service
 public class UserClient {
     
     @GrpcClient("user-service")
-    private UserServiceBlockingStub stub;
+    private UserServiceGrpc.UserServiceBlockingStub stub;
     
     public Response createUser(User user){
         try {

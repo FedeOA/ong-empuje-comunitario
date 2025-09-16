@@ -1,0 +1,46 @@
+syntax = "proto3";
+option java_package = "com.grpc.demo.service.event";
+option java_multiple_files = true;
+
+package event;
+
+import "user.proto";
+
+message Empty {}
+
+message Event {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    string fecha_hora = 4;
+    repeated user.User users = 5;
+}
+
+message EventList {
+    repeated Event event = 1;
+}
+
+message UserEventRequest {
+    int32 event_id = 1;
+    int32 user_id = 2;
+}
+
+message DonationEventRequest {
+    int32 event_id = 1;
+    int32 donation_id = 2;
+}
+
+message Response {
+    bool success = 1;
+    string message = 2;
+}
+
+service EventService {
+    rpc CreateEvent(Event) returns (Response);
+    rpc UpdateEvent(Event) returns (Response);
+    rpc DeleteEvent(Event) returns (Response);
+    rpc ListEvents(Empty) returns (EventList);
+    rpc AddUser(UserEventRequest) returns (Response);
+    rpc RemoveUser(UserEventRequest) returns (Response);
+    rpc UseDonations(DonationEventRequest) returns (Response);
+}
