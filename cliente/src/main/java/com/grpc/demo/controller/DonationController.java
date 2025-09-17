@@ -2,6 +2,8 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import com.grpc.demo.dto.DonationDTO;
+import com.grpc.demo.dto.ResponseDTO;
 import com.grpc.demo.service.donation.Donation;
 import com.grpc.demo.service.donation.Response;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.grpc.demo.service.DonationClient;
+import org.springframework.http.MediaType;
 
 
 
@@ -23,24 +26,33 @@ import com.grpc.demo.service.DonationClient;
 @RequestMapping("/api/donations")
 @CrossOrigin(origins = "*")
 public class DonationController {
-    
+
     private final DonationClient donationClient;
 
     public DonationController(DonationClient donationClient){
         this.donationClient = donationClient;
     }
-    
-    @PostMapping
-    public ResponseEntity<Response> createDonation(@RequestBody Donation donation) {
+
+    @PostMapping()
+    public ResponseEntity<ResponseDTO> createDonation(@RequestBody DonationDTO donationReq) {
         try {
-            Response response = donationClient.createDonation(donation);
+
+            Donation donation = Donation.
+                    newBuilder()
+                    .setCantidad(donationReq.quantity())
+                    .setDescription(donationReq.description())
+                    .setCategoria(donationReq.category())
+                    .setEliminado(false)
+                    .build();
+
+            Response serverResponse = donationClient.createDonation(donation);
+
+            ResponseDTO response = new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                Response.newBuilder()
-                    .setSuccess(false)
-                    .setMessage(e.getMessage())
-                    .build()
+                new ResponseDTO(false,e.getMessage())
             );
         }
     }

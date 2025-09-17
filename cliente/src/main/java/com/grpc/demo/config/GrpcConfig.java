@@ -9,7 +9,7 @@ import io.grpc.ManagedChannelBuilder;
 public class GrpcConfig {
     
     public ManagedChannel managedChannel(){
-        return ManagedChannelBuilder.forAddress("localhost",9090)
+        return ManagedChannelBuilder.forAddress("localhost",50051)
             .usePlaintext()
             .build();
     }

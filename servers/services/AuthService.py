@@ -23,38 +23,34 @@ class AuthService(authorize_pb2_grpc.AuthServiceServicer):
             user = session.query(User).filter(
                 or_(User.username == request.username_or_email, User.email == request.username_or_email)
             ).first()
+
             if not user:
                 return LoginResponse(
                     success=False,
                     message="User not found",
-                    user=UserMessage()
+                    role_id=0,
+                    username=""
                 )
+
             if bcrypt.checkpw(request.password.encode('utf-8'), user.password_hash.encode('utf-8')):
+
                 return LoginResponse(
                     success=True,
                     message="Login successful",
-                    user=UserMessage(
-                        id=user.id,
-                        username=user.username,
-                        first_name=user.first_name,
-                        last_name=user.last_name,
-                        phone=user.phone,
-                        email=user.email,
-                        is_active=user.is_active,
-                        role_id=user.role_id
-                    )
+                    role_id=user.role_id,
+                    username=user.username
                 )
             else:
                 return LoginResponse(
                     success=False,
                     message="Invalid password",
-                    user=UserMessage()
+                    role_id=0,
+                    username=""
                 )
         except Exception as e:
             return LoginResponse(
                 success=False,
                 message=str(e),
-                user=UserMessage()
             )
         finally:
             session.close()

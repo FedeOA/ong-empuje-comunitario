@@ -2,6 +2,8 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import com.grpc.demo.dto.ResponseDTO;
+import com.grpc.demo.dto.UserDTO;
 import com.grpc.demo.service.user.Response;
 import com.grpc.demo.service.user.User;
 import org.springframework.http.ResponseEntity;
@@ -27,18 +29,15 @@ public class UserController {
         this.userClient = userClient;
     }
 
-    @PostMapping("path")
-    public ResponseEntity<Response> createUser(@RequestBody User user) {
+    @PostMapping()
+    public ResponseEntity<ResponseDTO> createUser(@RequestBody UserDTO user) {
         try {
-            Response response = userClient.createUser(user);
-            return ResponseEntity.ok(response);
+            Response serverResponse = userClient.createUser(user);
+            ResponseDTO responseDTO = new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
+            return ResponseEntity.ok(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                Response.newBuilder()
-                .setSuccess(false)
-                .setMessage(e.getMessage())
-                .build()
-            );
+                    new ResponseDTO(false,e.getMessage()));
         } 
     }
 

@@ -14,7 +14,7 @@ public class DonationClient {
 
     @GrpcClient("donation-service")
     private DonationServiceGrpc.DonationServiceBlockingStub stub;
-    
+
     public Response createDonation(Donation donation){
         try {
             return stub.createDonation(donation);

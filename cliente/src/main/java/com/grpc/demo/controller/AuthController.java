@@ -1,5 +1,6 @@
 package com.grpc.demo.controller;
 
+import com.grpc.demo.dto.LoginResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,16 +25,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
         try {
-            LoginResponse response = auth.login(loginRequest);
-            return ResponseEntity.ok(response);
+            LoginResponse serverResponse = auth.login(loginRequest);
+            return ResponseEntity.ok(auth.generateToken(serverResponse));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                LoginResponse.newBuilder()
-                .setSuccess(false)
-                .setMessage(e.getMessage())
-                .build());
+                new LoginResponseDTO(false,"Unexpected Error","Empty","Empty","Empty"));
         }
     }
     
