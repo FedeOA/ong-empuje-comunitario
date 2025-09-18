@@ -2,8 +2,8 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
-import com.grpc.demo.dto.DonationDTO;
-import com.grpc.demo.dto.ResponseDTO;
+import com.grpc.demo.dto.in.DonationDTO;
+import com.grpc.demo.dto.out.ResponseDTO;
 import com.grpc.demo.service.donation.Donation;
 import com.grpc.demo.service.donation.Response;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.grpc.demo.service.DonationClient;
-import org.springframework.http.MediaType;
-
-
 
 
 @RestController
@@ -34,16 +31,8 @@ public class DonationController {
     }
 
     @PostMapping()
-    public ResponseEntity<ResponseDTO> createDonation(@RequestBody DonationDTO donationReq) {
+    public ResponseEntity<ResponseDTO> createDonation(@RequestBody DonationDTO donation) {
         try {
-
-            Donation donation = Donation.
-                    newBuilder()
-                    .setCantidad(donationReq.quantity())
-                    .setDescription(donationReq.description())
-                    .setCategoria(donationReq.category())
-                    .setEliminado(false)
-                    .build();
 
             Response serverResponse = donationClient.createDonation(donation);
 
@@ -58,17 +47,14 @@ public class DonationController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Response> updateDonation(@PathVariable int id, @RequestBody Donation donation) {
+    public ResponseEntity<ResponseDTO> updateDonation(@PathVariable int id, @RequestBody DonationDTO donation) {
         try {
-            Donation updateDonation = donation.toBuilder().setId(id).build();
-            Response response = donationClient.updateDonation(updateDonation);
+            Response serverResponse = donationClient.updateDonation(id,donation);
+            ResponseDTO response = new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-              Response.newBuilder()
-                .setSuccess(false)
-                .setMessage(e.getMessage())
-                .build()  
+                    new ResponseDTO(false,e.getMessage())
             );
         }
     }

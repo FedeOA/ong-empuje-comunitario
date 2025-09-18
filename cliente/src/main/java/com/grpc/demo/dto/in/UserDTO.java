@@ -1,4 +1,4 @@
-package com.grpc.demo.dto;
+package com.grpc.demo.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

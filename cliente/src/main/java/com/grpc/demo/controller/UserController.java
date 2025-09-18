@@ -2,8 +2,10 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
-import com.grpc.demo.dto.ResponseDTO;
-import com.grpc.demo.dto.UserDTO;
+import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.dto.in.UserDTO;
+import com.grpc.demo.dto.out.UserResponseDTO;
+import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.user.Response;
 import com.grpc.demo.service.user.User;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +24,13 @@ import com.grpc.demo.service.UserClient;
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class UserController {
-    
-    private final UserClient userClient;
 
-    public UserController(UserClient userClient){
+    private final UserClient userClient;
+    private final IMapper<User, UserResponseDTO> mapper;
+
+    public UserController(UserClient userClient, IMapper<User, UserResponseDTO>  mapper){
         this.userClient = userClient;
+        this.mapper = mapper;
     }
 
     @PostMapping()
@@ -38,50 +42,42 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     new ResponseDTO(false,e.getMessage()));
-        } 
-    }
-
-    @PutMapping("path/{id}")
-    public ResponseEntity<Response> updateUser(@PathVariable int id, @RequestBody User user) {
-        try {
-            User updateUser = user.toBuilder().setId(id).build();
-            Response response = userClient.updateUser(updateUser);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(
-                Response.newBuilder()
-                    .setSuccess(false)
-                    .setMessage(e.getMessage())
-                    .build()
-            );
         }
     }
-    
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Response> deleteUser(@PathVariable int id){
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseDTO> updateUser(@PathVariable int id, @RequestBody UserDTO user) {
         try {
-            User user = User.newBuilder().setId(id).build();
-            Response response = userClient.deleteUser(user);
+            Response serverResponse = userClient.updateUser(user,id);
+            ResponseDTO response= new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                Response.newBuilder()
-                    .setSuccess(false)
-                    .setMessage(e.getMessage())
-                    .build()   
-            );
+                    new ResponseDTO(false,e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseDTO> deleteUser(@PathVariable int id){
+        try {
+            User user = User.newBuilder().setId(id).build();
+            Response serverResponse = userClient.deleteUser(user);
+            ResponseDTO response = new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseDTO(false,e.getMessage()));
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> listUsers() {
+    public ResponseEntity<List<UserResponseDTO>> listUsers() {
         try {
-            List<User> users = userClient.listUsers();
-            return ResponseEntity.ok(users);
+            List<User> serverUsers = userClient.listUsers();
+            List<UserResponseDTO> response = mapper.mapList(serverUsers);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
         }
     }
-    
-    
 }

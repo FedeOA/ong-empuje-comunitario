@@ -8,10 +8,10 @@ message Empty{}
 
 message Donation {
     int32 id = 1;
-    string categoria = 2;
+    int32 categoria = 2;
     string description = 3;
     int32 cantidad = 4;
-    bool eliminado = 5;
+    string username = 6;
 }
 
 message DonationList {

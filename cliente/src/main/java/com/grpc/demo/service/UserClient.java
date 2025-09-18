@@ -2,7 +2,7 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
-import com.grpc.demo.dto.UserDTO;
+import com.grpc.demo.dto.in.UserDTO;
 import com.grpc.demo.service.user.*;
 import org.springframework.stereotype.Service;
 
@@ -37,8 +37,20 @@ public class UserClient {
         }
     }
 
-    public Response updateUser(User user){
+    public Response updateUser(UserDTO userUpdate,int id){
         try {
+
+            User user = User
+                    .newBuilder()
+                    .setId(id)
+                    .setUsername(userUpdate.username())
+                    .setEmail(userUpdate.email())
+                    .setPhone(userUpdate.phone())
+                    .setFirstName(userUpdate.firstName())
+                    .setLastName(userUpdate.lastName())
+                    .setRoleId(levelFromName(userUpdate.role()))
+                    .build();
+
             return stub.updateUser(user);
         } catch (Exception e) {
             throw new GrpcClientException("Error para actualizar usuario", e);

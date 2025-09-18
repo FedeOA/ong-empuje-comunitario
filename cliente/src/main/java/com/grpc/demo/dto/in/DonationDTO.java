@@ -1,4 +1,4 @@
-package com.grpc.demo.dto;
+package com.grpc.demo.dto.in;
 
 public record DonationDTO(
         String category,

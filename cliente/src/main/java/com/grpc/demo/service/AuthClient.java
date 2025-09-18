@@ -1,12 +1,12 @@
 package com.grpc.demo.service;
 
-import com.grpc.demo.dto.LoginResponseDTO;
+import com.grpc.demo.dto.out.LoginResponseDTO;
 import com.grpc.demo.enums.Role;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
 
-import com.grpc.demo.dto.LoginRequestDTO;
+import com.grpc.demo.dto.in.LoginRequestDTO;
 import com.grpc.demo.exception.GrpcClientException;
 import com.grpc.demo.service.authorize.AuthServiceGrpc;
 import com.grpc.demo.service.authorize.LoginRequest;

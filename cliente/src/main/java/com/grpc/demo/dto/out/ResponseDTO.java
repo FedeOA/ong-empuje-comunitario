@@ -1,4 +1,4 @@
-package com.grpc.demo.dto;
+package com.grpc.demo.dto.out;
 
 public record ResponseDTO(
         boolean isSuccess,

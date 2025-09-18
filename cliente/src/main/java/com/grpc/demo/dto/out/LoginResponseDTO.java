@@ -1,11 +1,11 @@
-package com.grpc.demo.dto;
+package com.grpc.demo.dto.out;
 
 public record LoginResponseDTO(
         boolean isSuccess,
         String message,
         String role,
         String username,
-        String jwt
+        String token
 ) {
 }
 
