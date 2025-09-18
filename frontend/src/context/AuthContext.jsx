@@ -15,13 +15,13 @@ export const AuthProvider = ({ children }) => {
     if (token && typeof token === "string" && token.split(".").length === 3) {
       try {
         const decoded = jwtDecode(token);
-        setUser({ username: decoded.username, role: decoded.role });
+        setUser({ username: decoded.sub, role: decoded.role });
       } catch (err) {
         console.error("Token inválido:", err);
         localStorage.removeItem("token");
       }
     } else {
-      localStorage.removeItem("token"); // limpiar token mal formado
+      localStorage.removeItem("token");
     }
 
     setLoading(false);
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("token", token);
 
     const decoded = jwtDecode(token);
-    setUser({ username: decoded.username, role: decoded.role });
+    setUser({ username: decoded.sub, role: decoded.role });
     setLoading(false);
 
     return decoded;

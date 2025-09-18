@@ -4,6 +4,7 @@ import EventsPage from "./Events";
 import DonationsPage from "./Donations";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
+import UserProfile from "../components/UserProfile";
 
 export default function Home() {
   const { user } = useAuth();
@@ -35,9 +36,17 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen bg-empuje-bg">
+
+     
+
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-6 flex flex-col">
-        <h2 className="text-2xl font-bold text-empuje-green mb-6">Dashboard</h2>
+        
+        <UserProfile username={user?.username} role={user?.role} />
+        <div className="h-6" />
+        <div className="h-6" />
+
+        {/* Navegación */}
         <nav className="flex flex-col gap-3">
           {hasPermission(user?.role, "users") && (
             <button
