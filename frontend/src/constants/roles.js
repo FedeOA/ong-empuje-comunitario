@@ -1,6 +1,6 @@
 export const roles = {
-  PRESIDENTE: "presidente",
-  VOCAL: "vocal",
-  DONANTE: "donante",
-  ADMIN: "admin" 
+  PRESIDENTE: "PRESIDENTE",
+  VOCAL: "VOCAL",
+  COORDINADOR: "COORDINADOR",
+  VOLUNTARIO: "VOLUNTARIO",
 };

@@ -25,7 +25,7 @@ class UserService(UserServiceServicer):
                 phone=request.phone,
                 email=request.email,
                 role_id=request.role_id,
-                is_active=request.is_active,
+                is_active=True,
                 password_hash=password_hash
             )
             session.add(db_user)
@@ -65,7 +65,7 @@ class UserService(UserServiceServicer):
             db_user.phone = request.phone
             db_user.email = request.email
             db_user.role_id = request.role_id
-            db_user.is_active = request.is_active
+    
             session.commit()
             return Response(success=True, message="User updated successfully")
         except Exception as e:
@@ -80,7 +80,7 @@ class UserService(UserServiceServicer):
             db_user = session.query(User).filter_by(id=request.id).first()
             if not db_user:
                 return Response(success=False, message="User not found")
-            session.delete(db_user)
+            db_user.is_active = False
             session.commit()
             return Response(success=True, message="User deleted successfully")
         except Exception as e:
@@ -98,10 +98,10 @@ class UserService(UserServiceServicer):
                     id=user.id,
                     username=user.username,
                     first_name=user.first_name,
-                    last_name=user.last_name or "",  # Handle NULL
+                    last_name=user.last_name or "",
                     phone=user.phone or "",
                     email=user.email or "",
-                    role_id=user.role_id or 0,  # Handle NULL
+                    role_id=user.role_id or 0,
                     is_active=user.is_active
                 ) for user in db_users
             ]

@@ -1,22 +1,23 @@
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext"; // hook que creamos
+import { useAuth } from "../context/AuthContext"; 
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 
 export default function Login() {
-  const { login } = useAuth(); // tomamos la función login del contexto
-  const navigate = useNavigate(); // para redirigir después de loguear
-  const [email, setEmail] = useState("");
+  const { login } = useAuth(); 
+  const navigate = useNavigate(); 
+  const [usernameOrEmail, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // evitar recargar la página
+    e.preventDefault(); 
     try {
-      await login(email, password); // envía al backend usando AuthContext
-      navigate("/home"); // redirige a la página inicial protegida
+      await login(usernameOrEmail, password); 
+      navigate("/home");
     } catch (err) {
-      setError(err.message || "Error al iniciar sesión");
+      setError("Credenciales invalidas");
+      console.error("Error during login:", err);
     }
   };
 
@@ -38,7 +39,7 @@ export default function Login() {
             </label>
             <input
               type="email"
-              value={email}
+              value={usernameOrEmail}
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
               placeholder="correo o usuario"
