@@ -5,7 +5,6 @@ export default function DonationModal({ isOpen, onClose, onSubmit, donationToEdi
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
 
-  // Cuando abrimos el modal para editar, precargamos los datos
   useEffect(() => {
     if (donationToEdit) {
       setDescription(donationToEdit.description);

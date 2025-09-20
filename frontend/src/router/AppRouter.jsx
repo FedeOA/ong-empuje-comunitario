@@ -12,33 +12,51 @@ const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login: única ruta pública */}
+        {/* Ruta pública */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* Rutas protegidas */}
         <Route
-          path="*"
+          path="/home"
           element={
             <ProtectedRoute>
-              <Routes>
-                <Route path="/home" element={<HomePage />} />
-                <Route path="/events" element={<EventsPage />} />
-                <Route path="/users" element={<UsersPage />} />
-                <Route
-                  path="/donations"
-                  element={
-                    <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
-                      <DonationsPage />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="/forbidden" element={<ForbiddenPage />} />
-                {/* Fallback: cualquier otra ruta redirige a /home */}
-                <Route path="*" element={<Navigate to="/home" replace />} />
-              </Routes>
+              <HomePage />
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/events"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.COORDINADOR, roles.VOLUNTARIO]}>
+              <EventsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE]}>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/donations"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
+              <DonationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Ruta de acceso denegado */}
+        <Route path="/forbidden" element={<ForbiddenPage />} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </BrowserRouter>
   );

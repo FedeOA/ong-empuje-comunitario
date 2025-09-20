@@ -1,0 +1,28 @@
+syntax = "proto3";
+option java_package = "com.grpc.demo.service.authorize";
+option java_multiple_files = true;
+
+package authorize;
+
+message Empty {}
+
+message LoginRequest {
+    string username_or_email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string message = 2;
+    int32 role_id = 3;
+    string username = 4;
+}
+
+message Response {
+    bool success = 1;
+    string message = 2;
+}
+
+service AuthService {
+    rpc Login(LoginRequest) returns (LoginResponse);
+}

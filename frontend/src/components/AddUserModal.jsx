@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { getRoleOptions, roles } from "../constants/roles";
 
 export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) {
+  const defaultRole = "VOLUNTARIO";
+
   const [formData, setFormData] = useState({
     username: "",
     first_name: "",
@@ -8,10 +11,9 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
     phone: "",
     email: "",
     password: "",
-    role: "SOCIO",
+    role: defaultRole,
   });
 
-  // Si userToEdit cambia, rellenamos los campos
   useEffect(() => {
     if (userToEdit) {
       setFormData({
@@ -21,10 +23,9 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
         phone: userToEdit.phone || "",
         email: userToEdit.email || "",
         password: "", // nunca mostrar contraseña
-        role: userToEdit.role || "SOCIO",
+        role: roles[userToEdit.role] ? userToEdit.role : defaultRole,
       });
     } else {
-      // reset si es agregar
       setFormData({
         username: "",
         first_name: "",
@@ -32,7 +33,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
         phone: "",
         email: "",
         password: "",
-        role: "SOCIO",
+        role: defaultRole,
       });
     }
   }, [userToEdit, isOpen]);
@@ -43,7 +44,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData); // Enviar datos al padre
+    onSubmit(formData);
     onClose();
   };
 
@@ -64,84 +65,30 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Username */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Usuario</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-              required
-            />
-          </div>
-
-          {/* Nombre */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Nombre</label>
-            <input
-              type="text"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-              required
-            />
-          </div>
-
-          {/* Apellido */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Apellido</label>
-            <input
-              type="text"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-              required
-            />
-          </div>
-
-          {/* Teléfono */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Teléfono</label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-            />
-          </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-              required
-            />
-          </div>
-
-          {/* Contraseña solo si es agregar */}
-          {!userToEdit && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+          {/* Campos de usuario */}
+          {["username", "first_name", "last_name", "phone", "email"].map((field) => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700">
+                {field === "username"
+                  ? "Usuario"
+                  : field === "first_name"
+                  ? "Nombre"
+                  : field === "last_name"
+                  ? "Apellido"
+                  : field === "phone"
+                  ? "Teléfono"
+                  : "Email"}
+              </label>
               <input
-                type="password"
-                name="password"
-                value={formData.password}
+                type={field === "email" ? "email" : "text"}
+                name={field}
+                value={formData[field]}
                 onChange={handleChange}
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-                required
+                required={["username", "first_name", "last_name", "email"].includes(field)}
               />
             </div>
-          )}
+          ))}
 
           {/* Rol */}
           <div>
@@ -152,9 +99,11 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
               onChange={handleChange}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
             >
-              <option value="SOCIO">Socio</option>
-              <option value="PRESIDENTE">Presidente</option>
-              <option value="ADMIN">Admin</option>
+              {getRoleOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </div>
 

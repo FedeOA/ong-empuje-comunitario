@@ -6,10 +6,11 @@ const Dashboard = () => {
   const { user, loading, logout } = useAuth();
 
   if (loading) return <LoadingSpinner />;
+  if (!user) return <p>No hay usuario autenticado</p>;
 
   return (
     <div>
-      <h1>Bienvenido, {user.nombre}</h1>
+      <h1>Bienvenido, {user.username}</h1>
       <p>Rol: {user.role}</p>
       <button
         className="bg-red-500 text-white px-3 py-1 rounded"
