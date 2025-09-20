@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AddUserModal from "../components/AddUserModal";
-import Toast from "../components/Toast"; // 👈 nuevo import
+import Toast from "../components/Toast";
 import { baseUrl } from "../constants/constants.js";
 import { getRoleName } from "../constants/roles";
 
@@ -8,7 +8,7 @@ export default function Users() {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToEdit, setUserToEdit] = useState(null);
-  const [toast, setToast] = useState({ message: "", type: "success" }); // 👈 nuevo estado
+  const [toast, setToast] = useState({ message: "", type: "success" });
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
