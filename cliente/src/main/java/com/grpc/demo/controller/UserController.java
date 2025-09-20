@@ -9,20 +9,11 @@ import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.user.Response;
 import com.grpc.demo.service.user.User;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.grpc.demo.service.UserClient;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserClient userClient;
@@ -57,7 +48,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping ("/{id}")
     public ResponseEntity<ResponseDTO> deleteUser(@PathVariable int id){
         try {
             User user = User.newBuilder().setId(id).build();

@@ -21,7 +21,6 @@ import com.grpc.demo.service.DonationClient;
 
 @RestController
 @RequestMapping("/api/donations")
-@CrossOrigin(origins = "*")
 public class DonationController {
 
     private final DonationClient donationClient;

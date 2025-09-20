@@ -2,6 +2,7 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
+import com.grpc.demo.dto.in.EventDTO;
 import com.grpc.demo.service.event.*;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +15,33 @@ public class EventClient {
     @GrpcClient("event-sevice")
     private EventServiceGrpc.EventServiceBlockingStub stub;
 
-    public Response createEvent(Event event){
+    public Response createEvent(EventDTO eventReq){
         try {
+
+            Event event =Event
+                    .newBuilder()
+                    .setName(eventReq.name())
+                    .setDescription(eventReq.description())
+                    .setFechaHora(eventReq.datetime().toString())
+                    .build();
+
             return stub.createEvent(event);
         } catch (Exception e) {
             throw new GrpcClientException("Error al crear Evento",e);
         }
     }
 
-    public Response updateEvent(Event event){
+    public Response updateEvent(int id,EventDTO eventReq){
         try {
+
+            Event event = Event
+                    .newBuilder()
+                    .setId(id)
+                    .setName(eventReq.name())
+                    .setDescription(eventReq.description())
+                    .setFechaHora(eventReq.datetime().toString())
+                    .build();
+
             return stub.updateEvent(event);
         } catch (Exception e) {
             throw new GrpcClientException("Error al actualizar evento",e);
@@ -47,11 +65,11 @@ public class EventClient {
         }
     }
 
-    public Response addUserToEvent(int eventId, int userId){
+    public Response addUserToEvent(int eventId, String username){
         try {
             UserEventRequest request = UserEventRequest.newBuilder()
                 .setEventId(eventId)
-                .setUserId(userId)
+                .setUsername(username)
                 .build();
             return stub.addUser(request);
         } catch (Exception e) {
@@ -60,11 +78,11 @@ public class EventClient {
     }
 
 
-    public Response removeUserFromEvent(int eventId, int userId){
+    public Response removeUserFromEvent(int eventId, String username){
         try {
             UserEventRequest request = UserEventRequest.newBuilder()
                 .setEventId(eventId)
-                .setUserId(userId)
+                .setUsername(username)
                 .build();
             return stub.removeUser(request);
         } catch (Exception e) {

@@ -87,8 +87,13 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def AddUser(self, request, context):
         session = get_session()
         try:
+            user_id = session.query(User).filter_by(id=request.username).first()
+            
+            if not user_id:
+                return Response(success=False, message="User not found")
+            
             user_event = UserEvent(
-                user_id=request.user_id,
+                user_id= user_id.id,
                 event_id=request.event_id
             )
             session.add(user_event)
@@ -103,8 +108,13 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def RemoveUser(self, request, context):
         session = get_session()
         try:
+            user_id = session.query(User).filter_by(id=request.username).first()
+            
+            if not user_id:
+                return Response(success=False, message="User not found")
+            
             user_event = session.query(UserEvent).filter_by(
-                user_id=request.user_id,
+                user_id= user_id.id,
                 event_id=request.event_id
             ).first()
             if not user_event:

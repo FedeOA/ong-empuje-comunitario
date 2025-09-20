@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 import services_pb2.user_pb2 as user__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\x12\x05\x65vent\x1a\nuser.proto\"\x07\n\x05\x45mpty\"e\n\x05\x45vent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x19\n\x05users\x18\x05 \x03(\x0b\x32\n.user.User\"(\n\tEventList\x12\x1b\n\x05\x65vent\x18\x01 \x03(\x0b\x32\x0c.event.Event\"5\n\x10UserEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x0f\n\x07user_id\x18\x02 \x01(\x05\"=\n\x14\x44onationEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64onation_id\x18\x02 \x01(\x05\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xf1\x02\n\x0c\x45ventService\x12,\n\x0b\x43reateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0bUpdateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0b\x44\x65leteEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\nListEvents\x12\x0c.event.Empty\x1a\x10.event.EventList\x12\x33\n\x07\x41\x64\x64User\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12\x36\n\nRemoveUser\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12<\n\x0cUseDonations\x12\x1b.event.DonationEventRequest\x1a\x0f.event.ResponseB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\x12\x05\x65vent\x1a\nuser.proto\"\x07\n\x05\x45mpty\"e\n\x05\x45vent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x19\n\x05users\x18\x05 \x03(\x0b\x32\n.user.User\"(\n\tEventList\x12\x1b\n\x05\x65vent\x18\x01 \x03(\x0b\x32\x0c.event.Event\"6\n\x10UserEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x10\n\x08username\x18\x02 \x01(\t\"=\n\x14\x44onationEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64onation_id\x18\x02 \x01(\x05\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xf1\x02\n\x0c\x45ventService\x12,\n\x0b\x43reateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0bUpdateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0b\x44\x65leteEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\nListEvents\x12\x0c.event.Empty\x1a\x10.event.EventList\x12\x33\n\x07\x41\x64\x64User\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12\x36\n\nRemoveUser\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12<\n\x0cUseDonations\x12\x1b.event.DonationEventRequest\x1a\x0f.event.ResponseB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,11 +40,11 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_EVENTLIST']._serialized_start=146
   _globals['_EVENTLIST']._serialized_end=186
   _globals['_USEREVENTREQUEST']._serialized_start=188
-  _globals['_USEREVENTREQUEST']._serialized_end=241
-  _globals['_DONATIONEVENTREQUEST']._serialized_start=243
-  _globals['_DONATIONEVENTREQUEST']._serialized_end=304
-  _globals['_RESPONSE']._serialized_start=306
-  _globals['_RESPONSE']._serialized_end=350
-  _globals['_EVENTSERVICE']._serialized_start=353
-  _globals['_EVENTSERVICE']._serialized_end=722
+  _globals['_USEREVENTREQUEST']._serialized_end=242
+  _globals['_DONATIONEVENTREQUEST']._serialized_start=244
+  _globals['_DONATIONEVENTREQUEST']._serialized_end=305
+  _globals['_RESPONSE']._serialized_start=307
+  _globals['_RESPONSE']._serialized_end=351
+  _globals['_EVENTSERVICE']._serialized_start=354
+  _globals['_EVENTSERVICE']._serialized_end=723
 # @@protoc_insertion_point(module_scope)

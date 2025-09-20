@@ -80,7 +80,7 @@ class UserService(UserServiceServicer):
             db_user = session.query(User).filter_by(id=request.id).first()
             if not db_user:
                 return Response(success=False, message="User not found")
-            db_user.is_active = False
+            db_user.is_active = not db_user.is_active  
             session.commit()
             return Response(success=True, message="User deleted successfully")
         except Exception as e:

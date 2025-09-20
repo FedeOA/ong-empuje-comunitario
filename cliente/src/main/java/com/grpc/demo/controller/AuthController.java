@@ -15,7 +15,6 @@ import com.grpc.demo.service.authorize.LoginResponse;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
     
     private final AuthClient auth;
