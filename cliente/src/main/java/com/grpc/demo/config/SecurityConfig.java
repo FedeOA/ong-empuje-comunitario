@@ -20,7 +20,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/donations/**", "/api/users/**").hasRole(Role.PRESIDENTE.name())
+                        .requestMatchers( "/api/users/**").hasRole(Role.PRESIDENTE.name())
+                        .requestMatchers("/api/users/**", "/api/donations/**").hasAnyRole(Role.PRESIDENTE.name(),Role.VOCAL.name())
                         .requestMatchers("/api/events/**").hasAnyRole(Role.PRESIDENTE.name(), Role.COORDINADOR.name())
                         .anyRequest().authenticated()
                 )

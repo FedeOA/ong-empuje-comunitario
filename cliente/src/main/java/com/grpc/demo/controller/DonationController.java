@@ -4,10 +4,10 @@ import java.util.List;
 
 import com.grpc.demo.dto.in.DonationDTO;
 import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.donation.Donation;
 import com.grpc.demo.service.donation.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +24,11 @@ import com.grpc.demo.service.DonationClient;
 public class DonationController {
 
     private final DonationClient donationClient;
+    private final IMapper<Donation, DonationDTO> mapper;
 
-    public DonationController(DonationClient donationClient){
+    public DonationController(DonationClient donationClient, IMapper<Donation, DonationDTO> mapper){
         this.donationClient = donationClient;
+        this.mapper = mapper;
     }
 
     @PostMapping()
@@ -75,9 +77,10 @@ public class DonationController {
     }
     
     @GetMapping
-    public ResponseEntity<List<Donation>> listDonations() {
+    public ResponseEntity<List<DonationDTO>> listDonations() {
         try {
-            List<Donation> donations = donationClient.listDonations();
+            List<Donation> serverDonations = donationClient.listDonations();
+            List<DonationDTO> donations = mapper.mapList(serverDonations);
             return ResponseEntity.ok(donations);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
