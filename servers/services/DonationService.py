@@ -67,14 +67,14 @@ class DonationService(donation_pb2_grpc.DonationServiceServicer):
     def ListDonations(self, request, context):
         session = get_session()
         try:
-            donations = session.query(Donation).all()
+            donations = session.query(Donation).filter(Donation.is_deleted == False).all()
             donation_list = DonationList()
             for donation in donations:
                 donation_list.donation.add(
                     id=donation.id,
                     description=donation.description,
                     cantidad=donation.quantity,
-                    eliminado=donation.is_deleted
+                    categoria=donation.category_id,
                 )
             return donation_list
         finally:
