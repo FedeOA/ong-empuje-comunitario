@@ -179,7 +179,6 @@ export default function Users() {
         userToEdit={userToEdit}
       />
 
-      {/* 👇 Toast renderizado */}
       <Toast
         message={toast.message}
         type={toast.type}
