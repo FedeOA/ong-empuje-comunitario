@@ -56,6 +56,37 @@ export default function Events() {
       alert("Solo se pueden modificar eventos futuros.");
     }
   };
+  
+  const handleDeleteEvent = async (event) => {
+    const eventDate = new Date(event.datetime);
+
+    if (eventDate <= today) {
+      alert("Solo se pueden eliminar eventos futuros.");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${baseUrl}/events/${event.id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error("Error al eliminar el evento");
+
+      await fetchEvents();
+      showToast("Evento dado de baja correctamente", "success");
+
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un problema al eliminar el evento.");
+    }
+  };
+
 
   const handleSubmitEvent = async (formData) => {
     try {
