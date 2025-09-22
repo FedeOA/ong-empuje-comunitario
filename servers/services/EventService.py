@@ -2,16 +2,21 @@ from services_pb2.event_pb2 import Response, EventList
 from services_pb2_grpc import event_pb2_grpc
 from database.databaseManager import get_session
 from database.models import Event, UserEvent, EventDonation, User
-import datetime
+from dateutil import parser
+
 
 class EventService(event_pb2_grpc.EventServiceServicer):
     def CreateEvent(self, request, context):
         session = get_session()
         try:
+
+            event_datetime = parser.parse(request.fecha_hora)
+
+
             new_event = Event(
                 name=request.name,
                 description=request.description,
-                event_datetime=datetime.datetime.fromisoformat(request.fecha_hora)
+                event_datetime= event_datetime
             )
             session.add(new_event)
             session.commit()
@@ -28,9 +33,12 @@ class EventService(event_pb2_grpc.EventServiceServicer):
             event = session.query(Event).filter_by(id=request.id).first()
             if not event:
                 return Response(success=False, message="Event not found")
+            
+            event_datetime = parser.parse(request.fecha_hora)
+
             event.name = request.name
             event.description = request.description
-            event.event_datetime = datetime.datetime.fromisoformat(request.fecha_hora)
+            event.event_datetime =event_datetime
             session.commit()
             return Response(success=True, message="Event updated successfully")
         except Exception as e:
@@ -61,25 +69,15 @@ class EventService(event_pb2_grpc.EventServiceServicer):
         try:
             events = session.query(Event).all()
             event_list = EventList()
+            if not events:
+                return event_list
             for event in events:
-                event_proto = event_list.event.add(
+                event_list.event.add(
                     id=event.id,
                     name=event.name,
                     description=event.description,
                     fecha_hora=event.event_datetime.isoformat()
                 )
-                user_events = session.query(UserEvent).filter_by(event_id=event.id).all()
-                for ue in user_events:
-                    user = session.query(User).filter_by(id=ue.user_id).first()
-                    if user:
-                        event_proto.users.add(
-                            id=user.id,
-                            username=user.username,
-                            first_name=user.first_name,
-                            phone=user.phone,
-                            email=user.email,
-                            is_active=user.is_active
-                        )
             return event_list
         finally:
             session.close()

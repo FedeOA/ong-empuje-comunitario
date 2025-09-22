@@ -1,43 +1,54 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import EventModal from "../components/EventModal";
 import MembersModal from "../components/MembersModal";
-
-// Eventos iniciales de ejemplo
-const initialEvents = [
-  {
-    id: 1,
-    name: "Campaña de alimentos",
-    description: "Recolección y distribución de alimentos.",
-    date: "2025-10-15",
-    members: ["John Doe", "Alice Presidente"]
-  },
-  {
-    id: 2,
-    name: "Limpieza del barrio",
-    description: "Jornada de limpieza comunitaria.",
-    date: "2024-12-01",
-    members: ["John Doe"]
-  }
-];
+import { baseUrl } from "../constants/constants.js";
+import { useAuth } from "../context/AuthContext";
+import Toast from "../components/Toast";
 
 export default function Events() {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState(null);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [toast, setToast] = useState({ message: "", type: "success" });
 
   const today = new Date();
+  const { user } = useAuth()
 
-  // Agregar evento
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast({ message: "", type: "success" }), 3000);
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${baseUrl}/events`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      setEvents(data);
+    } catch (error) {
+      console.error("Error al cargar eventos:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
   const handleAddEvent = () => {
     setEventToEdit(null);
     setIsEventModalOpen(true);
   };
 
-  // Modificar evento
   const handleEditEvent = (event) => {
-    const eventDate = new Date(event.date);
+    const eventDate = new Date(event.datetime);
     if (eventDate > today) {
       setEventToEdit(event);
       setIsEventModalOpen(true);
@@ -46,30 +57,66 @@ export default function Events() {
     }
   };
 
-  // Guardar evento agregado o modificado
-  const handleSubmitEvent = (data) => {
-    if (eventToEdit) {
-      setEvents(events.map(e => e.id === eventToEdit.id ? { ...e, ...data } : e));
-    } else {
-      const id = events.length + 1;
-      setEvents([...events, { ...data, id, members: [] }]);
+  const handleSubmitEvent = async (formData) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const payload = {
+        ...formData,
+        ...(eventToEdit && { id: eventToEdit.id })
+      };
+
+      console.log("Payload enviado al backend:", payload); // Verificás qué se envía
+
+      const response = await fetch(
+        payload.id ? `${baseUrl}/events/${payload.id}` : `${baseUrl}/events`,
+        {
+          method: payload.id ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!response.ok) throw new Error("Error al guardar el evento");
+
+      showToast(
+        payload.id ? "Evento modificado con éxito" : "Evento registrado correctamente",
+        "success"
+      );
+
+      await fetchEvents();
+      setIsEventModalOpen(false);
+      setEventToEdit(null);
+
+    } catch (error) {
+      console.error(error);
+      showToast("Hubo un problema al procesar el evento", "error");
     }
-    setIsEventModalOpen(false);
   };
 
-  // Eliminar evento futuro
-  const handleDeleteEvent = (event) => {
-    const eventDate = new Date(event.date);
-    if (eventDate > today) {
-      setEvents(events.filter(e => e.id !== event.id));
-    } else {
-      alert("Solo se pueden eliminar eventos futuros.");
-    }
-  };
 
-  // Actualizar miembros de un evento
-  const handleUpdateMembers = (eventId, newMembers) => {
-    setEvents(events.map(e => e.id === eventId ? { ...e, members: newMembers } : e));
+  const handleUpdateMembers = async (eventId, newMembers) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${baseUrl}/events/${eventId}/members`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ members: newMembers })
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar miembros");
+
+      await fetchEvents();
+    } catch (error) {
+      console.error(error);
+      alert("Hubo un problema al actualizar los miembros.");
+    }
   };
 
   return (
@@ -100,38 +147,45 @@ export default function Events() {
 
           <tbody className="divide-y divide-gray-200">
             {events.map(event => {
-              const eventDate = new Date(event.date);
+              const eventDate = new Date(event.datetime);
               const isFuture = eventDate > today;
 
               return (
                 <tr key={event.id}>
                   <td className="px-6 py-4">{event.name}</td>
                   <td className="px-6 py-4">{event.description}</td>
-                  <td className="px-6 py-4">{event.date}</td>
+                  <td className="px-6 py-4">{event.datetime}</td>
 
                   {/* Columna Miembros */}
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                      onClick={() => {
-                        setSelectedEvent(event);
-                        setIsMembersModalOpen(true);
-                      }}
-                    >
-                      Ver miembros
-                    </button>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsMembersModalOpen(true);
+                        }}
+                      >
+                        Ver
+                      </button>
+                    </div>
                   </td>
 
                   {/* Columna Acciones */}
                   <td className="px-6 py-4 flex justify-center gap-2">
-                    <button
-                      className="bg-empuje-green text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                      onClick={() => alert("Te agregaste al evento!")}
-                    >
-                      Agregarse
-                    </button>
-
+                    {/* Solo mostrar si el evento es futuro */}
                     {isFuture && (
+                      <button
+                        className="bg-empuje-green text-white px-3 py-1 rounded hover:bg-green-700 transition"
+                        onClick={() => alert("Te agregaste al evento!")}
+                      >
+                        Agregarse
+                      </button>
+                    )}
+
+
+                    {/* Solo PRESIDENTE y COORDINADOR pueden modificar/eliminar */}
+                    {(user.role === "PRESIDENTE" || user.role === "COORDINADOR") && isFuture && (
                       <>
                         <button
                           className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
@@ -170,6 +224,11 @@ export default function Events() {
         event={selectedEvent}
         onUpdateMembers={handleUpdateMembers}
       />
+
+      {/* Toast visual */}
+      {toast.message && (
+        <Toast message={toast.message} type={toast.type} />
+      )}
     </div>
   );
 }

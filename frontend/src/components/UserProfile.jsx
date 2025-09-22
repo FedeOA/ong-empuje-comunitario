@@ -1,4 +1,3 @@
-import React from "react";
 import avatarPres from "../assets/avatar-pres.png";
 import avatarCoor from "../assets/avatar-coor.png";
 import avatarVoc from "../assets/avatar-voc.png";

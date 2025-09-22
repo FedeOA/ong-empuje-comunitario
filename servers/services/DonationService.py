@@ -55,7 +55,7 @@ class DonationService(donation_pb2_grpc.DonationServiceServicer):
             if not donation:
                 return Response(success=False, message="Donation not found")
             session.query(EventDonation).filter_by(donation_id=donation.id).delete()
-            session.delete(donation)
+            donation.is_deleted = True 
             session.commit()
             return Response(success=True, message="Donation deleted successfully")
         except Exception as e:
