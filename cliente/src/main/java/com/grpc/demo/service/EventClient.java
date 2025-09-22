@@ -12,7 +12,7 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 @Service
 public class EventClient {
      
-    @GrpcClient("event-sevice")
+    @GrpcClient("event-service")
     private EventServiceGrpc.EventServiceBlockingStub stub;
 
     public Response createEvent(EventDTO eventReq){
@@ -22,7 +22,7 @@ public class EventClient {
                     .newBuilder()
                     .setName(eventReq.name())
                     .setDescription(eventReq.description())
-                    .setFechaHora(eventReq.datetime().toString())
+                    .setFechaHora(eventReq.datetime())
                     .build();
 
             return stub.createEvent(event);

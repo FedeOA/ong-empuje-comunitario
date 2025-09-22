@@ -1,6 +1,6 @@
 package com.grpc.demo.mapper.donations;
 
-import com.grpc.demo.dto.in.DonationDTO;
+import com.grpc.demo.dto.out.DonationResponseDTO;
 import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.donation.Donation;
 import org.springframework.stereotype.Component;
@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 import static com.grpc.demo.enums.Category.*;
 
 @Component
-public class DonationMapperImpl implements IMapper<Donation, DonationDTO> {
+public class DonationMapperImpl implements IMapper<Donation, DonationResponseDTO> {
     @Override
-    public DonationDTO map(Donation source) {
+    public DonationResponseDTO map(Donation source) {
 
         String category;
 
@@ -21,7 +21,8 @@ public class DonationMapperImpl implements IMapper<Donation, DonationDTO> {
             category = fromId(source.getCategoria()).name();
         }
 
-        return new DonationDTO(
+        return new DonationResponseDTO(
+                source.getId(),
                 category,
                 source.getDescription(),
                 source.getCantidad(),
