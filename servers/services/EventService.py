@@ -3,7 +3,7 @@ from services_pb2_grpc import event_pb2_grpc
 from database.databaseManager import get_session
 from database.models import Event, UserEvent, EventDonation, User
 from dateutil import parser
-
+from sqlalchemy.orm import joinedload
 
 class EventService(event_pb2_grpc.EventServiceServicer):
     def CreateEvent(self, request, context):
@@ -11,7 +11,6 @@ class EventService(event_pb2_grpc.EventServiceServicer):
         try:
 
             event_datetime = parser.parse(request.fecha_hora)
-
 
             new_event = Event(
                 name=request.name,
@@ -67,25 +66,36 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def ListEvents(self, request, context):
         session = get_session()
         try:
-            events = session.query(Event).all()
+            events = session.query(Event).options(
+                joinedload(Event.user_events).joinedload(UserEvent.user)
+            ).all()
+
             event_list = EventList()
-            if not events:
-                return event_list
+
             for event in events:
-                event_list.event.add(
+                new_event = event_list.event.add(
                     id=event.id,
                     name=event.name,
                     description=event.description,
                     fecha_hora=event.event_datetime.isoformat()
                 )
+
+                for ue in event.user_events:
+                    if ue.user:
+                        new_event.users.append(ue.user.username)
+
             return event_list
         finally:
             session.close()
 
+
+
+
     def AddUser(self, request, context):
         session = get_session()
         try:
-            user_id = session.query(User).filter_by(id=request.username).first()
+            print("Request to add user:", request.username, "to event:", request.event_id)
+            user_id = session.query(User).filter_by(username=request.username).first()
             
             if not user_id:
                 return Response(success=False, message="User not found")
@@ -106,7 +116,7 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def RemoveUser(self, request, context):
         session = get_session()
         try:
-            user_id = session.query(User).filter_by(id=request.username).first()
+            user_id = session.query(User).filter_by(username=request.username).first()
             
             if not user_id:
                 return Response(success=False, message="User not found")
