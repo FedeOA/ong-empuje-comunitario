@@ -5,7 +5,7 @@ import warnings
 
 import services_pb2.event_pb2 as event__pb2
 
-GRPC_GENERATED_VERSION = '1.74.0'
+GRPC_GENERATED_VERSION = '1.75.0'
 GRPC_VERSION = grpc.__version__
 _version_not_supported = False
 
@@ -69,6 +69,31 @@ class EventServiceStub(object):
                 request_serializer=event__pb2.DonationEventRequest.SerializeToString,
                 response_deserializer=event__pb2.Response.FromString,
                 _registered_method=True)
+        self.PublishSolidarityEvent = channel.unary_unary(
+                '/event.EventService/PublishSolidarityEvent',
+                request_serializer=event__pb2.SolidarityEventRequest.SerializeToString,
+                response_deserializer=event__pb2.Response.FromString,
+                _registered_method=True)
+        self.CancelSolidarityEvent = channel.unary_unary(
+                '/event.EventService/CancelSolidarityEvent',
+                request_serializer=event__pb2.EventCancellationRequest.SerializeToString,
+                response_deserializer=event__pb2.Response.FromString,
+                _registered_method=True)
+        self.ListExternalEvents = channel.unary_unary(
+                '/event.EventService/ListExternalEvents',
+                request_serializer=event__pb2.Empty.SerializeToString,
+                response_deserializer=event__pb2.EventList.FromString,
+                _registered_method=True)
+        self.AdhereToEvent = channel.unary_unary(
+                '/event.EventService/AdhereToEvent',
+                request_serializer=event__pb2.EventAdhesionRequest.SerializeToString,
+                response_deserializer=event__pb2.Response.FromString,
+                _registered_method=True)
+        self.ListEventAdhesions = channel.unary_unary(
+                '/event.EventService/ListEventAdhesions',
+                request_serializer=event__pb2.Empty.SerializeToString,
+                response_deserializer=event__pb2.EventAdhesionList.FromString,
+                _registered_method=True)
 
 
 class EventServiceServicer(object):
@@ -118,6 +143,36 @@ class EventServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def PublishSolidarityEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def CancelSolidarityEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListExternalEvents(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AdhereToEvent(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListEventAdhesions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_EventServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -155,6 +210,31 @@ def add_EventServiceServicer_to_server(servicer, server):
                     servicer.UseDonations,
                     request_deserializer=event__pb2.DonationEventRequest.FromString,
                     response_serializer=event__pb2.Response.SerializeToString,
+            ),
+            'PublishSolidarityEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.PublishSolidarityEvent,
+                    request_deserializer=event__pb2.SolidarityEventRequest.FromString,
+                    response_serializer=event__pb2.Response.SerializeToString,
+            ),
+            'CancelSolidarityEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.CancelSolidarityEvent,
+                    request_deserializer=event__pb2.EventCancellationRequest.FromString,
+                    response_serializer=event__pb2.Response.SerializeToString,
+            ),
+            'ListExternalEvents': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListExternalEvents,
+                    request_deserializer=event__pb2.Empty.FromString,
+                    response_serializer=event__pb2.EventList.SerializeToString,
+            ),
+            'AdhereToEvent': grpc.unary_unary_rpc_method_handler(
+                    servicer.AdhereToEvent,
+                    request_deserializer=event__pb2.EventAdhesionRequest.FromString,
+                    response_serializer=event__pb2.Response.SerializeToString,
+            ),
+            'ListEventAdhesions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListEventAdhesions,
+                    request_deserializer=event__pb2.Empty.FromString,
+                    response_serializer=event__pb2.EventAdhesionList.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -346,6 +426,141 @@ class EventService(object):
             '/event.EventService/UseDonations',
             event__pb2.DonationEventRequest.SerializeToString,
             event__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def PublishSolidarityEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/PublishSolidarityEvent',
+            event__pb2.SolidarityEventRequest.SerializeToString,
+            event__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def CancelSolidarityEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/CancelSolidarityEvent',
+            event__pb2.EventCancellationRequest.SerializeToString,
+            event__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListExternalEvents(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/ListExternalEvents',
+            event__pb2.Empty.SerializeToString,
+            event__pb2.EventList.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AdhereToEvent(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/AdhereToEvent',
+            event__pb2.EventAdhesionRequest.SerializeToString,
+            event__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListEventAdhesions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/ListEventAdhesions',
+            event__pb2.Empty.SerializeToString,
+            event__pb2.EventAdhesionList.FromString,
             options,
             channel_credentials,
             insecure,

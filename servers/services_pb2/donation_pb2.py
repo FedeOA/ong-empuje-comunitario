@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64onation.proto\x12\x08\x64onation\"\x07\n\x05\x45mpty\"b\n\x08\x44onation\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcategoria\x18\x02 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x04 \x01(\x05\x12\x10\n\x08username\x18\x05 \x01(\t\"4\n\x0c\x44onationList\x12$\n\x08\x64onation\x18\x01 \x03(\x0b\x32\x12.donation.Donation\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xf9\x01\n\x0f\x44onationService\x12\x38\n\x0e\x43reateDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\x0eUpdateDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\x0e\x44\x65leteDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\rListDonations\x12\x0f.donation.Empty\x1a\x16.donation.DonationListB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64onation.proto\x12\x08\x64onation\"\x07\n\x05\x45mpty\"u\n\x08\x44onation\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x11\n\tcategoria\x18\x02 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x10\n\x08\x63\x61ntidad\x18\x04 \x01(\x05\x12\x10\n\x08username\x18\x05 \x01(\t\x12\x11\n\teliminado\x18\x06 \x01(\x08\"4\n\x0c\x44onationList\x12$\n\x08\x64onation\x18\x01 \x03(\x0b\x32\x12.donation.Donation\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"\x84\x01\n\x17\x44onationTransferRequest\x12\x12\n\nrequest_id\x18\x01 \x01(\x05\x12\x14\n\x0c\x64onor_org_id\x18\x02 \x01(\x05\x12\x18\n\x10recipient_org_id\x18\x03 \x01(\x05\x12%\n\tdonations\x18\x04 \x03(\x0b\x32\x12.donation.Donation\"e\n\x14\x44onationOfferRequest\x12\x10\n\x08offer_id\x18\x01 \x01(\x05\x12\x14\n\x0c\x64onor_org_id\x18\x02 \x01(\x05\x12%\n\tdonations\x18\x03 \x03(\x0b\x32\x12.donation.Donation\"H\n\"DonationRequestCancellationRequest\x12\x0e\n\x06org_id\x18\x01 \x01(\x05\x12\x12\n\nrequest_id\x18\x02 \x01(\x05\x32\xe4\x03\n\x0f\x44onationService\x12\x38\n\x0e\x43reateDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\x0eUpdateDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\x0e\x44\x65leteDonation\x12\x12.donation.Donation\x1a\x12.donation.Response\x12\x38\n\rListDonations\x12\x0f.donation.Empty\x1a\x16.donation.DonationList\x12I\n\x10TransferDonation\x12!.donation.DonationTransferRequest\x1a\x12.donation.Response\x12\x43\n\rOfferDonation\x12\x1e.donation.DonationOfferRequest\x1a\x12.donation.Response\x12Y\n\x15\x43\x61ncelDonationRequest\x12,.donation.DonationRequestCancellationRequest\x1a\x12.donation.ResponseB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -35,11 +35,17 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_EMPTY']._serialized_start=28
   _globals['_EMPTY']._serialized_end=35
   _globals['_DONATION']._serialized_start=37
-  _globals['_DONATION']._serialized_end=135
-  _globals['_DONATIONLIST']._serialized_start=137
-  _globals['_DONATIONLIST']._serialized_end=189
-  _globals['_RESPONSE']._serialized_start=191
-  _globals['_RESPONSE']._serialized_end=235
-  _globals['_DONATIONSERVICE']._serialized_start=238
-  _globals['_DONATIONSERVICE']._serialized_end=487
+  _globals['_DONATION']._serialized_end=154
+  _globals['_DONATIONLIST']._serialized_start=156
+  _globals['_DONATIONLIST']._serialized_end=208
+  _globals['_RESPONSE']._serialized_start=210
+  _globals['_RESPONSE']._serialized_end=254
+  _globals['_DONATIONTRANSFERREQUEST']._serialized_start=257
+  _globals['_DONATIONTRANSFERREQUEST']._serialized_end=389
+  _globals['_DONATIONOFFERREQUEST']._serialized_start=391
+  _globals['_DONATIONOFFERREQUEST']._serialized_end=492
+  _globals['_DONATIONREQUESTCANCELLATIONREQUEST']._serialized_start=494
+  _globals['_DONATIONREQUESTCANCELLATIONREQUEST']._serialized_end=566
+  _globals['_DONATIONSERVICE']._serialized_start=569
+  _globals['_DONATIONSERVICE']._serialized_end=1053
 # @@protoc_insertion_point(module_scope)

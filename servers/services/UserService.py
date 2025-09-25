@@ -1,23 +1,24 @@
+from services_pb2.user_pb2 import User as UserMessage, UserList, Response
+from services_pb2_grpc.user_pb2_grpc import UserServiceServicer
+from database.databaseManager import get_session
+from database.models import User
+from kafka_integration.KafkaIntegration import KafkaIntegration
 import bcrypt
 import os
 import smtplib
 from email.mime.text import MIMEText
 from secrets import token_urlsafe
 from database.config import SMTP_PASSWORD, SMTP_SERVER, SMTP_USER
-from services_pb2.user_pb2 import User as UserMessage, UserList, Response
-from services_pb2_grpc.user_pb2_grpc import UserServiceServicer
-from database.databaseManager import get_session
-from database.models import User
 
 class UserService(UserServiceServicer):
+    def __init__(self):
+        self.kafka = KafkaIntegration()
+
     def CreateUser(self, request, context):
         session = get_session()
         try:
-            # Generate a random password
-            random_password = token_urlsafe(12)  # Generate a 12-character secure random password
+            random_password = token_urlsafe(12)
             password_hash = bcrypt.hashpw(random_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-            # Create the user in the database
             db_user = User(
                 username=request.username,
                 first_name=request.first_name,
@@ -31,7 +32,14 @@ class UserService(UserServiceServicer):
             session.add(db_user)
             session.commit()
 
-            # Send email with the random password
+            user_data = {
+                'id': db_user.id,
+                'username': db_user.username,
+                'email': db_user.email,
+                'role_id': db_user.role_id
+            }
+            self.kafka.publish_user_event('create', user_data)
+
             if not SMTP_USER or not SMTP_PASSWORD:
                 raise ValueError("SMTP credentials not configured")
 
@@ -41,12 +49,11 @@ class UserService(UserServiceServicer):
             msg['To'] = request.email
 
             with smtplib.SMTP(SMTP_SERVER, smtplib.SMTP_PORT) as server:
-                server.starttls()  # Enable TLS
+                server.starttls()
                 server.login(SMTP_USER, SMTP_PASSWORD)
                 server.send_message(msg)
 
             return Response(success=True, message="User created successfully and password emailed")
-
         except Exception as e:
             session.rollback()
             return Response(success=False, message=f"Failed to create user or send email: {str(e)}")
@@ -65,8 +72,16 @@ class UserService(UserServiceServicer):
             db_user.phone = request.phone
             db_user.email = request.email
             db_user.role_id = request.role_id
-    
             session.commit()
+
+            user_data = {
+                'id': db_user.id,
+                'username': db_user.username,
+                'email': db_user.email,
+                'role_id': db_user.role_id
+            }
+            self.kafka.publish_user_event('update', user_data)
+
             return Response(success=True, message="User updated successfully")
         except Exception as e:
             session.rollback()
@@ -80,8 +95,16 @@ class UserService(UserServiceServicer):
             db_user = session.query(User).filter_by(id=request.id).first()
             if not db_user:
                 return Response(success=False, message="User not found")
-            db_user.is_active = not db_user.is_active  
+            db_user.is_active = not db_user.is_active
             session.commit()
+
+            user_data = {
+                'id': db_user.id,
+                'username': db_user.username,
+                'is_active': db_user.is_active
+            }
+            self.kafka.publish_user_event('delete', user_data)
+
             return Response(success=True, message="User deleted successfully")
         except Exception as e:
             session.rollback()

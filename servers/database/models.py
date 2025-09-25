@@ -62,3 +62,47 @@ class EventDonation(Base):
     quantity_used = Column(Integer)
     event_id = Column(Integer, ForeignKey('events.id'))
     donation_id = Column(Integer, ForeignKey('donations.id'))
+    
+class DonationRequest(Base):
+    __tablename__ = 'donation_requests'
+    id = Column(Integer, primary_key=True)
+    request_id = Column(Integer, index=True)
+    org_id = Column(Integer)
+    category_id = Column(Integer, ForeignKey('categories.id'))
+    description = Column(String(255))
+    is_canceled = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+class DonationOffer(Base):
+    __tablename__ = 'donation_offers'
+    id = Column(Integer, primary_key=True)
+    offer_id = Column(Integer, index=True)
+    donor_org_id = Column(Integer)
+    category_id = Column(Integer, ForeignKey('categories.id'))
+    description = Column(String(255))
+    quantity = Column(Integer)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+class ExternalEvent(Base):
+    __tablename__ = 'external_events'
+    id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, index=True)
+    org_id = Column(Integer)
+    name = Column(String(255))
+    description = Column(String(255))
+    date_time = Column(DateTime)
+    is_canceled = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    
+class EventAdhesion(Base):
+    __tablename__ = 'event_adhesions'
+    id = Column(Integer, primary_key=True)
+    event_id = Column(Integer, nullable=False)
+    org_id = Column(Integer, nullable=False)
+    volunteer_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    volunteer_name = Column(String, nullable=False)
+    volunteer_last_name = Column(String, nullable=False)
+    volunteer_phone = Column(String)  # Nullable per schema
+    volunteer_email = Column(String, nullable=False)
+    volunteer_org_id = Column(Integer, nullable=False)  # Non-nullable
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)

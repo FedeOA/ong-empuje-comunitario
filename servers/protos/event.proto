@@ -35,6 +35,49 @@ message Response {
     string message = 2;
 }
 
+message SolidarityEventRequest {
+    int32 org_id = 1;
+    int32 event_id = 2;
+    string name = 3;
+    string description = 4;
+    string date_time = 5; // Format: YYYY-MM-DD HH:MM:SS
+}
+
+message EventCancellationRequest {
+    int32 org_id = 1;
+    int32 event_id = 2;
+}
+
+message EventAdhesionRequest {
+    int32 event_id = 1;
+    int32 org_id = 2;
+    int32 volunteer_id = 3;
+    string volunteer_name = 4;
+    string volunteer_last_name = 5;
+    string volunteer_phone = 6;
+    string volunteer_email = 7;
+}
+
+message EventAdhesionResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message EventAdhesion {
+    int32 event_id = 1;
+    int32 org_id = 2;
+    int32 volunteer_id = 3;
+    string volunteer_name = 4;
+    string volunteer_last_name = 5;
+    string volunteer_phone = 6;
+    string volunteer_email = 7;
+    int32 volunteer_org_id = 8;
+}
+
+message EventAdhesionList {
+    repeated EventAdhesion adhesions = 1;
+}
+
 service EventService {
     rpc CreateEvent(Event) returns(Response);
     rpc UpdateEvent(Event) returns(Response);
@@ -47,4 +90,10 @@ service EventService {
 
     //Donations 
     rpc UseDonations(DonationEventRequest) returns(Response);
+
+    rpc PublishSolidarityEvent(SolidarityEventRequest) returns (Response);
+    rpc CancelSolidarityEvent(EventCancellationRequest) returns (Response);
+    rpc ListExternalEvents(Empty) returns (EventList);
+    rpc AdhereToEvent(EventAdhesionRequest) returns (Response);
+    rpc ListEventAdhesions(Empty) returns (EventAdhesionList);
 }
