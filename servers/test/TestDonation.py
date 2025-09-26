@@ -1,12 +1,15 @@
 import sys
 import os
 import grpc
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import services_pb2.donation_pb2 as donation_pb2
-import services_pb2_grpc.donation_pb2_grpc as donation_pb2_grpc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+from services_pb2 import donation_pb2 as donation_pb2
+from services_pb2_grpc import donation_pb2_grpc as donation_pb2_grpc
+from database import databaseManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import databaseManager
 import logging
 
 # Suppress all SQLAlchemy logs
@@ -81,6 +84,23 @@ def test_donation_service(stub):
 
 def test_donation_transfer(stub_donation):
     print("\n=== Testing TransferDonation ===")
+    # Create a specific donation for transfer test
+    transfer_donation = donation_pb2.Donation(
+        categoria=1,
+        description="Transfer Test Donation",
+        cantidad=20,
+        eliminado=False,
+        username="admin"
+    )
+    try:
+        response = stub_donation.CreateDonation(transfer_donation)
+        print(f"Create Transfer Donation: success={response.success}, message={response.message}")
+        if not response.success:
+            return
+    except grpc.RpcError as e:
+        print(f"Create Transfer Donation failed: {str(e)}")
+        return
+
     transfer_request = donation_pb2.DonationTransferRequest(
         request_id=1,
         donor_org_id=1,
@@ -88,7 +108,7 @@ def test_donation_transfer(stub_donation):
         donations=[
             donation_pb2.Donation(
                 categoria=1,
-                description="Test Donation",
+                description="Transfer Test Donation",
                 cantidad=10
             )
         ]

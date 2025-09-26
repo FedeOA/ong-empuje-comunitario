@@ -1,11 +1,13 @@
 import sys
 import os
 import datetime
-# Add servers/ directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import grpc
-import services_pb2.user_pb2 as user_pb2
-import services_pb2_grpc.user_pb2_grpc as user_pb2_grpc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+from services_pb2 import user_pb2 as user_pb2
+from services_pb2_grpc import user_pb2_grpc as user_pb2_grpc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database import databaseManager

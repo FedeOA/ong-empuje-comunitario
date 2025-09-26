@@ -1,3 +1,10 @@
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 from services_pb2.user_pb2 import User as UserMessage
 from services_pb2.authorize_pb2 import LoginResponse
 from services_pb2_grpc import authorize_pb2_grpc

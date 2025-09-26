@@ -1,18 +1,22 @@
 import logging
 import os
-
+import sys
 import grpc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 from services_pb2 import event_pb2
 from services_pb2.event_pb2 import Response, EventList
 from services_pb2_grpc import event_pb2_grpc
 from database.databaseManager import get_session
 from database.models import Event, ExternalEvent, UserEvent, EventDonation, User, EventAdhesion
-from kafka_integration.KafkaIntegration import KafkaIntegration
+from kafka_module.kafka_manager import KafkaManager  # type: ignore
 import datetime
 
 class EventService(event_pb2_grpc.EventServiceServicer):
     def __init__(self):
-        self.kafka = KafkaIntegration()
+        self.kafka = KafkaManager(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'))
 
     def CreateEvent(self, request, context):
         session = get_session()
@@ -318,7 +322,7 @@ class EventService(event_pb2_grpc.EventServiceServicer):
             if self.kafka.producer is None:
                 logging.warning("Kafka producer not initialized, skipping message send")
             else:
-                self.kafka.producer.send(topic, message)
+                self.kafka.producer.send_message(topic, message)
                 self.kafka.producer.flush()
                 logging.info(f"Published adhesion to Kafka topic {topic}")
 

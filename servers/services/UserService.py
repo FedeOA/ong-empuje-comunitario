@@ -1,18 +1,25 @@
+import bcrypt
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 from services_pb2.user_pb2 import User as UserMessage, UserList, Response
 from services_pb2_grpc.user_pb2_grpc import UserServiceServicer
 from database.databaseManager import get_session
 from database.models import User
-from kafka_integration.KafkaIntegration import KafkaIntegration
-import bcrypt
-import os
 import smtplib
 from email.mime.text import MIMEText
 from secrets import token_urlsafe
 from database.config import SMTP_PASSWORD, SMTP_SERVER, SMTP_USER
+import sys
+import os
+from kafka_module.kafka_manager import KafkaManager  # type: ignore
 
 class UserService(UserServiceServicer):
     def __init__(self):
-        self.kafka = KafkaIntegration()
+        self.kafka = KafkaManager()
 
     def CreateUser(self, request, context):
         session = get_session()

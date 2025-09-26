@@ -1,14 +1,20 @@
 import logging
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 from services_pb2.donation_pb2 import Response, DonationList
 from services_pb2_grpc import donation_pb2_grpc
 from database.databaseManager import get_session
 from database.models import Donation, DonationRequest, EventDonation, User
-from kafka_integration.KafkaIntegration import KafkaIntegration
+from kafka_module.kafka_manager import KafkaManager  # type: ignore
 import datetime
 
 class DonationService(donation_pb2_grpc.DonationServiceServicer):
     def __init__(self):
-        self.kafka = KafkaIntegration()
+        self.kafka = KafkaManager(bootstrap_servers=os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'))
 
     def CreateDonation(self, request, context):
         session = get_session()

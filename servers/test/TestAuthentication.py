@@ -1,13 +1,15 @@
 import sys
 import os
-# Add servers/ directory to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import grpc
-import services_pb2.authorize_pb2 as authorize_pb2
-import services_pb2_grpc.authorize_pb2_grpc as authorize_pb2_grpc
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
+from services_pb2 import authorize_pb2 as authorize_pb2
+from services_pb2_grpc import authorize_pb2_grpc as authorize_pb2_grpc
+from database import databaseManager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database import databaseManager
 
 Session = databaseManager.get_session()
 

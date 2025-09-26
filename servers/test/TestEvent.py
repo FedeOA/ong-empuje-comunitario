@@ -3,17 +3,16 @@ import os
 import grpc
 import datetime
 import time
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../..')))
 from database.config import DB_USER, DB_PASS, DB_HOST, DB_PORT, DB_NAME
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from database.models import Event, EventDonation, ExternalEvent, EventAdhesion
-import services_pb2.event_pb2 as event_pb2
-import services_pb2.user_pb2 as user_pb2
-import services_pb2.donation_pb2 as donation_pb2
-import services_pb2_grpc.event_pb2_grpc as event_pb2_grpc
-import services_pb2_grpc.user_pb2_grpc as user_pb2_grpc
-import services_pb2_grpc.donation_pb2_grpc as donation_pb2_grpc
+from services_pb2 import event_pb2, user_pb2, donation_pb2, event_pb2
+from services_pb2_grpc import event_pb2_grpc, user_pb2_grpc, donation_pb2_grpc
 
 DB_URL = f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DB_URL, echo=False)

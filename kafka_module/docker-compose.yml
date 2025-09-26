@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    container_name: kafka
+    hostname: kafka
+    environment:
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - LANG=C.UTF-8
+      - CUB_CLASSPATH="/usr/share/java/cp-base-new/*"
+      - COMPONENT=kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_secrets:/etc/kafka/secrets
+      - kafka_data:/var/lib/kafka/data
+    working_dir: /home/appuser
+    networks:
+      - servers_default
+
+volumes:
+  kafka_secrets:
+    external: true
+    name: 65c175b3792fddaee1c01089aef2a0586a35da7dd3802af2e87385c9eed8d08c
+  kafka_data:
+    external: true
+    name: 549fd30ade8b36925605aa5cd877ea4b3de03df14c314f3eae1c029b96e428be
+
+networks:
+  servers_default:
+    external: true
