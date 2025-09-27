@@ -13,7 +13,7 @@ message Event {
     string name = 2;
     string description = 3;
     string fecha_hora = 4;
-    repeated user.User users = 5;
+    repeated string users = 5;
 }
 
 message EventList {

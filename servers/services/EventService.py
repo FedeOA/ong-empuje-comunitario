@@ -2,16 +2,20 @@ from services_pb2.event_pb2 import Response, EventList
 from services_pb2_grpc import event_pb2_grpc
 from database.databaseManager import get_session
 from database.models import Event, UserEvent, EventDonation, User
-import datetime
+from dateutil import parser
+from sqlalchemy.orm import joinedload
 
 class EventService(event_pb2_grpc.EventServiceServicer):
     def CreateEvent(self, request, context):
         session = get_session()
         try:
+
+            event_datetime = parser.parse(request.fecha_hora)
+
             new_event = Event(
                 name=request.name,
                 description=request.description,
-                event_datetime=datetime.datetime.fromisoformat(request.fecha_hora)
+                event_datetime= event_datetime
             )
             session.add(new_event)
             session.commit()
@@ -28,9 +32,12 @@ class EventService(event_pb2_grpc.EventServiceServicer):
             event = session.query(Event).filter_by(id=request.id).first()
             if not event:
                 return Response(success=False, message="Event not found")
+            
+            event_datetime = parser.parse(request.fecha_hora)
+
             event.name = request.name
             event.description = request.description
-            event.event_datetime = datetime.datetime.fromisoformat(request.fecha_hora)
+            event.event_datetime =event_datetime
             session.commit()
             return Response(success=True, message="Event updated successfully")
         except Exception as e:
@@ -59,35 +66,36 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def ListEvents(self, request, context):
         session = get_session()
         try:
-            events = session.query(Event).all()
+            events = session.query(Event).options(
+                joinedload(Event.user_events).joinedload(UserEvent.user)
+            ).all()
+
             event_list = EventList()
+
             for event in events:
-                event_proto = event_list.event.add(
+                new_event = event_list.event.add(
                     id=event.id,
                     name=event.name,
                     description=event.description,
                     fecha_hora=event.event_datetime.isoformat()
                 )
-                user_events = session.query(UserEvent).filter_by(event_id=event.id).all()
-                for ue in user_events:
-                    user = session.query(User).filter_by(id=ue.user_id).first()
-                    if user:
-                        event_proto.users.add(
-                            id=user.id,
-                            username=user.username,
-                            first_name=user.first_name,
-                            phone=user.phone,
-                            email=user.email,
-                            is_active=user.is_active
-                        )
+
+                for ue in event.user_events:
+                    if ue.user:
+                        new_event.users.append(ue.user.username)
+
             return event_list
         finally:
             session.close()
 
+
+
+
     def AddUser(self, request, context):
         session = get_session()
         try:
-            user_id = session.query(User).filter_by(id=request.username).first()
+            print("Request to add user:", request.username, "to event:", request.event_id)
+            user_id = session.query(User).filter_by(username=request.username).first()
             
             if not user_id:
                 return Response(success=False, message="User not found")
@@ -108,7 +116,7 @@ class EventService(event_pb2_grpc.EventServiceServicer):
     def RemoveUser(self, request, context):
         session = get_session()
         try:
-            user_id = session.query(User).filter_by(id=request.username).first()
+            user_id = session.query(User).filter_by(username=request.username).first()
             
             if not user_id:
                 return Response(success=False, message="User not found")

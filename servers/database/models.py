@@ -2,7 +2,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import declarative_base
 import datetime
-
+from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
@@ -18,6 +18,7 @@ class User(Base):
     is_active = Column(Boolean)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     role_id = Column(Integer, ForeignKey('roles.id'))
+    user_events = relationship("UserEvent", back_populates="user")
 
 class Donation(Base):
     __tablename__ = 'donations'
@@ -38,6 +39,7 @@ class Event(Base):
     name = Column(String(255))
     description = Column(String(255))
     event_datetime = Column(DateTime)
+    user_events = relationship("UserEvent", back_populates="event")
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -55,6 +57,8 @@ class UserEvent(Base):
     registration_date = Column(DateTime, default=datetime.datetime.utcnow)
     user_id = Column(Integer, ForeignKey('users.id'))
     event_id = Column(Integer, ForeignKey('events.id'))
+    user = relationship("User", back_populates="user_events")
+    event = relationship("Event", back_populates="user_events")
 
 class EventDonation(Base):
     __tablename__ = 'event_donations'

@@ -22,7 +22,6 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
         last_name: userToEdit.last_name || "",
         phone: userToEdit.phone || "",
         email: userToEdit.email || "",
-        password: "", // nunca mostrar contraseña
         role: roles[userToEdit.role] ? userToEdit.role : defaultRole,
       });
     } else {
@@ -32,7 +31,6 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
         last_name: "",
         phone: "",
         email: "",
-        password: "",
         role: defaultRole,
       });
     }
@@ -107,7 +105,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit, userToEdit }) 
             </select>
           </div>
 
-          {/* Botón */}
+          {/* Botón  agregar usuario*/}
           <button
             type="submit"
             className="w-full bg-empuje-green text-white py-2 rounded-lg font-medium hover:bg-green-700 transition"

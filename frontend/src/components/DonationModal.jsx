@@ -1,33 +1,36 @@
 import React, { useState, useEffect } from "react";
+import { categories } from "../constants/Categories.js";
 
 export default function DonationModal({ isOpen, onClose, onSubmit, donationToEdit }) {
   const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [category, setCategory] = useState("");
 
   useEffect(() => {
     if (donationToEdit) {
       setDescription(donationToEdit.description);
-      setAmount(donationToEdit.amount);
+      setQuantity(donationToEdit.quantity);
       setCategory(donationToEdit.category);
     } else {
       setDescription("");
-      setAmount("");
+      setQuantity("");
       setCategory("");
     }
   }, [donationToEdit, isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!description || !amount || !category) {
+    if (!description || !quantity || !category) {
       alert("Por favor completa todos los campos.");
       return;
     }
-    onSubmit({
-      description,
-      amount,
-      category
-    });
+   onSubmit({
+    id: donationToEdit?.id,
+    description,
+    quantity,
+    category
+  });
+
   };
 
   if (!isOpen) return null;
@@ -67,8 +70,8 @@ export default function DonationModal({ isOpen, onClose, onSubmit, donationToEdi
             <input
               type="number"
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
               placeholder="Cantidad"
             />
           </div>
@@ -77,14 +80,20 @@ export default function DonationModal({ isOpen, onClose, onSubmit, donationToEdi
             <label className="block text-sm font-medium text-gray-700">
               Categoría
             </label>
-            <input
-              type="text"
+            <select
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              placeholder="Categoría de la donación"
-            />
+            >
+              <option value="">Selecciona una categoría</option>
+              {Object.entries(categories).map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </div>
+
 
           <button
             type="submit"

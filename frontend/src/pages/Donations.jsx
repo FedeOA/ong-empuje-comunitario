@@ -28,7 +28,6 @@ export default function Donations() {
       setDonations(data);
     } catch (error) {
       console.error("Error al cargar donaciones:", error);
-      console.log(error);
       showToast("Error al cargar donaciones", "error");
     }
   };
@@ -50,17 +49,17 @@ export default function Donations() {
   const handleSubmitDonation = async (data) => {
     try {
       const token = localStorage.getItem("token");
+      const { id, ...payload } = data;
+
       const response = await fetch(
-        donationToEdit
-          ? `${baseUrl}/donations/${donationToEdit.id}`
-          : `${baseUrl}/donations`,
+        id ? `${baseUrl}/donations/${id}` : `${baseUrl}/donations`,
         {
-          method: donationToEdit ? "PUT" : "POST",
+          method: id ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
           },
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         }
       );
 
@@ -71,7 +70,7 @@ export default function Donations() {
       setDonationToEdit(null);
 
       showToast(
-        donationToEdit
+        id
           ? "Donación modificada con éxito"
           : "Donación registrada correctamente",
         "success"
@@ -79,6 +78,31 @@ export default function Donations() {
     } catch (error) {
       console.error(error);
       showToast("Hubo un problema al procesar la donación.", "error");
+    }
+  };
+
+  const handleDeleteDonation = async (donation) => {
+    const confirm = window.confirm("¿Estás seguro de que querés dar de baja esta donación?");
+    if (!confirm) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${baseUrl}/donations/${donation.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ eliminado: true })
+      });
+
+      if (!response.ok) throw new Error("Error al dar de baja la donación");
+
+      await fetchDonations();
+      showToast("Donación dada de baja correctamente", "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Hubo un problema al dar de baja la donación.", "error");
     }
   };
 
@@ -120,6 +144,13 @@ export default function Donations() {
                   >
                     Modificar
                   </button>
+                  <button
+                    className="bg-empuje-orange text-white px-3 py-1 rounded hover:bg-orange-700 transition"
+                    onClick={() => handleDeleteDonation(donation)}
+                  >
+                    Eliminar
+                  </button>
+
                 </td>
               </tr>
             ))}

@@ -9,7 +9,7 @@ import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.event.Event;
 import com.grpc.demo.service.event.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,7 +23,6 @@ import com.grpc.demo.service.EventClient;
 
 @RestController
 @RequestMapping("/api/events")
-@CrossOrigin(origins = "*")
 public class EventController {
 
     private final EventClient eventClient;
@@ -84,6 +83,7 @@ public class EventController {
         }
     }
 
+    @PreAuthorize("#username == authentication.name or hasAnyRole('PRESIDENTE','COORDINADOR')")
     @PostMapping("/{eventId}/users/{username}")
     public ResponseEntity<ResponseDTO> addUserToEvent(@PathVariable int eventId, @PathVariable String username){
         try {
@@ -97,6 +97,7 @@ public class EventController {
         }
     }
 
+    @PreAuthorize("#username == authentication.name or hasAnyRole('PRESIDENTE','COORDINADOR')")
     @DeleteMapping("/{eventId}/users/{username}")
     public ResponseEntity<ResponseDTO> removeUserFromEvent(@PathVariable int eventId, @PathVariable String username){
         try {

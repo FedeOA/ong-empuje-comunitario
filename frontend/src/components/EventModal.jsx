@@ -4,19 +4,26 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    date: "",
+    datetime: "",
   });
 
-  // Rellenar formulario si estamos editando
+  const getLocalISOString = () => {
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
+  };
+
   useEffect(() => {
     if (eventToEdit) {
+      const raw = eventToEdit.datetime || "";
+      const formatted = raw ? raw.slice(0, 16) : "";
       setFormData({
         name: eventToEdit.name || "",
         description: eventToEdit.description || "",
-        date: eventToEdit.date || "",
+        datetime: formatted,
       });
     } else {
-      setFormData({ name: "", description: "", date: "" });
+      setFormData({ name: "", description: "", datetime: "" });
     }
   }, [eventToEdit, isOpen]);
 
@@ -26,6 +33,13 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const localNow = getLocalISOString();
+    if (formData.datetime < localNow) {
+      alert("La fecha y hora del evento no pueden ser anteriores al momento actual.");
+      return;
+    }
+
     onSubmit(formData);
     onClose();
   };
@@ -47,7 +61,6 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Nombre del evento */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Nombre del evento</label>
             <input
@@ -60,7 +73,6 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
             />
           </div>
 
-          {/* Descripción */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Descripción</label>
             <textarea
@@ -73,20 +85,19 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
             />
           </div>
 
-          {/* Fecha */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Fecha del evento</label>
+            <label className="block text-sm font-medium text-gray-700">Fecha y hora del evento</label>
             <input
-              type="date"
-              name="date"
-              value={formData.date}
+              type="datetime-local"
+              name="datetime"
+              value={formData.datetime}
               onChange={handleChange}
+              min={getLocalISOString()}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-empuje-green focus:border-empuje-green"
               required
             />
           </div>
 
-          {/* Botón */}
           <button
             type="submit"
             className="w-full bg-empuje-green text-white py-2 rounded-lg font-medium hover:bg-green-700 transition"
