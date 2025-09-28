@@ -2,12 +2,16 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grpc.demo.dto.in.EventDTO;
 import com.grpc.demo.dto.out.EventResponseDTO;
 import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.dto.producer.EventPublicationDTO;
+import com.grpc.demo.enums.Topic;
 import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.event.Event;
 import com.grpc.demo.service.event.Response;
+import com.grpc.demo.service.producer.IProducer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,11 +30,15 @@ import com.grpc.demo.service.EventClient;
 public class EventController {
 
     private final EventClient eventClient;
+    private final IProducer kafkaProducer;
     private final IMapper<Event, EventResponseDTO> mapper;
+    private final ObjectMapper objectMapper;
 
-    public EventController(EventClient eventClient, IMapper<Event, EventResponseDTO> mapper){
+    public EventController(EventClient eventClient, IProducer kafkaProducer, IMapper<Event, EventResponseDTO> mapper, ObjectMapper objectMapper) {
         this.eventClient = eventClient;
+        this.kafkaProducer = kafkaProducer;
         this.mapper = mapper;
+        this.objectMapper = objectMapper;
     }
 
     @PostMapping
@@ -120,5 +128,18 @@ public class EventController {
             return ResponseEntity.badRequest().body(
                     new ResponseDTO(false,e.getMessage()));
         }
-    }     
+    }
+
+    @PostMapping("/publish")
+    public ResponseEntity<ResponseDTO> publishEvent(@RequestBody EventPublicationDTO event) {
+        try {
+            String jsonMessage = objectMapper.writeValueAsString(event);
+            kafkaProducer.sendMessage(Topic.EVENTOS_SOLIDARIOS.getName(), jsonMessage);
+            ResponseDTO response = new ResponseDTO(true, "Mensaje enviado correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseDTO(false, e.getMessage()));
+        }
+    }
 }
