@@ -39,7 +39,9 @@ class Event(Base):
     name = Column(String(255))
     description = Column(String(255))
     event_datetime = Column(DateTime)
+    is_published = Column(Boolean)
     user_events = relationship("UserEvent", back_populates="event")
+    organization_id = Column(Integer, ForeignKey('organizations.id'))
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -66,3 +68,8 @@ class EventDonation(Base):
     quantity_used = Column(Integer)
     event_id = Column(Integer, ForeignKey('events.id'))
     donation_id = Column(Integer, ForeignKey('donations.id'))
+
+class Organization(Base):
+    __tablename__ = 'organizations'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(255))
