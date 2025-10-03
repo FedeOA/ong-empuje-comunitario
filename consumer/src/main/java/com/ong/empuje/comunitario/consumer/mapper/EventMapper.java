@@ -15,6 +15,7 @@ public interface EventMapper {
     EventMapper INSTANCE = Mappers.getMapper(EventMapper.class);
 
     @Mapping(source = "datetime", target = "datetime", qualifiedByName = "stringToDate")
+    @Mapping(source = "eventId", target = "remoteId")
     Event toEntity(EventDTO eventDTO);
 
     @Named("stringToDate")

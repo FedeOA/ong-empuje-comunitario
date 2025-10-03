@@ -2,11 +2,16 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grpc.demo.dto.in.EventDTO;
 import com.grpc.demo.dto.out.EventResponseDTO;
 import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.dto.producer.EventDeleteDTO;
 import com.grpc.demo.dto.producer.EventPublicationDTO;
+import com.grpc.demo.dto.producer.EventVoluntaryDTO;
+import com.grpc.demo.dto.producer.VoluntaryDTO;
+import com.grpc.demo.enums.Organization;
 import com.grpc.demo.enums.Topic;
 import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.event.Event;
@@ -71,6 +76,11 @@ public class EventController {
         try {
             Event event = Event.newBuilder().setId(id).build();
             Response serverResponse = eventClient.deleteEvent(event);
+
+            EventDeleteDTO eventDelete = new EventDeleteDTO(Organization.ONG_EMPUJE_COMUNITARIO.getId(), id);
+            String jsonMessage = objectMapper.writeValueAsString(eventDelete);
+            kafkaProducer.sendMessage(Topic.BAJA_EVENTO_SOLIDARIO.getName(),jsonMessage);
+
             ResponseDTO response = new ResponseDTO((serverResponse.getSuccess()),serverResponse.getMessage());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -142,4 +152,22 @@ public class EventController {
                     new ResponseDTO(false, e.getMessage()));
         }
     }
+
+    @PreAuthorize("#username == authentication.name or hasAnyRole('PRESIDENTE','COORDINADOR')")
+    @PostMapping("/event/{remoteId}/organization/{originOrganizationId}")
+    public ResponseEntity<ResponseDTO> addToRemoteEvent(@PathVariable int originOrganizationId, @PathVariable int remoteId, @RequestBody VoluntaryDTO voluntary) {
+
+        try {
+
+            EventVoluntaryDTO eventVoluntary= new EventVoluntaryDTO(remoteId,originOrganizationId,voluntary);
+            String jsonMessage = objectMapper.writeValueAsString(eventVoluntary);
+            kafkaProducer.sendMessage(Topic.ADHESION_EVENTO.getName(), jsonMessage);
+            ResponseDTO response = new ResponseDTO(true, "Mensaje enviado correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    new ResponseDTO(false, e.getMessage()));
+        }
+    }
+
 }

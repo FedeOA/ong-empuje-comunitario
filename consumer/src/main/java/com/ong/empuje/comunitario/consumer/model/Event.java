@@ -3,6 +3,7 @@ package com.ong.empuje.comunitario.consumer.model;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "events")
@@ -18,15 +19,18 @@ public class Event {
     @Column(length = 200, nullable = false)
     private String description;
 
-    @Column(name="is_published")
-    private boolean isPublished;
-
     @Column(name="event_datetime")
     private Date datetime;
+
+    @Column(name="remote_id")
+    private Integer remoteId;
 
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
+
+    @OneToMany(mappedBy = "event")
+    private List<VoluntaryEvents> voluntaryEvents;
 
     public Integer getId() {return id;}
 
@@ -34,11 +38,13 @@ public class Event {
 
     public String getDescription() {return description;}
 
-    public boolean isPublished() {return isPublished;}
+    public Integer getRemoteId() {return remoteId;}
 
     public Date getDatetime() {return datetime;}
 
     public Organization getOrganization() {return organization;}
+
+    public List<VoluntaryEvents> getVoluntaryEvents() {return voluntaryEvents;}
 
     public void setId(Integer id) {this.id = id;}
 
@@ -46,9 +52,11 @@ public class Event {
 
     public void setDescription(String description) {this.description = description;}
 
-    public void setPublished(boolean published) {isPublished = published;}
+    public void setRemoteId(Integer remoteId) {this.remoteId = remoteId;}
 
     public void setDatetime(Date datetime) {this.datetime = datetime;}
 
     public void setOrganization(Organization organization) {this.organization = organization;}
+
+    public void setVoluntaryEvents(List<VoluntaryEvents> voluntaryEvents) {this.voluntaryEvents = voluntaryEvents;}
 }
