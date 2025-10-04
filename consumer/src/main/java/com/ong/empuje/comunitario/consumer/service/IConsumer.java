@@ -11,4 +11,8 @@ public interface IConsumer {
     void listenDonationRequests(String message) throws JsonProcessingException;
     
     void listenDonationCancellations(String message) throws JsonProcessingException;
+
+    void listenDonationTransfers(String message) throws JsonProcessingException;
+
+    void listenDonationOffers(String message) throws JsonProcessingException;
 }

@@ -2,16 +2,6 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.grpc.demo.dto.in.EventDTO;
-import com.grpc.demo.dto.out.EventResponseDTO;
-import com.grpc.demo.dto.out.ResponseDTO;
-import com.grpc.demo.dto.producer.EventPublicationDTO;
-import com.grpc.demo.enums.Topic;
-import com.grpc.demo.mapper.IMapper;
-import com.grpc.demo.service.event.Event;
-import com.grpc.demo.service.event.Response;
-import com.grpc.demo.service.producer.IProducer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +13,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grpc.demo.dto.in.EventDTO;
+import com.grpc.demo.dto.out.EventResponseDTO;
+import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.dto.producer.EventPublicationDTO;
+import com.grpc.demo.enums.Topic;
+import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.EventClient;
+import com.grpc.demo.service.event.Event;
+import com.grpc.demo.service.event.Response;
+import com.grpc.demo.service.producer.IProducer;
 
 @RestController
 @RequestMapping("/api/events")

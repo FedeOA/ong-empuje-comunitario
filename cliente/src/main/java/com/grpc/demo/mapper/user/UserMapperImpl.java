@@ -1,9 +1,10 @@
 package com.grpc.demo.mapper.user;
 
+import org.springframework.stereotype.Component;
+
 import com.grpc.demo.dto.out.UserResponseDTO;
 import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.user.User;
-import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapperImpl implements IMapper <User, UserResponseDTO>{
