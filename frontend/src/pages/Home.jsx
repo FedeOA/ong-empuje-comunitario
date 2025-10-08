@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import UsersPage from "./Users";
 import EventsPage from "./Events";
 import DonationsPage from "./Donations";
+import DonationRequestsPage from "./DonationRequests";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
 import UserProfile from "../components/UserProfile";
@@ -29,6 +30,8 @@ export default function Home() {
         return <EventsPage />;
       case "donations":
         return <DonationsPage />;
+      case "donation-requests":
+        return <DonationRequestsPage />;
       default:
         return null;
     }
@@ -76,6 +79,18 @@ export default function Home() {
               onClick={() => setActiveSection("donations")}
             >
               Donaciones
+            </button>
+          )}
+          {hasPermission(user?.role, "donation-requests") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "donation-requests"
+                  ? "bg-empuje-green text-white"
+                  : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("donation-requests")}
+            >
+              Solicitudes de Donación
             </button>
           )}
         </nav>

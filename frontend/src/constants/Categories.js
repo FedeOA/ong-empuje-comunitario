@@ -4,3 +4,10 @@ export const categories = {
   UTILES_ESCOLARES: "UTILES ESCOLARES",
   JUGUETES: "JUGUETES",
 };
+
+export const categoriesIndexes = {
+  1: "ALIMENTOS",
+  2: "ROPA",
+  3: "JUGUETES",
+  4: "UTILES_ESCOLARES",
+};

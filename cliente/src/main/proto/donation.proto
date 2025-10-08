@@ -23,6 +23,7 @@ message Response {
     string message = 2;
 }
 
+
 service DonationService {
     rpc CreateDonation(Donation) returns (Response);
     rpc UpdateDonation(Donation) returns (Response);
