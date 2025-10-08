@@ -25,12 +25,18 @@ public class Event {
     @Column(name="remote_id")
     private Integer remoteId;
 
+    @Column(name="is_published")
+    private boolean isPublished;
+
     @ManyToOne
     @JoinColumn(name = "organization_id", nullable = false)
     private Organization organization;
 
-    @OneToMany(mappedBy = "event")
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VoluntaryEvents> voluntaryEvents;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserEvents> userEvents;
 
     public Integer getId() {return id;}
 
@@ -39,6 +45,8 @@ public class Event {
     public String getDescription() {return description;}
 
     public Integer getRemoteId() {return remoteId;}
+
+    public boolean isPublished() {return isPublished;}
 
     public Date getDatetime() {return datetime;}
 
@@ -53,6 +61,8 @@ public class Event {
     public void setDescription(String description) {this.description = description;}
 
     public void setRemoteId(Integer remoteId) {this.remoteId = remoteId;}
+
+    public void setPublished(boolean published) {isPublished = published;}
 
     public void setDatetime(Date datetime) {this.datetime = datetime;}
 
