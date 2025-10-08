@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nuser.proto\x12\x04user\"\x07\n\x05\x45mpty\"\x8d\x01\n\x04User\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\r\n\x05phone\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0f\n\x07role_id\x18\x07 \x01(\x05\x12\x11\n\tis_active\x18\x08 \x01(\x08\" \n\x04Role\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"$\n\x08UserList\x12\x18\n\x04user\x18\x01 \x03(\x0b\x32\n.user.User2\xb5\x01\n\x0bUserService\x12(\n\nCreateUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\nUpdateUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\nDeleteUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\tListUsers\x12\x0b.user.Empty\x1a\x0e.user.UserListB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nuser.proto\x12\x04user\"\x07\n\x05\x45mpty\"\x8d\x01\n\x04User\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\r\n\x05phone\x18\x05 \x01(\t\x12\r\n\x05\x65mail\x18\x06 \x01(\t\x12\x0f\n\x07role_id\x18\x07 \x01(\x05\x12\x11\n\tis_active\x18\x08 \x01(\x08\" \n\x04Role\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"$\n\x08UserList\x12\x18\n\x04user\x18\x01 \x03(\x0b\x32\n.user.User\"#\n\x0fUsernameRequest\x12\x10\n\x08username\x18\x01 \x01(\t2\xed\x01\n\x0bUserService\x12(\n\nCreateUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\nUpdateUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\nDeleteUser\x12\n.user.User\x1a\x0e.user.Response\x12(\n\tListUsers\x12\x0b.user.Empty\x1a\x0e.user.UserList\x12\x36\n\x11GetUserByUsername\x12\x15.user.UsernameRequest\x1a\n.user.UserB\x17\n\x15\x63om.grpc.demo.serviceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -42,6 +42,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_RESPONSE']._serialized_end=251
   _globals['_USERLIST']._serialized_start=253
   _globals['_USERLIST']._serialized_end=289
-  _globals['_USERSERVICE']._serialized_start=292
-  _globals['_USERSERVICE']._serialized_end=473
+  _globals['_USERNAMEREQUEST']._serialized_start=291
+  _globals['_USERNAMEREQUEST']._serialized_end=326
+  _globals['_USERSERVICE']._serialized_start=329
+  _globals['_USERSERVICE']._serialized_end=566
 # @@protoc_insertion_point(module_scope)

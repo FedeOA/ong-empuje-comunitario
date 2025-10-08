@@ -169,6 +169,55 @@ export default function Events() {
     if (updated) setSelectedEvent(updated);
   };
 
+  const handlePublishEvent = async (event) => {
+    
+    try {
+      const token = localStorage.getItem("token");
+
+      const response1 = await fetch(`${baseUrl}/events/${event.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+
+        body: JSON.stringify({
+          name: event.name,
+          description: event.description,
+          datetime: event.datetime,
+          is_published: true
+        })
+      });
+
+      if (!response1.ok) throw new Error("Error al modificar el evento");
+
+      const response = await fetch(`${baseUrl}/events/publish`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+          
+        body: JSON.stringify({
+          organization_id: 1 ,// id de organización fija por ahora
+          event_id: event.id,
+          name: event.name,
+          description: event.description,
+          datetime: event.datetime
+        })
+
+      });
+
+    
+    if (!response.ok) throw new Error("Error al publicar el evento");
+    await fetchEvents();
+
+    showToast("Evento publicado correctamente", "success");
+  } catch (error) {
+    console.error(error);
+    showToast("Hubo un problema al publicar el evento", "error");
+  }
+};
 
   return (
     <div className="min-h-screen bg-empuje-bg p-6">
@@ -252,6 +301,27 @@ export default function Events() {
                           Eliminar
                         </button>
                       </>
+                    )}
+
+                    {(user.role === "PRESIDENTE" || user.role === "COORDINADOR") && isFuture &&(
+                      <div className="flex items-center justify-center">
+                        {!event.is_published ? (
+                          <button
+                            className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition flex items-center gap-1"
+                            onClick={() => handlePublishEvent(event)}
+                            title="Publicar evento"
+                          >
+                            📢 <span className="text-sm">Publicar</span>
+                          </button>
+                        ) : (
+                          <div
+                            className="flex items-center gap-1 text-purple-700 font-semibold"
+                            title="Evento publicado"
+                          >
+                            ✅ <span className="text-sm">Publicado</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>
