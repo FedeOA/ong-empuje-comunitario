@@ -2,10 +2,10 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grpc.demo.dto.in.EventDTO;
 import com.grpc.demo.dto.out.EventResponseDTO;
+import com.grpc.demo.dto.out.ExternalEventResponseDTO;
 import com.grpc.demo.dto.out.ResponseDTO;
 import com.grpc.demo.dto.producer.EventDeleteDTO;
 import com.grpc.demo.dto.producer.EventPublicationDTO;
@@ -14,9 +14,12 @@ import com.grpc.demo.dto.producer.VoluntaryDTO;
 import com.grpc.demo.enums.Organization;
 import com.grpc.demo.enums.Topic;
 import com.grpc.demo.mapper.IMapper;
+import com.grpc.demo.service.UserClient;
 import com.grpc.demo.service.event.Event;
+import com.grpc.demo.service.event.ExternalEvent;
 import com.grpc.demo.service.event.Response;
 import com.grpc.demo.service.producer.IProducer;
+import com.grpc.demo.service.user.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,14 +38,18 @@ import com.grpc.demo.service.EventClient;
 public class EventController {
 
     private final EventClient eventClient;
+    private final UserClient uSerClient;
     private final IProducer kafkaProducer;
     private final IMapper<Event, EventResponseDTO> mapper;
+    private final IMapper<ExternalEvent, ExternalEventResponseDTO> externalEventMapper;
     private final ObjectMapper objectMapper;
 
-    public EventController(EventClient eventClient, IProducer kafkaProducer, IMapper<Event, EventResponseDTO> mapper, ObjectMapper objectMapper) {
+    public EventController(EventClient eventClient, UserClient uSerClient, IProducer kafkaProducer, IMapper<Event, EventResponseDTO> mapper, IMapper<ExternalEvent, ExternalEventResponseDTO> externalEventMapper, ObjectMapper objectMapper) {
         this.eventClient = eventClient;
+        this.uSerClient = uSerClient;
         this.kafkaProducer = kafkaProducer;
         this.mapper = mapper;
+        this.externalEventMapper = externalEventMapper;
         this.objectMapper = objectMapper;
     }
 
@@ -77,7 +84,7 @@ public class EventController {
             Event event = Event.newBuilder().setId(id).build();
             Response serverResponse = eventClient.deleteEvent(event);
 
-            EventDeleteDTO eventDelete = new EventDeleteDTO(Organization.ONG_EMPUJE_COMUNITARIO.getId(), id);
+            EventDeleteDTO eventDelete = new EventDeleteDTO(id,Organization.ONG_EMPUJE_COMUNITARIO.getId());
             String jsonMessage = objectMapper.writeValueAsString(eventDelete);
             kafkaProducer.sendMessage(Topic.BAJA_EVENTO_SOLIDARIO.getName(),jsonMessage);
 
@@ -95,6 +102,18 @@ public class EventController {
 
             List<Event> serverEvents = eventClient.listEvents();
             List<EventResponseDTO> events = mapper.mapList(serverEvents);
+            return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @GetMapping("/externals")
+    public ResponseEntity<List<ExternalEventResponseDTO>> listExternalEvents() {
+        try {
+
+            List<ExternalEvent> serverEvents = eventClient.listExternalEvents();
+            List<ExternalEventResponseDTO> events = externalEventMapper.mapList(serverEvents);
             return ResponseEntity.ok(events);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -153,13 +172,26 @@ public class EventController {
         }
     }
 
-    @PreAuthorize("#username == authentication.name or hasAnyRole('PRESIDENTE','COORDINADOR')")
-    @PostMapping("/event/{remoteId}/organization/{originOrganizationId}")
-    public ResponseEntity<ResponseDTO> addToRemoteEvent(@PathVariable int originOrganizationId, @PathVariable int remoteId, @RequestBody VoluntaryDTO voluntary) {
+    @PreAuthorize("#username == authentication.name")
+    @PostMapping("/{remoteId}/organization/{originOrganizationId}/user/{username}")
+    public ResponseEntity<ResponseDTO> addToRemoteEvent(@PathVariable int originOrganizationId,
+                                                        @PathVariable int remoteId,
+                                                        @PathVariable String username) {
 
         try {
 
+            User user = uSerClient.getUserByUsername(username);
+
+            VoluntaryDTO voluntary= new VoluntaryDTO(
+                    Organization.ONG_SOMOS_MAS.getId(),
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getPhone(),
+                    user.getEmail());
+
             EventVoluntaryDTO eventVoluntary= new EventVoluntaryDTO(remoteId,originOrganizationId,voluntary);
+
             String jsonMessage = objectMapper.writeValueAsString(eventVoluntary);
             kafkaProducer.sendMessage(Topic.ADHESION_EVENTO.getName(), jsonMessage);
             ResponseDTO response = new ResponseDTO(true, "Mensaje enviado correctamente");
@@ -169,5 +201,4 @@ public class EventController {
                     new ResponseDTO(false, e.getMessage()));
         }
     }
-
 }

@@ -5,14 +5,8 @@ import com.ong.empuje.comunitario.consumer.dto.in.EventDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventVoluntaryDTO;
 import com.ong.empuje.comunitario.consumer.mapper.EventMapper;
 import com.ong.empuje.comunitario.consumer.mapper.VoluntaryMapper;
-import com.ong.empuje.comunitario.consumer.model.Event;
-import com.ong.empuje.comunitario.consumer.model.Organization;
-import com.ong.empuje.comunitario.consumer.model.Voluntary;
-import com.ong.empuje.comunitario.consumer.model.VoluntaryEvents;
-import com.ong.empuje.comunitario.consumer.repository.EventRepository;
-import com.ong.empuje.comunitario.consumer.repository.OrganizationRepository;
-import com.ong.empuje.comunitario.consumer.repository.VoluntaryEventsRepository;
-import com.ong.empuje.comunitario.consumer.repository.VoluntaryRepository;
+import com.ong.empuje.comunitario.consumer.model.*;
+import com.ong.empuje.comunitario.consumer.repository.*;
 import com.ong.empuje.comunitario.consumer.service.IConsumer;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -28,13 +22,17 @@ public class KafkaConsumerImpl implements IConsumer {
     private final VoluntaryRepository voluntaryRepository;
     private final VoluntaryEventsRepository voluntaryEventsRepository;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
+    private final UserEventsRepository userEventsRepository;
 
-    public KafkaConsumerImpl(EventRepository eventRepository, OrganizationRepository organizationRepository, VoluntaryRepository voluntaryRepository, VoluntaryEventsRepository registrationEventsRepository, ObjectMapper objectMapper) {
+    public KafkaConsumerImpl(EventRepository eventRepository, OrganizationRepository organizationRepository, VoluntaryRepository voluntaryRepository, VoluntaryEventsRepository registrationEventsRepository, ObjectMapper objectMapper, UserRepository userRepository, UserEventsRepository userEventsRepository) {
         this.eventRepository = eventRepository;
         this.organizationRepository = organizationRepository;
         this.voluntaryRepository = voluntaryRepository;
         this.voluntaryEventsRepository = registrationEventsRepository;
         this.objectMapper = objectMapper;
+        this.userRepository = userRepository;
+        this.userEventsRepository = userEventsRepository;
     }
 
     @Override
@@ -43,7 +41,10 @@ public class KafkaConsumerImpl implements IConsumer {
 
         try {
             EventDTO event = objectMapper.readValue(message, EventDTO.class);
-            eventRepository.save(build(event));
+
+            if(Integer.parseInt(event.organizationId()) != 1) { // si no es mi orgaizacion
+                eventRepository.save(build(event));
+            }
         }catch (Exception e){
             System.out.println("Exception : "+ e.getCause() + e.getMessage());
         }
@@ -74,12 +75,13 @@ public class KafkaConsumerImpl implements IConsumer {
             EventVoluntaryDTO eventVoluntary = objectMapper.readValue(message, EventVoluntaryDTO.class);
             Voluntary voluntary = VoluntaryMapper.INSTANCE.toEntity(eventVoluntary.voluntary());
 
-            if(eventVoluntary.originOrganizationId() == 1) { // mi organización
-                Optional<Event> event = eventRepository.findById(eventVoluntary.remoteId());
+            Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
 
-                Voluntary toSave;
+            if (event.isPresent()) {
+                if (eventVoluntary.originOrganizationId() == 1) { // evento de mi organización
 
-                if (event.isPresent()) {
+                    Voluntary toSave;
+
                     Optional<Voluntary> toUpdate = voluntaryRepository
                             .findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
 
@@ -100,8 +102,19 @@ public class KafkaConsumerImpl implements IConsumer {
                     voluntaryEvents.setVoluntary(toSave);
                     voluntaryEvents.setRegistrationDate(new Date());
                     voluntaryEventsRepository.save(voluntaryEvents);
+                } else if (voluntary.getOrganizationId() == 1){ // usuario de mi organizacion
+
+                    Optional<User> user = userRepository.findById(voluntary.getVoluntaryId());
+
+                    if(user.isPresent()){
+                        UserEvents userEvents = new UserEvents();
+                        userEvents.setEvent(event.get());
+                        userEvents.setUser(user.get());
+                        userEvents.setRegistrationDate(new Date());
+                        userEventsRepository.save(userEvents);
+                    }
                 }
-            }
+        }
         }catch (Exception e){
             System.out.println("Exception : "+ e.getCause() + e.getMessage());
         }
