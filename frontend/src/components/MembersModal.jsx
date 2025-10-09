@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { baseUrl } from "../constants/constants.js";
-import { roles } from "../constants/roles.js"; // Asegurate de importar esto correctamente
+import { roles } from "../constants/roles.js";
 
 export default function MembersModal({ isOpen, onClose, event, user }) {
   const [members, setMembers] = useState([]);
@@ -62,7 +62,7 @@ export default function MembersModal({ isOpen, onClose, event, user }) {
       if (!response.ok) throw new Error("Error al eliminar miembro");
 
       setMembers(prev => prev.filter(m => m !== username));
-      //onUpdateUsers();
+      
     } catch (error) {
       console.error("Error al eliminar miembro:", error);
     }
@@ -83,7 +83,7 @@ export default function MembersModal({ isOpen, onClose, event, user }) {
 
       setMembers(prev => [...prev, username]);
       setSearchTerm("");
-      //onUpdateUsers();
+      
     } catch (error) {
       console.error("Error al agregar miembro:", error);
     }

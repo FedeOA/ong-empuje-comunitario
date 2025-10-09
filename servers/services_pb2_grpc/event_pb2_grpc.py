@@ -54,6 +54,11 @@ class EventServiceStub(object):
                 request_serializer=event__pb2.Empty.SerializeToString,
                 response_deserializer=event__pb2.EventList.FromString,
                 _registered_method=True)
+        self.ListExternalEvents = channel.unary_unary(
+                '/event.EventService/ListExternalEvents',
+                request_serializer=event__pb2.Empty.SerializeToString,
+                response_deserializer=event__pb2.ExternalEventList.FromString,
+                _registered_method=True)
         self.AddUser = channel.unary_unary(
                 '/event.EventService/AddUser',
                 request_serializer=event__pb2.UserEventRequest.SerializeToString,
@@ -98,9 +103,14 @@ class EventServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def ListExternalEvents(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def AddUser(self, request, context):
-        """Users
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -112,8 +122,7 @@ class EventServiceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def UseDonations(self, request, context):
-        """Donations 
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -140,6 +149,11 @@ def add_EventServiceServicer_to_server(servicer, server):
                     servicer.ListEvents,
                     request_deserializer=event__pb2.Empty.FromString,
                     response_serializer=event__pb2.EventList.SerializeToString,
+            ),
+            'ListExternalEvents': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListExternalEvents,
+                    request_deserializer=event__pb2.Empty.FromString,
+                    response_serializer=event__pb2.ExternalEventList.SerializeToString,
             ),
             'AddUser': grpc.unary_unary_rpc_method_handler(
                     servicer.AddUser,
@@ -265,6 +279,33 @@ class EventService(object):
             '/event.EventService/ListEvents',
             event__pb2.Empty.SerializeToString,
             event__pb2.EventList.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListExternalEvents(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/event.EventService/ListExternalEvents',
+            event__pb2.Empty.SerializeToString,
+            event__pb2.ExternalEventList.FromString,
             options,
             channel_credentials,
             insecure,

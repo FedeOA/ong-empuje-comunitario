@@ -1,17 +1,18 @@
 package com.grpc.demo.mapper.event;
 
-import com.grpc.demo.dto.out.EventResponseDTO;
+import com.grpc.demo.dto.out.ExternalEventResponseDTO;
 import com.grpc.demo.mapper.IMapper;
-import com.grpc.demo.service.event.Event;
-import org.springframework.stereotype.Component;
+import com.grpc.demo.service.event.ExternalEvent;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
-public class EventMapperImpl implements IMapper <Event, EventResponseDTO>{
+@Service
+public class ExternalEventMapperImpl implements IMapper  <ExternalEvent, ExternalEventResponseDTO> {
+
     @Override
-    public EventResponseDTO map(Event source) {
+    public ExternalEventResponseDTO map(ExternalEvent source) {
 
         List<String> users = new ArrayList<>();
 
@@ -19,12 +20,14 @@ public class EventMapperImpl implements IMapper <Event, EventResponseDTO>{
             users.add(source.getUsers(i));
         }
 
-        return new EventResponseDTO(
+        return new ExternalEventResponseDTO(
                 source.getId(),
                 source.getName(),
                 source.getDescription(),
                 source.getFechaHora(),
                 source.getIsPublished(),
+                source.getRemoteId(),
+                source.getOrganizationId(),
                 users
         );
     }

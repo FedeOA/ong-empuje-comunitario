@@ -23,6 +23,7 @@ public class EventClient {
                     .setName(eventReq.name())
                     .setDescription(eventReq.description())
                     .setFechaHora(eventReq.datetime())
+                    .setIsPublished(false)
                     .build();
 
             return stub.createEvent(event);
@@ -40,6 +41,7 @@ public class EventClient {
                     .setName(eventReq.name())
                     .setDescription(eventReq.description())
                     .setFechaHora(eventReq.datetime().toString())
+                    .setIsPublished(eventReq.isPublished())
                     .build();
 
             return stub.updateEvent(event);
@@ -60,6 +62,15 @@ public class EventClient {
         try {
             EventList list = stub.listEvents(Empty.newBuilder().build());
             return list.getEventList();
+        } catch (Exception e) {
+            throw new GrpcClientException("Error en la lista de eventos",e);
+        }
+    }
+
+    public List<ExternalEvent> listExternalEvents(){
+        try {
+            ExternalEventList list = stub.listExternalEvents(Empty.newBuilder().build());
+            return list.getExternalEventList();
         } catch (Exception e) {
             throw new GrpcClientException("Error en la lista de eventos",e);
         }

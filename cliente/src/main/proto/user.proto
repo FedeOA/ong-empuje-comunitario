@@ -31,9 +31,14 @@ message UserList {
     repeated User user = 1;
 }
 
+message UsernameRequest {
+  string username = 1;
+}
+
 service UserService {
     rpc CreateUser(User) returns (Response);
     rpc UpdateUser(User) returns (Response);
     rpc DeleteUser(User) returns (Response);
     rpc ListUsers(Empty) returns (UserList);
+    rpc GetUserByUsername (UsernameRequest) returns (User);
 }
