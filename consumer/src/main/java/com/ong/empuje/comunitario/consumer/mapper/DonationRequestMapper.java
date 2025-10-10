@@ -1,10 +1,10 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\mapper\DonationRequestMapper.java
+//  consumer\src\main\java\com\ong\empuje\comunitario\consumer\mapper\DonationRequestMapper.java
 
 package com.ong.empuje.comunitario.consumer.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
+import org.mapstruct.factory.Mappers;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestItemDTO;
 import com.ong.empuje.comunitario.consumer.model.DonationRequest;
