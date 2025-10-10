@@ -20,6 +20,15 @@ class User(Base):
     role_id = Column(Integer, ForeignKey('roles.id'))
     user_events = relationship("UserEvent", back_populates="user")
 
+class Voluntary(Base):
+    __tablename__ = 'voluntaries'
+    id = Column(Integer, primary_key=True)
+    organization_id = Column(Integer)
+    voluntary_id = Column(Integer)
+    name = Column(String(255))
+    phone = Column(String(255))
+    email = Column(String(255))
+
 class Donation(Base):
     __tablename__ = 'donations'
     id = Column(Integer, primary_key=True)
@@ -39,9 +48,11 @@ class Event(Base):
     name = Column(String(255))
     description = Column(String(255))
     event_datetime = Column(DateTime)
-    is_published = Column(Boolean)
+    remote_id = Column(Integer,nullable=True)
+    is_published = Column(Boolean, default=False)
+
     user_events = relationship("UserEvent", back_populates="event")
-    organization_id = Column(Integer, ForeignKey('organizations.id'))
+    organization_id = Column(Integer, ForeignKey('organizations.id'), default=1) # 1 id de nuestra organización
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -68,6 +79,15 @@ class EventDonation(Base):
     quantity_used = Column(Integer)
     event_id = Column(Integer, ForeignKey('events.id'))
     donation_id = Column(Integer, ForeignKey('donations.id'))
+
+class VoluntaryEvent(Base):
+    __tablename__ = 'voluntary_events'
+    id = Column(Integer, primary_key=True)
+    registration_date = Column(DateTime, default=datetime.datetime.utcnow)
+    voluntary_id = Column(Integer, ForeignKey('voluntaries.id'))
+    event_id = Column(Integer, ForeignKey('events.id'))
+    voluntary = relationship("Voluntary", backref="voluntary_events")
+    event = relationship("Event", backref="voluntary_events")
 
 class Organization(Base):
     __tablename__ = 'organizations'

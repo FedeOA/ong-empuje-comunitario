@@ -1,13 +1,27 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\dto\in\DonationCancellationDTO.java
-
 package com.ong.empuje.comunitario.consumer.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record DonationCancellationDTO(
-        @JsonProperty("request_id")
-        Integer requestId,
-        @JsonProperty("organization_id")
-        Integer organizationId
-) {
+public class DonationCancellationDTO {
+    @JsonProperty("requestId")
+    private Integer requestId;
+
+    @JsonProperty("organizationId")
+    private Integer organizationId;
+
+    public Integer getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Integer requestId) {
+        this.requestId = requestId;
+    }
+
+    public Integer getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Integer organizationId) {
+        this.organizationId = organizationId;
+    }
 }

@@ -25,6 +25,7 @@ public class EventMapperImpl implements IMapper <Event, EventResponseDTO>{
                 source.getName(),
                 source.getDescription(),
                 source.getFechaHora(),
+                source.getIsPublished(),
                 users
         );
     }

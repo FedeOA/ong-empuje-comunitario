@@ -8,16 +8,32 @@ import "user.proto";
 
 message Empty {}
 
+message ExternalEvent {
+    int32 id = 1;
+    string name = 2;
+    string description = 3;
+    string fecha_hora = 4; // formato ISO 8601
+    bool is_published = 5;
+    int32 remote_id = 6;
+    int32 organization_id = 7;
+    repeated string users = 8;
+}
+
 message Event {
     int32 id = 1;
     string name = 2;
     string description = 3;
     string fecha_hora = 4;
-    repeated string users = 5;
+    bool is_published = 5;
+    repeated string users = 6;
 }
 
 message EventList {
     repeated Event event = 1;
+}
+
+message ExternalEventList {
+    repeated ExternalEvent externalEvent = 1;
 }
 
 message UserEventRequest {
@@ -40,6 +56,7 @@ service EventService {
     rpc UpdateEvent(Event) returns (Response);
     rpc DeleteEvent(Event) returns (Response);
     rpc ListEvents(Empty) returns (EventList);
+    rpc ListExternalEvents(Empty) returns (ExternalEventList);
     rpc AddUser(UserEventRequest) returns (Response);
     rpc RemoveUser(UserEventRequest) returns (Response);
     rpc UseDonations(DonationEventRequest) returns (Response);
