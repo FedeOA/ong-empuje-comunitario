@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 public class KafkaConsumerImpl implements IConsumer {
@@ -44,19 +43,20 @@ public class KafkaConsumerImpl implements IConsumer {
     private final OrganizationRepository organizationRepository;
     private final VoluntaryRepository voluntaryRepository;
     private final VoluntaryEventsRepository voluntaryEventsRepository;
+    private final UserRepository userRepository;
+    private final UserEventsRepository userEventsRepository;
     private final ObjectMapper objectMapper;
     private static final int MAX_ID_GENERATION_ATTEMPTS = 3;
     private static final List<Integer> VALID_CATEGORIES = Arrays.asList(1, 2, 3, 4); // ALIMENTOS, ROPA, JUGUETES, UTILES_ESCOLARES
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerImpl.class);
 
     public KafkaConsumerImpl(EventRepository eventRepository,
-                             DonationRequestRepository donationRequestRepository,
                              OrganizationRepository organizationRepository,
-                             ObjectMapper objectMapper) {
-    private final UserRepository userRepository;
-    private final UserEventsRepository userEventsRepository;
-
-    public KafkaConsumerImpl(EventRepository eventRepository, OrganizationRepository organizationRepository, VoluntaryRepository voluntaryRepository, VoluntaryEventsRepository registrationEventsRepository, ObjectMapper objectMapper, UserRepository userRepository, UserEventsRepository userEventsRepository) {
+                             VoluntaryRepository voluntaryRepository,
+                             VoluntaryEventsRepository registrationEventsRepository,
+                             ObjectMapper objectMapper, UserRepository userRepository,
+                             UserEventsRepository userEventsRepository,
+                             DonationRequestRepository donationRequestRepository) {
         this.eventRepository = eventRepository;
         this.donationRequestRepository = donationRequestRepository;
         this.organizationRepository = organizationRepository;
@@ -77,7 +77,7 @@ public class KafkaConsumerImpl implements IConsumer {
             logger.error("Exception in event listener: {} - {}", e.getCause(), e.getMessage(), e);
         }
     }
-    
+
     @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
     @Override
@@ -190,7 +190,7 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
     public void consumeDonationRequest(String message) {
         try {
@@ -252,7 +252,7 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "baja_solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
     public void consumeDonationCancellation(String message) {
         try {
@@ -276,13 +276,16 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    private Event buildEvent(EventDTO message) throws Exception {
 
-            if(Integer.parseInt(event.organizationId()) != 1) { // si no es mi orgaizacion
-                eventRepository.save(build(event));
-            }
-        }catch (Exception e){
-            System.out.println("Exception : "+ e.getCause() + e.getMessage());
+    private Event buildEvent(EventDTO message) throws Exception {
+        Optional<Organization> organization = organizationRepository.findById(Integer.valueOf(message.organizationId()));
+
+        if (organization.isPresent() && organization.get().getId() != 1) {
+            Event event = EventMapper.INSTANCE.toEntity(message);
+            event.setOrganization(organization.get());
+            return event;
+        } else {
+            throw new Exception("no existe la organizacion");
         }
     }
 
@@ -356,23 +359,10 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-
-    private Event build(EventDTO message) throws Exception {
-        Optional<Organization> organization = organizationRepository.findById(Integer.valueOf(message.organizationId()));
-
-        if (organization.isPresent()) {
-            Event event = EventMapper.INSTANCE.toEntity(message);
-            event.setOrganization(organization.get());
-            return event;
-        } else {
-            throw new Exception("no existe la organizacion");
-        }
-    }
-    
     private boolean validateOrganization(Integer orgId) {
         return organizationRepository.findById(orgId).isPresent();
     }
-    
+
 
     private DonationRequest buildDonationRequest(DonationRequestDTO dto) {
         // Busca si ya existe la solicitud
@@ -395,7 +385,7 @@ public class KafkaConsumerImpl implements IConsumer {
             item.setDescription(itemDto.getDescription());
             request.getItems().add(item);
         }
-        
+
         return request;
     }
 }

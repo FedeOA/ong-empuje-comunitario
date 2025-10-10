@@ -1,6 +1,7 @@
 package com.grpc.demo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grpc.demo.enums.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -28,7 +29,7 @@ public class KafkaController {
         try {
             String message = objectMapper.writeValueAsString(request);
             logger.debug("Publishing message to solicitud_donaciones: {}", message);
-            kafkaTemplate.send("solicitud_donaciones", message);
+            kafkaTemplate.send(Topic.ALTA_SOLICITUD_DONACION.name(), message);
             return ResponseEntity.ok("Donation request published");
         } catch (Exception e) {
             logger.error("Error publishing donation request: {}", e.getMessage(), e);
@@ -42,7 +43,7 @@ public class KafkaController {
         try {
             String message = objectMapper.writeValueAsString(request);
             logger.debug("Publishing message to baja_solicitud_donaciones: {}", message);
-            kafkaTemplate.send("baja_solicitud_donaciones", message);
+            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACION.name(), message);
             return ResponseEntity.ok("Donation cancellation published");
         } catch (Exception e) {
             logger.error("Error publishing donation cancellation: {}", e.getMessage(), e);

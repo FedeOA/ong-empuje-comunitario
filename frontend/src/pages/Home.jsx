@@ -3,10 +3,10 @@ import UsersPage from "./Users";
 import EventsPage from "./Events";
 import DonationsPage from "./Donations";
 import DonationRequestsPage from "./DonationRequests";
+import ExternalEventsPage from "./ExternalEventsPage";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
 import UserProfile from "../components/UserProfile";
-import ExternalEventsPage from "./ExternalEventsPage";
 
 export default function Home() {
   const { user } = useAuth();
@@ -42,12 +42,8 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen bg-empuje-bg">
-
-     
-
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-6 flex flex-col">
-        
         <UserProfile username={user?.username} role={user?.role} />
         <div className="h-6" />
         <div className="h-6" />
@@ -94,7 +90,8 @@ export default function Home() {
               onClick={() => setActiveSection("donation-requests")}
             >
               Solicitudes de Donación
-
+            </button>
+          )}
           {hasPermission(user?.role, "externalEvents") && (
             <button
               className={`text-left px-3 py-2 rounded ${
