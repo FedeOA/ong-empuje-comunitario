@@ -6,8 +6,8 @@ public enum Topic {
     ADHESION_EVENTO("adhesion-evento"),
     BAJA_EVENTO_SOLIDARIO("baja-evento-solidario"),
 
-    TRANSFERENCIA_DONACIONES("transferencia_donaciones"),
-    OFERTA_DONACIONES("oferta_donaciones");
+    TRANSFERENCIA_DONACIONES("transferencia-donaciones"),
+    OFERTA_DONACIONES("oferta-donaciones");
 
 
     private final String name;

@@ -44,7 +44,7 @@ public class KafkaProducerServiceImpl implements IProducer {
         try{
             DonationTransferDTO transfer = new DonationTransferDTO(requestId, organizationId, items);
             String message = objectMapper.writeValueAsString(transfer);
-            String topicTransfer = Topic.TRANSFERENCIA_DONACIONES.getName() + " " + targetOrganizationId;
+            String topicTransfer = Topic.TRANSFERENCIA_DONACIONES.getName() +"-"+ targetOrganizationId;
             
             sendMessage(topicTransfer, message);  
         }catch(JsonProcessingException e){

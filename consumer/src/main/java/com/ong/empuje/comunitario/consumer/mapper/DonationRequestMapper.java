@@ -2,12 +2,8 @@
 
 package com.ong.empuje.comunitario.consumer.mapper;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestDTO;

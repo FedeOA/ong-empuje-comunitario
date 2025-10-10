@@ -2,6 +2,7 @@ package com.grpc.demo.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.grpc.demo.dto.in.DonationDTO;
 import com.grpc.demo.dto.out.DonationResponseDTO;
 import com.grpc.demo.dto.out.ResponseDTO;
+import com.grpc.demo.dto.producer.DonationOfferItemDTO;
 import com.grpc.demo.dto.producer.DonationTransferItemDTO;
+import com.grpc.demo.enums.Category;
 import com.grpc.demo.mapper.IMapper;
 import com.grpc.demo.service.DonationClient;
 import com.grpc.demo.service.donation.Donation;
@@ -31,6 +34,9 @@ public class DonationController {
     private final IMapper<Donation, DonationResponseDTO> mapper;
     private final IProducer kafkaProducer;
 
+    @Value("${ong.id:1}") 
+    private int organizationId;
+    
     public DonationController(DonationClient donationClient, IMapper<Donation, DonationResponseDTO> mapper, IProducer kafkaProducer){
         this.donationClient = donationClient;
         this.mapper = mapper;
@@ -95,8 +101,11 @@ public class DonationController {
     public ResponseEntity<ResponseDTO> transferDonation(@PathVariable int targetOrganizationId, @PathVariable int requestId, @RequestBody List<DonationTransferItemDTO> items){
         try {
             //verificamos inventario
-            if(!hasInventory(items)){
-                return ResponseEntity.badRequest().body(new ResponseDTO(false,"Insufficient inventory"));
+            if(targetOrganizationId != organizationId){
+                if(!hasInventory(items)){
+                    return ResponseEntity.badRequest().body(new ResponseDTO(false,"Insufficient inventory"));
+                }
+                deductFromInventory(items);
             }
             kafkaProducer.publicDonationTransfer(targetOrganizationId, requestId, items);
             return ResponseEntity.ok(new ResponseDTO(
@@ -108,11 +117,79 @@ public class DonationController {
             );
         }
     }
+    
 
+    @PostMapping("/offer")
+    public ResponseEntity<ResponseDTO> offerDonation(@RequestBody List<DonationOfferItemDTO> items){
+        try {
+            int offerId = generateUniqueId();
+            kafkaProducer.publicDonationOffer(offerId, items);
 
+            return ResponseEntity.ok(new ResponseDTO(
+                true,"Offer published successfully: " + offerId
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                new ResponseDTO(false,"error publishing offer" + e.getMessage())
+            );
+        }
+    }
 
+    private int generateUniqueId(){
+        return (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
+    }
 
     private boolean hasInventory(List<DonationTransferItemDTO> items){
-        return true;
+        try {
+            List<Donation> currentInventory = donationClient.listDonations();
+            for(DonationTransferItemDTO transferItem : items){
+                boolean itemFound = false;
+                for(Donation inventoryItem : currentInventory){
+                    if (inventoryItem.getCategoria() == transferItem.categoryId() && inventoryItem.getDescription().equals(transferItem.description())) {
+                        if(!hasSufficientQuantity(inventoryItem.getCantidad(), transferItem.quantity())){
+                            return false;
+                        }
+                        itemFound = true;
+                        break;
+                    }
+                }
+                if(!itemFound){
+                    return false;
+                }
+            }
+            return true;
+        }catch (Exception e) {
+            return false;
+        }
     }
+
+    private void deductFromInventory(List<DonationTransferItemDTO> items){
+        try {
+            List<Donation> currentInventory = donationClient.listDonations();
+            for(DonationTransferItemDTO transferItem : items){
+                for(Donation inventoryItem : currentInventory){
+                    if(inventoryItem.getCategoria() == transferItem.categoryId() && inventoryItem.getDescription().equals(transferItem.description())){
+                        int newQuantity = inventoryItem.getCantidad() - transferItem.quantity();
+                        DonationDTO updateDonation = new DonationDTO(
+                            Category.fromId(inventoryItem.getCategoria()).displayName(),
+                            inventoryItem.getDescription(),
+                            newQuantity,
+                            inventoryItem.getUsername()
+                        );
+                        donationClient.updateDonation(inventoryItem.getId(), updateDonation);
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error deducting from inventory: " + e.getMessage());
+            throw new RuntimeException("Failed to update inventory after transfer", e);
+        }
+    }
+    
+    private boolean hasSufficientQuantity(int available, int required) {
+        return available >= required; 
+    }
+ 
 }
+

@@ -113,7 +113,8 @@ public class KafkaConsumerImpl implements IConsumer {
             }
             DonationTransfer transfer = buildDonationTransfer(transferDto);
             donationTransferRepository.save(transfer);
-            //
+       
+
             System.out.println("Successful transfer");
         } catch (Exception e) {
             System.out.println("Exception in donation transfer listener: " + e.getCause() + e.getMessage());
@@ -231,5 +232,4 @@ public class KafkaConsumerImpl implements IConsumer {
 
         return offer;
     }
-
 }
