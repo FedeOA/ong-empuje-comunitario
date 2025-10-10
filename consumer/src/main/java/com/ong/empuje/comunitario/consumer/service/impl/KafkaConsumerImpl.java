@@ -1,6 +1,7 @@
 // consumer\src\main\java\com\ong\empuje\comunitario\consumer\service\impl\KafkaConsumerImpl.java
 
 package com.ong.empuje.comunitario.consumer.service.impl;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -64,12 +65,12 @@ public class KafkaConsumerImpl implements IConsumer {
                              OrganizationRepository organizationRepository,
                              VoluntaryRepository voluntaryRepository,
                              VoluntaryEventsRepository registrationEventsRepository,
-                             ObjectMapper objectMapper, UserRepository userRepository,
+                             ObjectMapper objectMapper,
+                             UserRepository userRepository,
                              UserEventsRepository userEventsRepository,
-                             DonationRequestRepository donationRequestRepository
+                             DonationRequestRepository donationRequestRepository,
                              DonationTransferRepository donationTransferRepository,
-                             DonationOfferRepository donationOfferRepository,
-                             ObjectMapper objectMapper) {
+                             DonationOfferRepository donationOfferRepository) {
 
         this.eventRepository = eventRepository;
         this.donationRequestRepository = donationRequestRepository;
