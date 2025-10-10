@@ -1,22 +1,21 @@
 package com.grpc.demo.service;
 
-import com.grpc.demo.dto.out.LoginResponseDTO;
-import com.grpc.demo.enums.Role;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
+import static com.grpc.demo.Constants.Constants.SECRET_KEY_TOKEN;
 import com.grpc.demo.dto.in.LoginRequestDTO;
+import com.grpc.demo.dto.out.LoginResponseDTO;
+import com.grpc.demo.enums.Role;
 import com.grpc.demo.exception.GrpcClientException;
 import com.grpc.demo.service.authorize.AuthServiceGrpc;
 import com.grpc.demo.service.authorize.LoginRequest;
 import com.grpc.demo.service.authorize.LoginResponse;
 
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import net.devh.boot.grpc.client.inject.GrpcClient;
-
-import java.util.Date;
-
-import static com.grpc.demo.Constants.Constants.SECRET_KEY_TOKEN;
 
 
 @Service

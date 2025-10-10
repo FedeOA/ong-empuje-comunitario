@@ -1,11 +1,13 @@
 package com.grpc.demo.mapper.donations;
 
-import com.grpc.demo.dto.out.DonationResponseDTO;
-import com.grpc.demo.mapper.IMapper;
-import com.grpc.demo.service.donation.Donation;
 import org.springframework.stereotype.Component;
 
-import static com.grpc.demo.enums.Category.*;
+import com.grpc.demo.dto.out.DonationResponseDTO;
+import static com.grpc.demo.enums.Category.UTILES_ESCOLARES;
+import static com.grpc.demo.enums.Category.fromId;
+import static com.grpc.demo.enums.Category.idFromName;
+import com.grpc.demo.mapper.IMapper;
+import com.grpc.demo.service.donation.Donation;
 
 @Component
 public class DonationMapperImpl implements IMapper<Donation, DonationResponseDTO> {

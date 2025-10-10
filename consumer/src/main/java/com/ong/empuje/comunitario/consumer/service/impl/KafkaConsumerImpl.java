@@ -12,17 +12,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationCancellationDTO;
+import com.ong.empuje.comunitario.consumer.dto.in.DonationOfferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestDTO;
+import com.ong.empuje.comunitario.consumer.dto.in.DonationTransferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestItemDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventVoluntaryDTO;
 import com.ong.empuje.comunitario.consumer.mapper.EventMapper;
+import com.ong.empuje.comunitario.consumer.model.DonationOffer;
+import com.ong.empuje.comunitario.consumer.model.DonationOfferItem;
 import com.ong.empuje.comunitario.consumer.model.DonationRequest;
 import com.ong.empuje.comunitario.consumer.model.DonationRequestId;
 import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
+import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
+import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
 import com.ong.empuje.comunitario.consumer.model.Event;
 import com.ong.empuje.comunitario.consumer.model.Organization;
+import com.ong.empuje.comunitario.consumer.repository.DonationOfferRepository;
 import com.ong.empuje.comunitario.consumer.repository.DonationRequestRepository;
+import com.ong.empuje.comunitario.consumer.repository.DonationTransferRepository;
 import com.ong.empuje.comunitario.consumer.repository.EventRepository;
 import com.ong.empuje.comunitario.consumer.repository.OrganizationRepository;
 import com.ong.empuje.comunitario.consumer.mapper.VoluntaryMapper;
@@ -46,6 +54,8 @@ public class KafkaConsumerImpl implements IConsumer {
     private final UserRepository userRepository;
     private final UserEventsRepository userEventsRepository;
     private final ObjectMapper objectMapper;
+    private final DonationTransferRepository donationTransferRepository;
+    private final DonationOfferRepository donationOfferRepository;
     private static final int MAX_ID_GENERATION_ATTEMPTS = 3;
     private static final List<Integer> VALID_CATEGORIES = Arrays.asList(1, 2, 3, 4); // ALIMENTOS, ROPA, JUGUETES, UTILES_ESCOLARES
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerImpl.class);
@@ -56,10 +66,16 @@ public class KafkaConsumerImpl implements IConsumer {
                              VoluntaryEventsRepository registrationEventsRepository,
                              ObjectMapper objectMapper, UserRepository userRepository,
                              UserEventsRepository userEventsRepository,
-                             DonationRequestRepository donationRequestRepository) {
+                             DonationRequestRepository donationRequestRepository
+                             DonationTransferRepository donationTransferRepository,
+                             DonationOfferRepository donationOfferRepository,
+                             ObjectMapper objectMapper) {
+
         this.eventRepository = eventRepository;
         this.donationRequestRepository = donationRequestRepository;
         this.organizationRepository = organizationRepository;
+        this.donationTransferRepository = donationTransferRepository;
+        this.donationOfferRepository = donationOfferRepository;
         this.voluntaryRepository = voluntaryRepository;
         this.voluntaryEventsRepository = registrationEventsRepository;
         this.objectMapper = objectMapper;
@@ -77,7 +93,7 @@ public class KafkaConsumerImpl implements IConsumer {
             logger.error("Exception in event listener: {} - {}", e.getCause(), e.getMessage(), e);
         }
     }
-
+    
     @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
     @Override
@@ -276,6 +292,47 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
+    @Override
+    @KafkaListener(topics = "transferencia-donaciones-${ong.id:1}", groupId = "consumidor1")
+    @Transactional
+    public void listenDonationTransfers(String message){
+        try {
+            DonationTransferDTO transferDto = objectMapper.readValue(message, DonationTransferDTO.class);
+            Optional<DonationTransfer> optionalTransfer = donationTransferRepository.findByTransferIdAndOrganizationId(transferDto.requestId(), transferDto.organizationId());
+            if(optionalTransfer.isPresent()){
+                System.out.println("Processed donation transfer: " + transferDto.requestId());
+                return;
+            }
+            DonationTransfer transfer = buildDonationTransfer(transferDto);
+            donationTransferRepository.save(transfer);
+
+
+            System.out.println("Successful transfer");
+        } catch (Exception e) {
+            System.out.println("Exception in donation transfer listener: " + e.getCause() + e.getMessage());
+        }
+    }
+
+    @Override
+    @KafkaListener(topics = "oferta-donaciones", groupId = "consumidor1")
+    @Transactional
+    public void listenDonationOffers(String message){
+        try {
+            DonationOfferDTO offerDto = objectMapper.readValue(message, DonationOfferDTO.class);
+            Optional<DonationOffer> optionalOffer = donationOfferRepository.findByOfferIdAndOrganizationId(offerDto.offerId(), offerDto.organizationId());
+            if(optionalOffer.isPresent()){
+                System.out.println("Processed donation offer: " + offerDto.offerId());
+                return;
+            }
+            DonationOffer offer = buildDonationOffer(offerDto);
+            donationOfferRepository.save(offer);
+
+            System.out.println("Offer successfully registered");
+        } catch (Exception e) {
+            System.out.println("Exception in donation offer listener: " + e.getCause() + e.getMessage());
+        }
+
+    }
 
     private Event buildEvent(EventDTO message) throws Exception {
         Optional<Organization> organization = organizationRepository.findById(Integer.valueOf(message.organizationId()));
@@ -385,7 +442,53 @@ public class KafkaConsumerImpl implements IConsumer {
             item.setDescription(itemDto.getDescription());
             request.getItems().add(item);
         }
-
+        
         return request;
+    }
+
+    private DonationTransfer buildDonationTransfer(DonationTransferDTO dto){
+        DonationTransfer transfer = donationTransferRepository.findByTransferIdAndOrganizationId(dto.requestId(), dto.organizationId()).orElse(new DonationTransfer());
+
+        transfer.setTransferId(dto.requestId());
+        transfer.setOrganizationId(dto.organizationId());
+        transfer.setRequestId(dto.requestId());
+        transfer.setCreatedAt(LocalDateTime.now());
+        transfer.setReceived(true);
+
+        transfer.getItems().clear();
+
+        for (var itemDto : dto.items()){
+            DonationTransferItem item = new DonationTransferItem();
+            item.setCategoryId(itemDto.categoryId());
+            item.setDescription(itemDto.description());
+            item.setCreatedAt(LocalDateTime.now());
+            item.setQuantity(itemDto.quantity());
+            item.setTransfer(transfer);
+            transfer.getItems().add(item);
+        }
+        return transfer;
+    }
+
+    private DonationOffer buildDonationOffer(DonationOfferDTO dto){
+        DonationOffer offer = donationOfferRepository.findByOfferIdAndOrganizationId(dto.offerId(), dto.organizationId()).orElse(new DonationOffer());
+
+        offer.setOfferId(dto.offerId());
+        offer.setOrganizationId(dto.organizationId());
+        offer.setAvailable(true);
+        offer.setCreatedAt(LocalDateTime.now());
+
+        offer.getItems().clear();
+
+        for(var itemDto : dto.items()){
+            DonationOfferItem item = new DonationOfferItem();
+            item.setCategoryId(itemDto.categoryId());
+            item.setDescription(itemDto.description());
+            item.setCreatedAt(LocalDateTime.now());
+            item.setQuantity(itemDto.quantity());
+            item.setOffer(offer);
+            offer.getItems().add(item);
+        }
+
+        return offer;
     }
 }
