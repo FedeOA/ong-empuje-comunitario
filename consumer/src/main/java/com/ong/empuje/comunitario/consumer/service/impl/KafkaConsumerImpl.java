@@ -85,7 +85,7 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "eventos-solidarios", groupId = "consumidor1")
+    @KafkaListener(topics = "eventos-solidarios", groupId = "ong-empuje-comunitario")
     public void listenCreateEvents(String message) {
         try {
             EventDTO event = objectMapper.readValue(message, EventDTO.class);
@@ -95,7 +95,7 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
     
-    @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "solicitud-donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
     @Override
     public void listenDonationRequests(String message) {
@@ -294,7 +294,7 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "transferencia-donaciones-${ong.id:1}", groupId = "consumidor1")
+    @KafkaListener(topics = "transferencia-donaciones-${ong.id:1}", groupId = "ong-empuje-comunitario")
     @Transactional
     public void listenDonationTransfers(String message){
         try {
@@ -315,7 +315,7 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "oferta-donaciones", groupId = "consumidor1")
+    @KafkaListener(topics = "oferta-donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
     public void listenDonationOffers(String message){
         try {
@@ -348,7 +348,7 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "baja-evento-solidario", groupId = "consumidor2")
+    @KafkaListener(topics = "baja-evento-solidario", groupId = "ong-empuje-comunitario")
     public void listenDeleteEvents(String message) {
 
         try {
@@ -364,7 +364,7 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "adhesion-evento",groupId = "consumidor3")
+    @KafkaListener(topics = "adhesion-evento",groupId = "ong-empuje-comunitario")
     public void listenAddVoluntary(String message) {
 
         try {
@@ -372,38 +372,41 @@ public class KafkaConsumerImpl implements IConsumer {
             EventVoluntaryDTO eventVoluntary = objectMapper.readValue(message, EventVoluntaryDTO.class);
             Voluntary voluntary = VoluntaryMapper.INSTANCE.toEntity(eventVoluntary.voluntary());
 
-            Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
 
-            if (event.isPresent()) {
-                if (eventVoluntary.originOrganizationId() == 1) { // evento de mi organización
+            if (eventVoluntary.originOrganizationId() == 1) { // evento de mi organización
 
-                    Voluntary toSave;
+                Optional<Event> event = eventRepository.findById(eventVoluntary.remoteId());
+                Voluntary toSave;
 
-                    Optional<Voluntary> toUpdate = voluntaryRepository
+                Optional<Voluntary> toUpdate = voluntaryRepository
                             .findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
 
-                    if (toUpdate.isPresent()) {
-                        Voluntary existing = toUpdate.get();
-                        existing.setName(voluntary.getName());
-                        existing.setLastName(voluntary.getLastName());
-                        existing.setPhone(voluntary.getPhone());
-                        existing.setEmail(voluntary.getEmail());
+                if (toUpdate.isPresent()){
+                    Voluntary existing = toUpdate.get();
+                    existing.setName(voluntary.getName());
+                    existing.setLastName(voluntary.getLastName());
+                    existing.setPhone(voluntary.getPhone());
+                    existing.setEmail(voluntary.getEmail());
 
-                        toSave = voluntaryRepository.save(existing);
-                    } else {
-                        toSave = voluntaryRepository.save(voluntary);
-                    }
+                    toSave = voluntaryRepository.save(existing);
+                } else {
+                    toSave = voluntaryRepository.save(voluntary);
+                }
 
+                if (event.isPresent()) {
                     VoluntaryEvents voluntaryEvents = new VoluntaryEvents();
                     voluntaryEvents.setEvent(event.get());
                     voluntaryEvents.setVoluntary(toSave);
                     voluntaryEvents.setRegistrationDate(new Date());
                     voluntaryEventsRepository.save(voluntaryEvents);
+                }
+
                 } else if (voluntary.getOrganizationId() == 1){ // usuario de mi organizacion
 
+                    Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
                     Optional<User> user = userRepository.findById(voluntary.getVoluntaryId());
 
-                    if(user.isPresent()){
+                    if(user.isPresent() && event.isPresent()){
                         UserEvents userEvents = new UserEvents();
                         userEvents.setEvent(event.get());
                         userEvents.setUser(user.get());
@@ -411,7 +414,6 @@ public class KafkaConsumerImpl implements IConsumer {
                         userEventsRepository.save(userEvents);
                     }
                 }
-        }
         }catch (Exception e){
             System.out.println("Exception : "+ e.getCause() + e.getMessage());
         }
