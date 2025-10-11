@@ -1,0 +1,14 @@
+{
+  "request_id": 100,
+  "organization_id": 1,
+  "items": [
+    {
+      "category_id": 1,
+      "description": "Puré de tomates"
+    },
+    {
+      "category_id": 1,
+      "description": "Arroz"
+    }
+  ]
+}

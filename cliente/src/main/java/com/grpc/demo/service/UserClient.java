@@ -73,4 +73,18 @@ public class UserClient {
             throw new GrpcClientException("Error en la lista de usuario", e);
         }
     }
+
+    public User getUserByUsername(String username){
+
+        try {
+            UsernameRequest usernameRequest = UsernameRequest
+                    .newBuilder()
+                    .setUsername(username)
+                    .build();
+
+            return stub.getUserByUsername(usernameRequest);
+        }catch (Exception e){
+            throw new GrpcClientException("Error al obtener el usuario", e);
+        }
+    }
 }

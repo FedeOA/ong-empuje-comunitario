@@ -92,7 +92,7 @@ class UserService(UserServiceServicer):
     def ListUsers(self, request, context):
         session = get_session()
         try:
-            db_users = session.query(User).all()
+            db_users = session.query(User).filter(User.is_active == True).all()
             users = [
                 UserMessage(
                     id=user.id,
@@ -110,3 +110,28 @@ class UserService(UserServiceServicer):
             return UserList(user=[])
         finally:
             session.close()
+
+    def GetUserByUsername(self, request, context):
+        session = get_session()
+        try:
+            db_user = session.query(User).filter(User.username == request.username).first()
+            
+            if db_user:
+                return UserMessage(
+                    id=db_user.id,
+                    username=db_user.username,
+                    first_name=db_user.first_name,
+                    last_name=db_user.last_name or "",
+                    phone=db_user.phone or "",
+                    email=db_user.email or "",
+                    role_id=db_user.role_id or 0,
+                    is_active=db_user.is_active
+                )
+            else:
+                return UserMessage() 
+
+        except Exception as e:
+            return UserMessage()
+        finally:
+            session.close()
+

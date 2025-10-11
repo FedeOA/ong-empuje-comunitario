@@ -62,7 +62,7 @@ public class SecurityConfig {
                          * - POST /api/events/{eventId}/users/{username}:
                          *   PRESIDENTE, COORDINADOR y VOLUNTARIO (solo el mismo usuario vía @PreAuthorize)
                          */
-                        .requestMatchers(HttpMethod.POST, "/api/events/*/users/*")
+                        .requestMatchers(HttpMethod.POST, "/api/events/*/users/*","/api/events/*/organization/*/user/*")
                         .hasAnyRole(Role.PRESIDENTE.name(), Role.COORDINADOR.name(), Role.VOLUNTARIO.name())
 
                         /**
