@@ -95,7 +95,7 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
     
-    @KafkaListener(topics = "solicitud-donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
     @Override
     public void listenDonationRequests(String message) {
@@ -176,7 +176,7 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "baja_solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "baja-solicitud-donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
     @Override
     public void listenDonationCancellations(String message) {
