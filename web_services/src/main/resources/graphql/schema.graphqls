@@ -1,0 +1,62 @@
+type Query {
+    donationReport(categoryId: Int, startDate: String, endDate: String, deleted: String): [DonationReportGroup!]!
+    savedFilters: [SavedFilter!]!
+    savedFilter(id: ID!): SavedFilter
+    categories: [Category!]!
+    category(id: Int!): Category
+}
+
+type Mutation {
+    saveFilter(input: FilterInput!): SavedFilter!
+    updateFilter(id: ID!, input: FilterInput!): SavedFilter!
+    deleteFilter(id: ID!): Boolean!
+}
+
+type DonationReportGroup {
+    categoryId: Int!
+    categoryName: String!
+    deleted: Boolean!
+    totalQuantity: Int!
+    donations: [Donation!]!
+}
+
+type Donation {
+    id: ID!
+    categoryId: Int!
+    categoryName: String!
+    description: String!
+    quantity: Int!
+    createdAt: String!
+    updatedAt: String
+    createdById: Int!
+    createdByUsername: String!
+    updatedById: Int
+    updatedByUsername: String
+    deleted: Boolean!
+}
+
+type SavedFilter {
+    id: ID!
+    name: String!
+    categoryId: Int
+    categoryName: String
+    userId: Int!
+    username: String!
+    startDate: String
+    endDate: String
+    deleted: String
+}
+
+type Category {
+    id: Int!
+    name: String!
+    description: String
+}
+
+input FilterInput {
+    name: String!
+    categoryId: Int
+    startDate: String
+    endDate: String
+    deleted: String
+}

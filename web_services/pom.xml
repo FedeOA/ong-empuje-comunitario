@@ -10,7 +10,7 @@
         <relativePath/>
     </parent>
     <groupId>com.ong.empuje.comunitario</groupId>
-    <artifactId>graphql-service</artifactId>
+    <artifactId>web_services</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>web_services</name>
     <description>GraphQL Service for Empuje Comunitario Donation Reports</description>
@@ -30,6 +30,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- AGREGAR ESTA DEPENDENCIA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
@@ -48,6 +57,11 @@
         <dependency>
             <groupId>org.springframework.graphql</groupId>
             <artifactId>spring-graphql-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

@@ -4,6 +4,7 @@ import EventsPage from "./Events";
 import DonationsPage from "./Donations";
 import DonationRequestsPage from "./DonationRequests";
 import ExternalEventsPage from "./ExternalEventsPage";
+import DonationReportsPage from "./DonationReports";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
 import UserProfile from "../components/UserProfile";
@@ -35,6 +36,8 @@ export default function Home() {
         return <DonationRequestsPage />;
       case "externalEvents":
         return <ExternalEventsPage />;
+      case "donation-reports":
+        return <DonationReportsPage/>;
       default:
         return null;
     }
@@ -100,6 +103,16 @@ export default function Home() {
               onClick={() => setActiveSection("externalEvents")}
             >
               Eventos Externos
+            </button>
+          )}
+          {hasPermission(user?.role, "donation-reports") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "donation-reports" ? "bg-empuje-green text-white" : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("donation-reports")}
+            >
+              Reporte de Donaciones
             </button>
           )}
         </nav>

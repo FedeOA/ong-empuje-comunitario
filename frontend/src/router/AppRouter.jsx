@@ -5,6 +5,7 @@ import EventsPage from "../pages/Events";
 import UsersPage from "../pages/Users";
 import DonationsPage from "../pages/Donations";
 import DonationRequestsPage from "../pages/DonationRequests";
+import DonationReportsPage from "../pages/DonationReports";
 import ForbiddenPage from "../pages/Forbidden";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { roles } from "../constants/roles";
@@ -58,6 +59,15 @@ const AppRouter = () => {
           element={
             <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
               <DonationRequestsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/donation-reports"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
+              <DonationReportsPage />
             </ProtectedRoute>
           }
         />
