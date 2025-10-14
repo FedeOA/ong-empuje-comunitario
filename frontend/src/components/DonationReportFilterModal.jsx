@@ -27,13 +27,14 @@ export default function DonationReportFilterModal({
           console.error("filterToEdit is missing id:", filterToEdit);
           setError("El filtro seleccionado no tiene un ID válido");
         }
-        setFormData({
-          name: filterToEdit.name || "",
-          categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
-          startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
-          endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
-          deleted: filterToEdit.deleted === true ? "YES" : filterToEdit.deleted === false ? "NO" : "",
-        });
+      setFormData({
+        id: filterToEdit.id,
+        name: filterToEdit.name || "",
+        categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
+        startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
+        endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
+        deleted: filterToEdit.isDeleted === true ? "YES" : filterToEdit.isDeleted === false ? "NO" : "",
+      });
       } else {
         setFormData({
           name: "",
@@ -121,21 +122,21 @@ export default function DonationReportFilterModal({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!filterToEdit && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre del Filtro (opcional)
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
-                  placeholder="Ej: Donaciones 2025"
-                />
-              </div>
-            )}
+            {/* La condición fue eliminada, ahora el campo siempre es visible */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {/* Usamos un texto dinámico para la etiqueta */}
+                {filterToEdit ? "Nombre del Filtro" : "Nombre del Filtro (opcional para buscar)"}
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
+                placeholder="Ej: Donaciones 2025"
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>

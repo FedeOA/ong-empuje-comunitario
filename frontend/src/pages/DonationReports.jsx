@@ -207,7 +207,7 @@ export default function DonationReport() {
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
         startDate: formData.startDate || null,
         endDate: formData.endDate || null,
-        deleted: formData.deleted === "YES" ? true : formData.deleted === "NO" ? false : null,
+        deleted: formData.deleted === "YES" ? true : formData.deleted === "NO" ? false : null, // Still works with form UI
         username: user.username,
       },
     };
@@ -236,6 +236,7 @@ export default function DonationReport() {
 
       showToast(formData.id ? "Filtro actualizado con éxito" : "Filtro guardado con éxito");
       fetchSavedFilters();
+      setIsModalOpen(false);
     } catch (error) {
       console.error("Error al procesar el filtro:", error);
       showToast(`Error al procesar el filtro: ${error.message}`, "error");
@@ -358,6 +359,12 @@ export default function DonationReport() {
                     onClick={() => handleApplyFilter(filter)}
                   >
                     Aplicar
+                  </button>
+                  <button
+                    className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition text-sm"
+                    onClick={() => openFilterModal(filter)}
+                  >
+                    Editar
                   </button>
                   <button
                     className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class SavedFilter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
 
     @Column(name = "name")
     private String name;
@@ -28,12 +28,12 @@ public class SavedFilter {
     private LocalDateTime endDate;
 
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean isDeleted = false; // New field for soft deleteById
+    private Boolean isDeleted = false;
 
     public SavedFilter() {
     }
 
-    public SavedFilter(int id, String name, Category category, User user, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
+    public SavedFilter(Integer id, String name, Category category, User user, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -43,27 +43,11 @@ public class SavedFilter {
         this.isDeleted = deleted;
     }
 
-    public Integer getCategoryId() {
-        return category != null ? category.getId() : null;
-    }
-
-    public String getCategoryName() {
-        return category != null ? category.getName() : null;
-    }
-
-    public Integer getUserId() {
-        return user != null ? user.getId() : null;
-    }
-
-    public String getUsername() {
-        return user != null ? user.getUsername() : null;
-    }
-
-    public int getId() {
+    public Integer getId() { // Changed from int to Integer
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -113,5 +97,21 @@ public class SavedFilter {
 
     public void setIsDeleted(Boolean deleted) {
         this.isDeleted = deleted;
+    }
+
+    public Integer getCategoryId() {
+        return category != null ? category.getId() : null;
+    }
+
+    public String getCategoryName() {
+        return category != null ? category.getName() : null;
+    }
+
+    public Integer getUserId() {
+        return user != null ? user.getId() : null;
+    }
+
+    public String getUsername() {
+        return user != null ? user.getUsername() : null;
     }
 }

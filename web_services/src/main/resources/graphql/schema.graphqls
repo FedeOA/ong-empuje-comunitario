@@ -60,6 +60,6 @@ input FilterInput {
     categoryId: Int
     startDate: String
     endDate: String
-    deleted: String
+    deleted: Boolean
     username: String!
 }

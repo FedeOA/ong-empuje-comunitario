@@ -10,6 +10,7 @@ import com.ong.empuje.comunitario.web_services.repository.SavedFilterRepository;
 import com.ong.empuje.comunitario.web_services.repository.UserRepository;
 
 import graphql.GraphQLException;
+import jakarta.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -216,48 +217,46 @@ public class DonationReportController {
     }
 
     @MutationMapping
+    @Transactional // 1. Add Transactional annotation
     public SavedFilter updateFilter(@Argument Integer id, @Argument FilterInput input) {
         logger.info("Updating filter with id: {}", id);
-        try {
-            if (id == null) {
-                throw new IllegalArgumentException("Filter ID is required");
-            }
-            if (input.getName() == null || input.getName().trim().isEmpty()) {
-                throw new IllegalArgumentException("Filter name is required");
-            }
-            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
-                throw new IllegalArgumentException("Username is required");
-            }
 
-            User user = userRepository.findByUsername(input.getUsername())
-                    .orElseThrow(() -> new IllegalArgumentException("Username " + input.getUsername() + " does not exist"));
-
-            SavedFilter filter = savedFilterRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
-
-            logger.info("Found filter with id: {}, current name: {}", filter.getId(), filter.getName());
-
-            // Update fields
-            filter.setName(input.getName().trim());
-            filter.setCategory(input.getCategoryId() != null
-                    ? categoryRepository.findById(input.getCategoryId())
-                            .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"))
-                    : null);
-            filter.setUser(user);
-            filter.setStartDate(input.getStartDate());
-            filter.setEndDate(input.getEndDate());
-            filter.setIsDeleted(input.getDeleted());
-
-            SavedFilter updated = savedFilterRepository.save(filter);
-            logger.info("Updated filter with id: {} for user {}, new name: {}", updated.getId(), input.getUsername(), updated.getName());
-            return updated;
-        } catch (IllegalArgumentException e) {
-            logger.error("Validation error updating filter with id {}: {}", id, e.getMessage());
-            throw new GraphQLException(e.getMessage());
-        } catch (Exception e) {
-            logger.error("Error updating filter with id {}: {}", id, e.getMessage(), e);
-            throw new GraphQLException("Failed to update filter: " + e.getMessage());
+        // 2. Validate input first (this is good practice)
+        if (id == null) {
+            throw new IllegalArgumentException("Filter ID is required");
         }
+        if (input.getName() == null || input.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Filter name is required");
+        }
+        if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        // 3. Fetch the filter and verify ownership in a single step
+        //    This uses the existing findByIdAndUserUsername method in your repository.
+        SavedFilter filter = savedFilterRepository.findByIdAndUserUsername(id, input.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("Filter with ID " + id + " not found or you don't have permission to edit it."));
+
+        // 4. Update the managed entity's fields
+        filter.setName(input.getName().trim());
+        filter.setStartDate(input.getStartDate());
+        filter.setEndDate(input.getEndDate());
+        filter.setIsDeleted(input.getDeleted());
+
+        // Handle category update
+        if (input.getCategoryId() != null) {
+            Category category = categoryRepository.findById(input.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
+            filter.setCategory(category);
+        } else {
+            filter.setCategory(null);
+        }
+
+        // 5. No need to call .save()!
+        //    The transaction will commit automatically when the method exits,
+        //    and Hibernate will write the changes to the database.
+        logger.info("Updated filter with id: {} for user {}, new name: {}", filter.getId(), input.getUsername(), filter.getName());
+        return filter;
     }
 
     @MutationMapping
