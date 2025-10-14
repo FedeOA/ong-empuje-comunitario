@@ -1,13 +1,14 @@
 package com.ong.empuje.comunitario.web_services.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "saved_filters")
 public class SavedFilter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -21,20 +22,18 @@ public class SavedFilter {
     private User user;
 
     @Column(name = "start_date")
-    private String startDate;
+    private LocalDateTime startDate;
 
     @Column(name = "end_date")
-    private String endDate;
+    private LocalDateTime endDate;
 
-    @Column(name = "deleted_status")
-    private String deleted;
+    @Column(name = "is_deleted")
+    private Boolean deleted;
 
     public SavedFilter() {
-        
     }
 
-    public SavedFilter(Long id, String name, Category category, User user, String startDate, String endDate,
-            String deleted) {
+    public SavedFilter(int id, String name, Category category, User user, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -44,7 +43,6 @@ public class SavedFilter {
         this.deleted = deleted;
     }
 
-    // Métodos calculados
     public Integer getCategoryId() {
         return category != null ? category.getId() : null;
     }
@@ -61,11 +59,11 @@ public class SavedFilter {
         return user != null ? user.getUsername() : null;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -93,29 +91,27 @@ public class SavedFilter {
         this.user = user;
     }
 
-    public String getStartDate() {
+    public LocalDateTime getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(String startDate) {
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
 
-    public String getEndDate() {
+    public LocalDateTime getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(String endDate) {
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
 
-    public String getDeleted() {
+    public Boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(String deleted) {
+    public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
     }
-
-    
 }

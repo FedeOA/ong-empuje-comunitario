@@ -8,15 +8,15 @@ import java.time.LocalDateTime;
 public class Donation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
     @Column(name = "category_id", nullable = false)
     private Integer categoryId;
 
-    @Column(nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(nullable = false)
+    @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @Column(name = "created_at", nullable = false)
@@ -25,54 +25,56 @@ public class Donation {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "created_by", nullable = false)
-    private Integer createdBy; // FK to users.id
+    @Column(name = "created_by_id", nullable = false)
+    private Integer createdById;
 
-    @Column(name = "updated_by")
-    private Integer updatedBy; // FK to users.id
+    @Column(name = "created_by_username", nullable = false)
+    private String createdByUsername;
+
+    @Column(name = "updated_by_id")
+    private Integer updatedById;
+
+    @Column(name = "updated_by_username")
+    private String updatedByUsername;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean deleted = false;
+    private boolean deleted;
 
-    // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     private Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", insertable = false, updatable = false)
-    private User createdByUser;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by", insertable = false, updatable = false)
-    private User updatedByUser;
-
     public Donation() {
-        
     }
-    
-    public Donation(Long id, Integer categoryId, String description, Integer quantity, LocalDateTime createdAt,
-            LocalDateTime updatedAt, Integer createdBy, Integer updatedBy, Boolean deleted, Category category,
-            User createdByUser, User updatedByUser) {
+
+    public Donation(Integer id, Integer categoryId, String description, Integer quantity, LocalDateTime createdAt, 
+                    LocalDateTime updatedAt, Integer createdById, String createdByUsername, 
+                    Integer updatedById, String updatedByUsername, boolean deleted, Category category) {
         this.id = id;
         this.categoryId = categoryId;
         this.description = description;
         this.quantity = quantity;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.createdBy = createdBy;
-        this.updatedBy = updatedBy;
+        this.createdById = createdById;
+        this.createdByUsername = createdByUsername;
+        this.updatedById = updatedById;
+        this.updatedByUsername = updatedByUsername;
         this.deleted = deleted;
         this.category = category;
-        this.createdByUser = createdByUser;
-        this.updatedByUser = updatedByUser;
     }
 
-    public Long getId() {
+    // Métodos calculados
+    public String getCategoryName() {
+        return category != null ? category.getName() : null;
+    }
+
+    // Getters y Setters
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -116,27 +118,43 @@ public class Donation {
         this.updatedAt = updatedAt;
     }
 
-    public Integer getCreatedBy() {
-        return createdBy;
+    public Integer getCreatedById() {
+        return createdById;
     }
 
-    public void setCreatedBy(Integer createdBy) {
-        this.createdBy = createdBy;
+    public void setCreatedById(Integer createdById) {
+        this.createdById = createdById;
     }
 
-    public Integer getUpdatedBy() {
-        return updatedBy;
+    public String getCreatedByUsername() {
+        return createdByUsername;
     }
 
-    public void setUpdatedBy(Integer updatedBy) {
-        this.updatedBy = updatedBy;
+    public void setCreatedByUsername(String createdByUsername) {
+        this.createdByUsername = createdByUsername;
     }
 
-    public Boolean getDeleted() {
+    public Integer getUpdatedById() {
+        return updatedById;
+    }
+
+    public void setUpdatedById(Integer updatedById) {
+        this.updatedById = updatedById;
+    }
+
+    public String getUpdatedByUsername() {
+        return updatedByUsername;
+    }
+
+    public void setUpdatedByUsername(String updatedByUsername) {
+        this.updatedByUsername = updatedByUsername;
+    }
+
+    public boolean getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(Boolean deleted) {
+    public void setDeleted(boolean deleted) {
         this.deleted = deleted;
     }
 
@@ -147,22 +165,4 @@ public class Donation {
     public void setCategory(Category category) {
         this.category = category;
     }
-
-    public User getCreatedByUser() {
-        return createdByUser;
-    }
-
-    public void setCreatedByUser(User createdByUser) {
-        this.createdByUser = createdByUser;
-    }
-
-    public User getUpdatedByUser() {
-        return updatedByUser;
-    }
-
-    public void setUpdatedByUser(User updatedByUser) {
-        this.updatedByUser = updatedByUser;
-    }
-
-    
 }

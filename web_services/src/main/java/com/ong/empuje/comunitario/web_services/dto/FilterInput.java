@@ -1,54 +1,62 @@
 package com.ong.empuje.comunitario.web_services.dto;
 
+import java.time.LocalDateTime;
+
 public class FilterInput {
     private String name;
     private Integer categoryId;
-    private String startDate;
-    private String endDate;
-    private String deletedStatus;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private Boolean deleted;
 
     public FilterInput() {
-
     }
 
-    public FilterInput(String name, Integer categoryId, String startDate, String endDate, String deletedStatus) {
+    public FilterInput(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
         this.name = name;
         this.categoryId = categoryId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.deletedStatus = deletedStatus;
+        this.deleted = deleted;
     }
-    
+
     public String getName() {
         return name;
     }
+
     public void setName(String name) {
         this.name = name;
     }
+
     public Integer getCategoryId() {
         return categoryId;
     }
+
     public void setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
     }
-    public String getStartDate() {
+
+    public LocalDateTime getStartDate() {
         return startDate;
     }
-    public void setStartDate(String startDate) {
+
+    public void setStartDate(LocalDateTime startDate) {
         this.startDate = startDate;
     }
-    public String getEndDate() {
+
+    public LocalDateTime getEndDate() {
         return endDate;
     }
-    public void setEndDate(String endDate) {
+
+    public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
     }
-    public String getDeletedStatus() {
-        return deletedStatus;
-    }
-    public void setDeletedStatus(String deletedStatus) {
-        this.deletedStatus = deletedStatus;
+
+    public Boolean getDeleted() {
+        return deleted;
     }
 
-
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
 }

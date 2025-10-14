@@ -1,3 +1,4 @@
+// web_services/src/main/java/com/ong/empuje/comunitario/web_services/model/User.java
 package com.ong.empuje.comunitario.web_services.model;
 
 import jakarta.persistence.*;
@@ -23,14 +24,14 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "role_id", nullable = false)
-    private Integer roleId;
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
-    
+
     public User() {
-        
     }
 
     public Integer getId() {
@@ -81,12 +82,12 @@ public class User {
         this.email = email;
     }
 
-    public Integer getRoleId() {
-        return roleId;
+    public Role getRole() {
+        return role;
     }
 
-    public void setRoleId(Integer roleId) {
-        this.roleId = roleId;
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public Boolean getActive() {

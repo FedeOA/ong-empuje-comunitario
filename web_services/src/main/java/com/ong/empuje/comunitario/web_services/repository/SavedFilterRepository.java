@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface SavedFilterRepository extends JpaRepository<SavedFilter, Long> {
+public interface SavedFilterRepository extends JpaRepository<SavedFilter, Integer> {
     
     // Usar @Query para categoryId (campo calculado)
     @Query("SELECT s FROM SavedFilter s WHERE s.category.id = :categoryId")

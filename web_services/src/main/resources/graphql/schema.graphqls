@@ -1,5 +1,6 @@
+# web_services/src/main/resources/graphql/schema.graphqls
 type Query {
-    donationReport(categoryId: Int, startDate: String, endDate: String, deleted: String): [DonationReportGroup!]!
+    donationReport(categoryId: Int, startDate: String, endDate: String, deleted: Boolean): [DonationReportGroup!]!
     savedFilters: [SavedFilter!]!
     savedFilter(id: ID!): SavedFilter
     categories: [Category!]!

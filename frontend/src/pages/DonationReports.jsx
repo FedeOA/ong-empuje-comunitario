@@ -1,3 +1,4 @@
+// frontend/src/pages/DonationReports.jsx
 import React, { useState, useEffect } from "react";
 import DonationReportFilterModal from "../components/DonationReportFilterModal";
 import { baseUrlGraphQL } from "../constants/constants.js";
@@ -9,27 +10,18 @@ export default function DonationReport() {
   const [filterToEdit, setFilterToEdit] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [loading, setLoading] = useState(false);
+  const [savedFilters, setSavedFilters] = useState([]);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
-    setTimeout(() => setToast({ message: "", type: "success" }), 3000);
+    setTimeout(() => setToast({ message: "", type: "success" }), 5000); // Extended timeout for better visibility
   };
 
   const fetchDonationReport = async (filters = {}) => {
-    const token = localStorage.getItem("token");
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      
-      if (filters.categoryId) params.append('categoryId', filters.categoryId);
-      if (filters.startDate) params.append('startDate', filters.startDate);
-      if (filters.endDate) params.append('endDate', filters.endDate);
-      if (filters.deleted) params.append('deleted', filters.deleted);
-
-      const url = `${baseUrlGraphQL}/graphql`;
-      
       const query = `
-        query DonationReport($categoryId: Int, $startDate: String, $endDate: String, $deleted: String) {
+        query DonationReport($categoryId: Int, $startDate: String, $endDate: String, $deleted: Boolean) {
           donationReport(categoryId: $categoryId, startDate: $startDate, endDate: $endDate, deleted: $deleted) {
             categoryId
             categoryName
@@ -52,38 +44,51 @@ export default function DonationReport() {
         }
       `;
 
-      const response = await fetch(url, {
+      const variables = {
+        categoryId: filters.categoryId ? parseInt(filters.categoryId) : null,
+        startDate: filters.startDate ? `${filters.startDate}T00:00:00` : null,
+        endDate: filters.endDate ? `${filters.endDate}T23:59:59` : null,
+        deleted: filters.deleted === "YES" ? true : filters.deleted === "NO" ? false : null,
+      };
+
+      // Validate dates
+      if (variables.startDate && variables.endDate && variables.startDate > variables.endDate) {
+        throw new Error("La fecha de fin no puede ser anterior a la fecha de inicio");
+      }
+
+      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({
           query,
-          variables: filters
+          variables,
         }),
       });
 
-      if (!response.ok) throw new Error("Error al cargar informe de donaciones");
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+      }
 
       const data = await response.json();
       console.log("Fetched donation report:", JSON.stringify(data, null, 2));
-      
+
       if (data.errors) {
-        throw new Error(data.errors[0].message);
+        const errorMessage = data.errors[0]?.message || "Error desconocido en el servidor";
+        throw new Error(errorMessage);
       }
 
       setReports(data.data.donationReport || []);
     } catch (error) {
       console.error("Error al cargar informe de donaciones:", error);
-      showToast("Error al cargar informe de donaciones", "error");
+      showToast(`Error al cargar informe de donaciones: ${error.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const fetchSavedFilters = async () => {
-    const token = localStorage.getItem("token");
     try {
       const query = `
         query {
@@ -103,28 +108,30 @@ export default function DonationReport() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ query }),
       });
 
-      if (!response.ok) throw new Error("Error al cargar filtros guardados");
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+      }
 
       const data = await response.json();
       if (data.errors) {
-        throw new Error(data.errors[0].message);
+        throw new Error(data.errors[0]?.message || "Error desconocido en el servidor");
       }
 
       return data.data.savedFilters || [];
     } catch (error) {
       console.error("Error al cargar filtros:", error);
-      showToast("Error al cargar filtros guardados", "error");
+      showToast(`Error al cargar filtros guardados: ${error.message}`, "error");
       return [];
     }
   };
 
   useEffect(() => {
     fetchDonationReport();
+    fetchSavedFilters().then(setSavedFilters);
   }, []);
 
   const openFilterModal = (filter = null) => {
@@ -133,9 +140,8 @@ export default function DonationReport() {
   };
 
   const handleSubmitFilter = async (data) => {
-    const token = localStorage.getItem("token");
     try {
-      const mutation = filterToEdit 
+      const mutation = filterToEdit
         ? `
           mutation UpdateFilter($id: ID!, $input: FilterInput!) {
             updateFilter(id: $id, input: $input) {
@@ -153,63 +159,64 @@ export default function DonationReport() {
           }
         `;
 
-      const variables = filterToEdit 
-        ? { 
-            id: filterToEdit.id, 
+      const variables = filterToEdit
+        ? {
+            id: filterToEdit.id,
             input: {
               name: data.name,
               categoryId: data.categoryId ? parseInt(data.categoryId) : null,
-              startDate: data.startDate || null,
-              endDate: data.endDate || null,
-              deleted: data.deleted || null,
-            }
+              startDate: data.startDate ? `${data.startDate}T00:00:00` : null,
+              endDate: data.endDate ? `${data.endDate}T23:59:59` : null,
+              deleted: data.deleted === "YES" ? true : data.deleted === "NO" ? false : null,
+            },
           }
-        : { 
+        : {
             input: {
               name: data.name,
               categoryId: data.categoryId ? parseInt(data.categoryId) : null,
-              startDate: data.startDate || null,
-              endDate: data.endDate || null,
-              deleted: data.deleted || null,
-            }
+              startDate: data.startDate ? `${data.startDate}T00:00:00` : null,
+              endDate: data.endDate ? `${data.endDate}T23:59:59` : null,
+              deleted: data.deleted === "YES" ? true : data.deleted === "NO" ? false : null,
+            },
           };
 
       const response = await fetch(`${baseUrlGraphQL}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ query: mutation, variables }),
       });
 
-      if (!response.ok) throw new Error("Error al procesar el filtro");
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+      }
 
       const result = await response.json();
       if (result.errors) {
-        throw new Error(result.errors[0].message);
+        throw new Error(result.errors[0]?.message || "Error desconocido en el servidor");
       }
 
       showToast(
         filterToEdit ? "Filtro actualizado correctamente" : "Filtro guardado correctamente"
       );
-      
+
       setTimeout(() => {
         fetchDonationReport(data);
+        fetchSavedFilters().then(setSavedFilters);
       }, 1000);
-      
+
       setIsModalOpen(false);
       setFilterToEdit(null);
     } catch (error) {
       console.error("Error al procesar el filtro:", error);
-      showToast("Error al procesar el filtro", "error");
+      showToast(`Error al procesar el filtro: ${error.message}`, "error");
     }
   };
 
   const handleDeleteFilter = async (filterId) => {
     if (!confirm("¿Está seguro de eliminar este filtro?")) return;
 
-    const token = localStorage.getItem("token");
     try {
       const mutation = `
         mutation DeleteFilter($id: ID!) {
@@ -221,25 +228,27 @@ export default function DonationReport() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          query: mutation, 
-          variables: { id: filterId } 
+        body: JSON.stringify({
+          query: mutation,
+          variables: { id: filterId },
         }),
       });
 
-      if (!response.ok) throw new Error("Error al eliminar el filtro");
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+      }
 
       const data = await response.json();
       if (data.errors) {
-        throw new Error(data.errors[0].message);
+        throw new Error(data.errors[0]?.message || "Error desconocido en el servidor");
       }
 
       showToast("Filtro eliminado correctamente");
+      fetchSavedFilters().then(setSavedFilters);
     } catch (error) {
       console.error("Error al eliminar el filtro:", error);
-      showToast("Error al eliminar el filtro", "error");
+      showToast(`Error al eliminar el filtro: ${error.message}`, "error");
     }
   };
 
@@ -248,7 +257,7 @@ export default function DonationReport() {
       categoryId: filter.categoryId,
       startDate: filter.startDate,
       endDate: filter.endDate,
-      deleted: filter.deleted,
+      deleted: filter.deleted === true ? "YES" : filter.deleted === false ? "NO" : null,
     };
     fetchDonationReport(appliedFilters);
     showToast(`Filtro "${filter.name}" aplicado`);
@@ -273,12 +282,43 @@ export default function DonationReport() {
       </div>
 
       {/* Filtros Guardados */}
-      {false && ( // Ocultar por ahora, mostrar cuando tengamos datos
-        <div className="bg-white shadow-md rounded-xl p-4 mb-6">
-          <h2 className="text-lg font-semibold text-empuje-green mb-3">Filtros Guardados</h2>
-          {/* Aquí irían los filtros guardados */}
-        </div>
-      )}
+      <div className="bg-white shadow-md rounded-xl p-4 mb-6">
+        <h2 className="text-lg font-semibold text-empuje-green mb-3">Filtros Guardados</h2>
+        {savedFilters.length > 0 ? (
+          <ul className="space-y-2">
+            {savedFilters.map((filter) => (
+              <li key={filter.id} className="flex justify-between items-center">
+                <span>
+                  {filter.name} - {filter.categoryName || "Todas"} -{" "}
+                  {filter.deleted === true ? "Eliminados" : filter.deleted === false ? "Activos" : "Todos"}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
+                    onClick={() => handleApplyFilter(filter)}
+                  >
+                    Aplicar
+                  </button>
+                  <button
+                    className="bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 transition text-sm"
+                    onClick={() => openFilterModal(filter)}
+                  >
+                    Editar
+                  </button>
+                  <button
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition text-sm"
+                    onClick={() => handleDeleteFilter(filter.id)}
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No hay filtros guardados.</p>
+        )}
+      </div>
 
       {/* Resultados */}
       <div className="bg-white shadow-md rounded-xl overflow-hidden">
@@ -336,6 +376,16 @@ export default function DonationReport() {
           </div>
         )}
       </div>
+
+      {toast.message && (
+        <div
+          className={`fixed bottom-4 right-4 p-4 rounded-lg text-white ${
+            toast.type === "success" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
 
       <DonationReportFilterModal
         isOpen={isModalOpen}
