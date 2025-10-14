@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { categoriesIndexes } from "../constants/Categories.js";
+import { baseUrlGraphQL } from "../constants/constants.js";
 
-export default function DonationReportFilterModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  onSearch, 
-  filterToEdit 
+export default function DonationReportFilterModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  onSearch,
+  filterToEdit,
+  initialCategoryId,
 }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -16,40 +17,44 @@ export default function DonationReportFilterModal({
     deleted: "",
   });
   const [categories, setCategories] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
-      // Cargar categorías si es necesario
       fetchCategories();
-      
       if (filterToEdit) {
+        if (!filterToEdit.id) {
+          console.error("filterToEdit is missing id:", filterToEdit);
+          setError("El filtro seleccionado no tiene un ID válido");
+        }
         setFormData({
           name: filterToEdit.name || "",
-          categoryId: filterToEdit.categoryId || "",
-          startDate: filterToEdit.startDate || "",
-          endDate: filterToEdit.endDate || "",
-          deleted: filterToEdit.deleted || "",
+          categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
+          startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
+          endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
+          deleted: filterToEdit.deleted === true ? "YES" : filterToEdit.deleted === false ? "NO" : "",
         });
       } else {
         setFormData({
           name: "",
-          categoryId: "",
+          categoryId: initialCategoryId ? initialCategoryId.toString() : "",
           startDate: "",
           endDate: "",
           deleted: "",
         });
       }
+      setError("");
     }
-  }, [isOpen, filterToEdit]);
+  }, [isOpen, filterToEdit, initialCategoryId]);
 
   const fetchCategories = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${baseUrl}/graphql`, {
+      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -59,30 +64,44 @@ export default function DonationReportFilterModal({
                 name
               }
             }
-          `
+          `,
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
+      if (data.errors) {
+        throw new Error(data.errors[0]?.message || "Error desconocido al cargar categorías");
+      }
+
       setCategories(data.data?.categories || []);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      console.error("Error al cargar categorías:", error);
+      setError(`Error al cargar categorías: ${error.message}`);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (filterToEdit || formData.name.trim()) {
-      onSubmit(formData);
-    } else {
+    if (filterToEdit && !filterToEdit.id) {
+      setError("No se puede actualizar un filtro sin un ID válido");
+      return;
+    }
+    if (!filterToEdit && !formData.name.trim()) {
       onSearch(formData);
       onClose();
+    } else {
+      onSubmit(formData);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setError("");
   };
 
   if (!isOpen) return null;
@@ -94,7 +113,13 @@ export default function DonationReportFilterModal({
           <h2 className="text-xl font-bold text-gray-900 mb-4">
             {filterToEdit ? "Editar Filtro" : "Nuevo Filtro"}
           </h2>
-          
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!filterToEdit && (
               <div>

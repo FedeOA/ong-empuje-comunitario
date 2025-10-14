@@ -10,7 +10,7 @@ public class SavedFilter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name")
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -18,7 +18,7 @@ public class SavedFilter {
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Column(name = "start_date")
@@ -27,8 +27,8 @@ public class SavedFilter {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
-    @Column(name = "is_deleted")
-    private Boolean deleted;
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean isDeleted = false; // New field for soft deleteById
 
     public SavedFilter() {
     }
@@ -40,7 +40,7 @@ public class SavedFilter {
         this.user = user;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.deleted = deleted;
+        this.isDeleted = deleted;
     }
 
     public Integer getCategoryId() {
@@ -107,11 +107,11 @@ public class SavedFilter {
         this.endDate = endDate;
     }
 
-    public Boolean getDeleted() {
-        return deleted;
+    public Boolean getIsDeleted() {
+        return isDeleted;
     }
 
-    public void setDeleted(Boolean deleted) {
-        this.deleted = deleted;
+    public void setIsDeleted(Boolean deleted) {
+        this.isDeleted = deleted;
     }
 }

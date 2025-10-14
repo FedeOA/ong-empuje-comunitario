@@ -5,6 +5,7 @@ type Query {
     savedFilter(id: ID!): SavedFilter
     categories: [Category!]!
     category(id: Int!): Category
+    getUserId(usernameOrEmail: String!): ID!
 }
 
 type Mutation {
@@ -45,7 +46,7 @@ type SavedFilter {
     username: String!
     startDate: String
     endDate: String
-    deleted: String
+    isDeleted: Boolean!
 }
 
 type Category {
@@ -60,4 +61,5 @@ input FilterInput {
     startDate: String
     endDate: String
     deleted: String
+    username: String!
 }

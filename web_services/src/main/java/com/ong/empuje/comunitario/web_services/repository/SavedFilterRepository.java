@@ -29,5 +29,9 @@ public interface SavedFilterRepository extends JpaRepository<SavedFilter, Intege
     
     // Búsqueda por ID y usuario para validación de permisos
     @Query("SELECT s FROM SavedFilter s WHERE s.id = :id AND s.user.id = :userId")
-    Optional<SavedFilter> findByIdAndUserId(@Param("id") Long id, @Param("userId") Integer userId);
+    Optional<SavedFilter> findByIdAndUserId(@Param("id") Integer id, @Param("userId") Integer userId);
+
+    List<SavedFilter> findByUserUsername(String username);
+    Optional<SavedFilter> findByIdAndUserUsername(Integer id, String username);
+    List<SavedFilter> findByIsDeletedFalse();
 }

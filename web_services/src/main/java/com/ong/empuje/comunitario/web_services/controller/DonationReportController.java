@@ -1,4 +1,3 @@
-// web_services/src/main/java/com/ong/empuje/comunitario/web_services/controller/DonationReportController.java
 package com.ong.empuje.comunitario.web_services.controller;
 
 import com.ong.empuje.comunitario.web_services.dto.DonationReportGroup;
@@ -8,19 +7,26 @@ import com.ong.empuje.comunitario.web_services.model.SavedFilter;
 import com.ong.empuje.comunitario.web_services.repository.CategoryRepository;
 import com.ong.empuje.comunitario.web_services.repository.DonationRepository;
 import com.ong.empuje.comunitario.web_services.repository.SavedFilterRepository;
+import com.ong.empuje.comunitario.web_services.repository.UserRepository;
+
+import graphql.GraphQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import com.ong.empuje.comunitario.web_services.dto.FilterInput;
+import com.ong.empuje.comunitario.web_services.model.User;
 
 @Controller
 public class DonationReportController {
@@ -29,14 +35,17 @@ public class DonationReportController {
     private final DonationRepository donationRepository;
     private final CategoryRepository categoryRepository;
     private final SavedFilterRepository savedFilterRepository;
+    private final UserRepository userRepository;
 
     public DonationReportController(
             DonationRepository donationRepository,
             CategoryRepository categoryRepository,
-            SavedFilterRepository savedFilterRepository) {
+            SavedFilterRepository savedFilterRepository,
+            UserRepository userRepository) {
         this.donationRepository = donationRepository;
         this.categoryRepository = categoryRepository;
         this.savedFilterRepository = savedFilterRepository;
+        this.userRepository = userRepository;
     }
 
     @QueryMapping
@@ -56,7 +65,7 @@ public class DonationReportController {
                     startDateTime = LocalDateTime.parse(startDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 } catch (Exception e) {
                     logger.error("Invalid startDate format: {}", startDate, e);
-                    throw new IllegalArgumentException("Invalid startDate format: " + startDate);
+                    throw new GraphQLException("Invalid startDate format: " + startDate);
                 }
             }
 
@@ -66,13 +75,13 @@ public class DonationReportController {
                     endDateTime = LocalDateTime.parse(endDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 } catch (Exception e) {
                     logger.error("Invalid endDate format: {}", endDate, e);
-                    throw new IllegalArgumentException("Invalid endDate format: " + endDate);
+                    throw new GraphQLException("Invalid endDate format: " + endDate);
                 }
             }
 
             if (startDateTime != null && endDateTime != null && startDateTime.isAfter(endDateTime)) {
                 logger.error("End date {} is before start date {}", endDate, startDate);
-                throw new IllegalArgumentException("End date cannot be before start date");
+                throw new GraphQLException("End date cannot be before start date");
             }
 
             List<Donation> donations = donationRepository.findByFilters(categoryId, startDateTime, endDateTime, deleted);
@@ -80,7 +89,7 @@ public class DonationReportController {
 
             Map<Integer, Map<Boolean, List<Donation>>> grouped = donations.stream()
                     .collect(Collectors.groupingBy(
-                            donation -> donation.getCategoryId() != null ? donation.getCategoryId() : 0, // Handle null categoryId
+                            donation -> donation.getCategoryId() != null ? donation.getCategoryId() : 0,
                             Collectors.groupingBy(Donation::getDeleted)
                     ));
 
@@ -96,7 +105,7 @@ public class DonationReportController {
                     group.setCategoryName(categoryName);
                     group.setDeleted(del);
                     group.setTotalQuantity(groupDonations.stream()
-                            .filter(d -> d.getQuantity() != null) // Handle null quantity
+                            .filter(d -> d.getQuantity() != null)
                             .mapToInt(Donation::getQuantity)
                             .sum());
                     group.setDonations(groupDonations);
@@ -108,7 +117,7 @@ public class DonationReportController {
             return result;
         } catch (Exception e) {
             logger.error("Error processing donation report: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation report: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to process donation report: " + e.getMessage());
         }
     }
 
@@ -121,7 +130,7 @@ public class DonationReportController {
             return categories;
         } catch (Exception e) {
             logger.error("Error fetching categories: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch categories: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to fetch categories: " + e.getMessage());
         }
     }
 
@@ -136,7 +145,7 @@ public class DonationReportController {
             return category;
         } catch (Exception e) {
             logger.error("Error fetching category with id {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch category: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to fetch category: " + e.getMessage());
         }
     }
 
@@ -144,12 +153,12 @@ public class DonationReportController {
     public List<SavedFilter> savedFilters() {
         logger.info("Fetching all saved filters");
         try {
-            List<SavedFilter> filters = savedFilterRepository.findAll();
+            List<SavedFilter> filters = savedFilterRepository.findByIsDeletedFalse();
             logger.info("Retrieved {} saved filters", filters.size());
             return filters;
         } catch (Exception e) {
             logger.error("Error fetching saved filters: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch saved filters: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to fetch saved filters: " + e.getMessage());
         }
     }
 
@@ -157,14 +166,12 @@ public class DonationReportController {
     public SavedFilter savedFilter(@Argument Integer id) {
         logger.info("Fetching saved filter with id: {}", id);
         try {
-            SavedFilter filter = savedFilterRepository.findById(id).orElse(null);
-            if (filter == null) {
-                logger.warn("Saved filter not found for id: {}", id);
-            }
+            SavedFilter filter = savedFilterRepository.findById(id)
+                    .orElseThrow(() -> new GraphQLException("Filter not found"));
             return filter;
         } catch (Exception e) {
             logger.error("Error fetching saved filter with id {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to fetch saved filter: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to fetch saved filter: " + e.getMessage());
         }
     }
 
@@ -172,28 +179,39 @@ public class DonationReportController {
     public SavedFilter saveFilter(@Argument FilterInput input) {
         logger.info("Saving filter with name: {}", input.getName());
         try {
+            if (input.getName() == null || input.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Filter name is required");
+            }
+            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
+                throw new IllegalArgumentException("Username is required");
+            }
+
+            User user = userRepository.findByUsername(input.getUsername())
+                    .orElseThrow(() -> new IllegalArgumentException("Username " + input.getUsername() + " does not exist"));
+
             SavedFilter filter = new SavedFilter();
-            filter.setName(input.getName());
+            filter.setName(input.getName().trim());
 
             if (input.getCategoryId() != null) {
                 Category category = categoryRepository.findById(input.getCategoryId())
-                        .orElseThrow(() -> {
-                            logger.error("Category not found for id: {}", input.getCategoryId());
-                            return new RuntimeException("Category not found");
-                        });
+                        .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
                 filter.setCategory(category);
             }
 
+            filter.setUser(user);
             filter.setStartDate(input.getStartDate());
             filter.setEndDate(input.getEndDate());
-            filter.setDeleted(input.getDeleted());
+            filter.setIsDeleted(false);
 
             SavedFilter saved = savedFilterRepository.save(filter);
-            logger.info("Saved filter with id: {}", saved.getId());
+            logger.info("Saved filter with id: {} for user {}", saved.getId(), input.getUsername());
             return saved;
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error saving filter: {}", e.getMessage());
+            throw new GraphQLException(e.getMessage());
         } catch (Exception e) {
             logger.error("Error saving filter: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to save filter: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to save filter: " + e.getMessage());
         }
     }
 
@@ -201,54 +219,90 @@ public class DonationReportController {
     public SavedFilter updateFilter(@Argument Integer id, @Argument FilterInput input) {
         logger.info("Updating filter with id: {}", id);
         try {
-            SavedFilter filter = savedFilterRepository.findById(id)
-                    .orElseThrow(() -> {
-                        logger.error("Filter not found for id: {}", id);
-                        return new RuntimeException("Filter not found");
-                    });
-
-            filter.setName(input.getName());
-
-            if (input.getCategoryId() != null) {
-                Category category = categoryRepository.findById(input.getCategoryId())
-                        .orElseThrow(() -> {
-                            logger.error("Category not found for id: {}", input.getCategoryId());
-                            return new RuntimeException("Category not found");
-                        });
-                filter.setCategory(category);
-            } else {
-                filter.setCategory(null);
+            if (id == null) {
+                throw new IllegalArgumentException("Filter ID is required");
+            }
+            if (input.getName() == null || input.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Filter name is required");
+            }
+            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
+                throw new IllegalArgumentException("Username is required");
             }
 
+            User user = userRepository.findByUsername(input.getUsername())
+                    .orElseThrow(() -> new IllegalArgumentException("Username " + input.getUsername() + " does not exist"));
+
+            SavedFilter filter = savedFilterRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
+
+            logger.info("Found filter with id: {}, current name: {}", filter.getId(), filter.getName());
+
+            // Update fields
+            filter.setName(input.getName().trim());
+            filter.setCategory(input.getCategoryId() != null
+                    ? categoryRepository.findById(input.getCategoryId())
+                            .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"))
+                    : null);
+            filter.setUser(user);
             filter.setStartDate(input.getStartDate());
             filter.setEndDate(input.getEndDate());
-            filter.setDeleted(input.getDeleted());
+            filter.setIsDeleted(input.getDeleted());
 
             SavedFilter updated = savedFilterRepository.save(filter);
-            logger.info("Updated filter with id: {}", updated.getId());
+            logger.info("Updated filter with id: {} for user {}, new name: {}", updated.getId(), input.getUsername(), updated.getName());
             return updated;
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error updating filter with id {}: {}", id, e.getMessage());
+            throw new GraphQLException(e.getMessage());
         } catch (Exception e) {
             logger.error("Error updating filter with id {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to update filter: " + e.getMessage(), e);
+            throw new GraphQLException("Failed to update filter: " + e.getMessage());
         }
     }
 
     @MutationMapping
     public Boolean deleteFilter(@Argument Integer id) {
-        logger.info("Deleting filter with id: {}", id);
+        logger.info("Soft-deleting filter with id: {}", id);
         try {
-            SavedFilter filter = savedFilterRepository.findById(id)
-                    .orElseThrow(() -> {
-                        logger.error("Filter not found for id: {}", id);
-                        return new RuntimeException("Filter not found");
-                    });
+            if (id == null) {
+                throw new IllegalArgumentException("Filter ID is required");
+            }
 
-            savedFilterRepository.deleteById(id);
-            logger.info("Deleted filter with id: {}", id);
+            SavedFilter filter = savedFilterRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
+
+            filter.setIsDeleted(true); // Soft delete
+            savedFilterRepository.save(filter);
+            logger.info("Soft-deleted filter with id: {}", id);
             return true;
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error soft-deleting filter with id {}: {}", id, e.getMessage());
+            throw new GraphQLException(e.getMessage());
         } catch (Exception e) {
-            logger.error("Error deleting filter with id {}: {}", id, e.getMessage(), e);
-            throw new RuntimeException("Failed to delete filter: " + e.getMessage(), e);
+            logger.error("Error soft-deleting filter with id {}: {}", id, e.getMessage(), e);
+            throw new GraphQLException("Failed to soft-delete filter: " + e.getMessage());
+        }
+    }
+
+    @QueryMapping
+    public Integer getUserId(@Argument String usernameOrEmail) {
+        logger.info("Fetching user ID for usernameOrEmail: {}", usernameOrEmail);
+        try {
+            if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty()) {
+                throw new IllegalArgumentException("Username or email is required");
+            }
+
+            User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("No user found for username or email: " + usernameOrEmail));
+
+            logger.info("Found user ID: {} for usernameOrEmail: {}", user.getId(), usernameOrEmail);
+            return user.getId();
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error fetching user ID: {}", e.getMessage());
+            throw new GraphQLException(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error fetching user ID: {}", e.getMessage(), e);
+            throw new GraphQLException("Failed to fetch user ID: " + e.getMessage());
         }
     }
 }

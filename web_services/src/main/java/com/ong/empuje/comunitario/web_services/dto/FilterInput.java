@@ -8,16 +8,18 @@ public class FilterInput {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Boolean deleted;
+    private String username;
 
     public FilterInput() {
     }
 
-    public FilterInput(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
+    public FilterInput(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted, String username) {
         this.name = name;
         this.categoryId = categoryId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.deleted = deleted;
+        this.username = username;
     }
 
     public String getName() {
@@ -58,5 +60,13 @@ public class FilterInput {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
