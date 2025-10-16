@@ -3,6 +3,7 @@ package com.ong.empuje.comunitario.web_services.repository.impl;
 import com.ong.empuje.comunitario.web_services.dto.DonationDTO;
 import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
+import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 import com.ong.empuje.comunitario.web_services.repository.EventJdbcRepository;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,8 +18,15 @@ public class JdbcRepository implements EventJdbcRepository {
 
     private static final String saveSql = ("""
     INSERT INTO event_filter (distribution, end_date, name, start_date, username, user_id)
-    VALUES (:distribution, :endDate, :name, :startDate, :username, 
+    VALUES (:distribution, :endDate, :name, :startDate, :username,
             (SELECT id FROM users WHERE username = :searchUsername))
+    """);
+
+    private static final String getFilterSql = ("""
+    SELECT ef.distribution, ef.end_date, ef.name, ef.start_date, ef.username
+    FROM event_filter ef
+    JOIN users u ON ef.user_id = u.id
+    WHERE u.username = :username
     """);
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -125,6 +133,37 @@ public class JdbcRepository implements EventJdbcRepository {
             namedParameterJdbcTemplate.update(saveSql, params);
         }catch (Exception e){
             System.out.println("Exception : ");
+        }
+    }
+
+    @Override
+    public List<EventFilterResponseDTO> getFilters(String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("El nombre de usuario es obligatorio");
+        }
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("username", username);
+
+        try {
+            return namedParameterJdbcTemplate.query(getFilterSql, params, rs -> {
+                List<EventFilterResponseDTO> filters = new ArrayList<>();
+
+                while (rs.next()) {
+                    EventFilterResponseDTO dto = new EventFilterResponseDTO();
+                    dto.setDistribution(rs.getString("distribution"));
+                    dto.setEndDate(rs.getDate("end_date").toLocalDate().toString());
+                    dto.setName(rs.getString("name"));
+                    dto.setStartDate(rs.getDate("start_date").toLocalDate().toString());
+                    dto.setSearchUsername(rs.getString("username"));
+
+                    filters.add(dto);
+                }
+                return filters;
+            });
+        } catch (Exception e) {
+            System.out.println("Exception: " + e.getMessage());
+            return Collections.emptyList();
         }
     }
 }

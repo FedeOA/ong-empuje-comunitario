@@ -3,6 +3,7 @@ package com.ong.empuje.comunitario.web_services.service.impl;
 import com.ong.empuje.comunitario.web_services.dto.DonationDTO;
 import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
+import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 import com.ong.empuje.comunitario.web_services.repository.EventJdbcRepository;
 import com.ong.empuje.comunitario.web_services.service.EventService;
@@ -52,6 +53,9 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
+    public List<EventFilterResponseDTO> getFilters(String username){
+       return eventRepository.getFilters(username);
+    }
 
     public void saveFilter(EventFilterDTO eventFilter){
         eventRepository.saveFilter(eventFilter);
