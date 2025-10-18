@@ -4,6 +4,8 @@ import MembersModal from "../components/MembersModal";
 import { baseUrl } from "../constants/constants.js";
 import { useAuth } from "../context/AuthContext";
 import Toast from "../components/Toast";
+import ActionsModal from "../components/ActionsModal.jsx";
+import FiltersModal from "../components/FiltersModal.jsx";
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -12,6 +14,11 @@ export default function Events() {
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "success" });
+  const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [savedFilters, setSavedFilters] = useState([]);
+
+
 
   const today = new Date();
   const { user } = useAuth();
@@ -218,42 +225,55 @@ export default function Events() {
     showToast("Hubo un problema al publicar el evento", "error");
   }
 };
-
-  return (
-    <div className="min-h-screen bg-empuje-bg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-empuje-green">Eventos Solidarios</h1>
+return (
+  <div className="min-h-screen bg-empuje-bg p-6">
+    {/* Header */}
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-3xl font-bold text-empuje-green">Eventos Solidarios</h1>
+      <div className="flex gap-4">
         <button
           className="bg-empuje-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
           onClick={handleAddEvent}
         >
           Agregar Evento
         </button>
+        <button
+          className="bg-empuje-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          Filtros
+        </button>
       </div>
+    </div>
 
-      <div className="bg-white shadow-md rounded-xl overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-empuje-green text-white">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
-              <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
-              <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
-            </tr>
-          </thead>
+    {/* Table */}
+    <div className="bg-white shadow-md rounded-xl overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-empuje-green text-white">
+          <tr>
+            <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
+            <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
+            <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Donaciones</th>
+          </tr>
+        </thead>
 
-          <tbody className="divide-y divide-gray-200">
-            {events.map(event => {
-              const eventDate = new Date(event.datetime);
-              const isFuture = eventDate > today;
-              const isAlreadyJoined = event.users?.includes(user.username);
+        <tbody className="divide-y divide-gray-200">
+          {events.map(event => {
+            const eventDate = new Date(event.datetime);
+            const isFuture = eventDate > today;
+            const isAlreadyJoined = event.users?.includes(user.username);
 
-              return (
-                <tr key={event.id}>
+            return (
+              <React.Fragment key={event.id}>
+                <tr>
                   <td className="px-6 py-4">{event.name}</td>
                   <td className="px-6 py-4">{event.description}</td>
-                  <td className="px-6 py-4">{new Date(event.datetime).toLocaleString("es-AR")}</td>
+                  <td className="px-6 py-4">{eventDate.toLocaleString("es-AR")}</td>
+
+                  {/* Miembros */}
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       <button
@@ -267,91 +287,83 @@ export default function Events() {
                       </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 flex justify-center gap-2">
-                    {isFuture && (
-                      isAlreadyJoined ? (
-                        <button
-                          className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-                          onClick={() => handleLeaveEvent(event.id)}
-                        >
-                          Abandonar
-                        </button>
-                      ) : (
-                        <button
-                          className="bg-empuje-green text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                          onClick={() => handleJoinEvent(event.id)}
-                        >
-                          Agregarse
-                        </button>
-                      )
-                    )}
 
-                    {(user.role === "PRESIDENTE" || user.role === "COORDINADOR") && isFuture && (
-                      <>
-                        <button
-                          className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                          onClick={() => handleEditEvent(event)}
-                        >
-                          Modificar
-                        </button>
-                        <button
-                          className="bg-empuje-orange text-white px-3 py-1 rounded hover:bg-orange-700 transition"
-                          onClick={() => handleDeleteEvent(event)}
-                        >
-                          Eliminar
-                        </button>
-                      </>
-                    )}
+                  {/* Acciones */}
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsActionsModalOpen(true);
+                        }}
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  </td>
 
-                    {(user.role === "PRESIDENTE" || user.role === "COORDINADOR") && isFuture &&(
-                      <div className="flex items-center justify-center">
-                        {!event.is_published ? (
-                          <button
-                            className="bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 transition flex items-center gap-1"
-                            onClick={() => handlePublishEvent(event)}
-                            title="Publicar evento"
-                          >
-                            📢 <span className="text-sm">Publicar</span>
-                          </button>
-                        ) : (
-                          <div
-                            className="flex items-center gap-1 text-purple-700 font-semibold"
-                            title="Evento publicado"
-                          >
-                            ✅ <span className="text-sm">Publicado</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                  {/* Donaciones */}
+                  <td className="px-6 py-4 text-center">
+                    {event.has_donations ? "Sí" : "No"}
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
 
-      {/* Modal agregar/modificar evento */}
-      <EventModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        onSubmit={handleSubmitEvent}
-        eventToEdit={eventToEdit}
-      />
-
-      {/* Modal miembros */}
-      <MembersModal
-        isOpen={isMembersModalOpen}
-        onClose={() => setIsMembersModalOpen(false)}
-        event={selectedEvent}
-        onUpdateMembers={handleUpdateUsers}
-        user={user}
-      />
-
-      {/* Toast visual */}
-      {toast.message && (
-        <Toast message={toast.message} type={toast.type} />
-      )}
+                {/* Modal de acciones */}
+                {isActionsModalOpen && selectedEvent?.id === event.id && (
+                  <ActionsModal
+                    event={selectedEvent}
+                    user={user}
+                    isAlreadyJoined={isAlreadyJoined}
+                    isFuture={isFuture}
+                    onClose={() => setIsActionsModalOpen(false)}
+                    onJoin={handleJoinEvent}
+                    onLeave={handleLeaveEvent}
+                    onEdit={handleEditEvent}
+                    onDelete={handleDeleteEvent}
+                    onPublish={handlePublishEvent}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
-  );
+
+    {/* Modals */}
+    <EventModal
+      isOpen={isEventModalOpen}
+      onClose={() => setIsEventModalOpen(false)}
+      onSubmit={handleSubmitEvent}
+      eventToEdit={eventToEdit}
+    />
+
+    <MembersModal
+      isOpen={isMembersModalOpen}
+      onClose={() => setIsMembersModalOpen(false)}
+      event={selectedEvent}
+      onUpdateMembers={handleUpdateUsers}
+      user={user}
+    />
+
+    {isFilterModalOpen && (
+      <FiltersModal
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={(filters) => {
+          console.log("Filtrar con:", filters);
+          setIsFilterModalOpen(false);
+        }}
+        onSaveFilter={(newFilter) => {
+          setSavedFilters((prev) => [...prev, newFilter]);
+        }}
+        savedFilters={savedFilters}
+      />
+    )}
+
+    {toast.message && (
+      <Toast message={toast.message} type={toast.type} />
+    )}
+  </div>
+);
 }
