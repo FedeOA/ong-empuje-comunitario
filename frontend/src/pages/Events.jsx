@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import Toast from "../components/Toast";
 import ActionsModal from "../components/ActionsModal.jsx";
 import FiltersModal from "../components/FiltersModal.jsx";
+import DonationEventModal from "../components/DonationEventModal";
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -17,6 +18,15 @@ export default function Events() {
   const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [savedFilters, setSavedFilters] = useState([]);
+  const [donationsModalOpen, setDonationsModalOpen] = useState(false);
+  const [selectedDonations, setSelectedDonations] = useState([]);
+
+  const handleOpenDonationsModal = (donations) => {
+    const safeDonations = Array.isArray(donations) ? donations : [];
+    setSelectedDonations(safeDonations);
+    setDonationsModalOpen(true);
+  };
+
 
 
 
@@ -242,7 +252,7 @@ return (
           onClick={() => setIsFilterModalOpen(true)}
         >
           Filtros
-        </button>
+        </button>   
       </div>
     </div>
 
@@ -304,8 +314,16 @@ return (
                   </td>
 
                   {/* Donaciones */}
-                  <td className="px-6 py-4 text-center">
-                    {event.has_donations ? "Sí" : "No"}
+                  
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => handleOpenDonationsModal(event.donations)}
+                      >
+                        Ver
+                      </button>
+                    </div>
                   </td>
                 </tr>
 
@@ -347,11 +365,19 @@ return (
       user={user}
     />
 
+    
+    {donationsModalOpen && (
+      <DonationEventModal
+        donations={selectedDonations}
+        onClose={() => setDonationsModalOpen(false)}
+      />
+    )}
+
     {isFilterModalOpen && (
       <FiltersModal
         onClose={() => setIsFilterModalOpen(false)}
-        onApplyFilters={(filters) => {
-          console.log("Filtrar con:", filters);
+        onApplyFilters={(filteredEvents) => {
+          setEvents(filteredEvents); 
           setIsFilterModalOpen(false);
         }}
         onSaveFilter={(newFilter) => {
@@ -360,6 +386,7 @@ return (
         savedFilters={savedFilters}
       />
     )}
+
 
     {toast.message && (
       <Toast message={toast.message} type={toast.type} />
