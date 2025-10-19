@@ -4,13 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record EventFilterDTO(
         String name,
-        String username,
+        String searchUsername,
         String distribution,
-        @JsonProperty("start_date")
         String startDate,
-        @JsonProperty("end_date")
         String endDate,
-        @JsonProperty("search_username")
-        String searchUsername
+        String username
 ) {
 }

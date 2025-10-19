@@ -24,7 +24,7 @@ public class EventFilter {
     private Date endDate;
 
     @Column(name="distribution")
-    private Boolean distribution;
+    private String distribution;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -40,7 +40,7 @@ public class EventFilter {
 
     public Date getEndDate() {return endDate;}
 
-    public Boolean getDistribution() {return distribution;}
+    public String getDistribution() {return distribution;}
 
     public User getUser() {return user;}
 
@@ -54,7 +54,7 @@ public class EventFilter {
 
     public void setEndDate(Date endDate) {this.endDate = endDate;}
 
-    public void setDistribution(Boolean distribution) {this.distribution = distribution;}
+    public void setDistribution(String distribution) {this.distribution = distribution;}
 
     public void setUser(User user) {this.user = user;}
 }

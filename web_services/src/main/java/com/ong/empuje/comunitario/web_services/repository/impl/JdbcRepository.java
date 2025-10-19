@@ -18,8 +18,8 @@ public class JdbcRepository implements EventJdbcRepository {
 
     private static final String saveSql = ("""
     INSERT INTO event_filter (distribution, end_date, name, start_date, username, user_id)
-    VALUES (:distribution, :endDate, :name, :startDate, :username,
-            (SELECT id FROM users WHERE username = :searchUsername))
+    VALUES (:distribution, :endDate, :name, :startDate, :searchUsername,
+            (SELECT id FROM users WHERE username = :username))
     """);
 
     private static final String getFilterSql = ("""
@@ -62,7 +62,7 @@ public class JdbcRepository implements EventJdbcRepository {
             switch (distribution) {
                 case YES -> sql.append(" AND ed.donation_id IS NOT NULL");
                 case NO -> sql.append(" AND ed.donation_id IS NULL");
-                case BOTH -> {} // sin filtro adicional
+                default -> {} // sin filtro adicional
             }
         }
 
@@ -151,15 +151,21 @@ public class JdbcRepository implements EventJdbcRepository {
 
                 while (rs.next()) {
                     EventFilterResponseDTO dto = new EventFilterResponseDTO();
+
                     dto.setDistribution(rs.getString("distribution"));
-                    dto.setEndDate(rs.getDate("end_date").toLocalDate().toString());
                     dto.setName(rs.getString("name"));
-                    dto.setStartDate(rs.getDate("start_date").toLocalDate().toString());
                     dto.setSearchUsername(rs.getString("username"));
+
+                    Date startDate = rs.getDate("start_date");
+                    dto.setStartDate(startDate != null ? startDate.toString() : null);
+
+                    Date endDate = rs.getDate("end_date");
+                    dto.setEndDate(endDate != null ? endDate.toString() : null);
 
                     filters.add(dto);
                 }
                 return filters;
+
             });
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage());

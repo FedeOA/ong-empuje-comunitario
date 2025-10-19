@@ -5,7 +5,7 @@ import java.util.List;
 public class EventsDonationsResponseDTO {
 
     private String name;
-    private String date;
+    private String datetime;
     private String description;
     private List<DonationDTO> donations;
 
@@ -13,9 +13,9 @@ public class EventsDonationsResponseDTO {
 
     public void setName(String name) {this.name = name;}
 
-    public String getDate() {return date;}
+    public String getDate() {return datetime;}
 
-    public void setDate(String date) {this.date = date;}
+    public void setDate(String datetime) {this.datetime = datetime;}
 
     public String getDescription() {return description;}
 

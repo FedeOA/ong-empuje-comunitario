@@ -1,20 +1,15 @@
 package com.ong.empuje.comunitario.web_services.dto.out;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class EventFilterResponseDTO {
 
     private String name;
 
     private String distribution;
 
-    @JsonProperty("start_date")
     private String startDate;
 
-    @JsonProperty("end_date")
     private String endDate;
 
-    @JsonProperty("search_username")
     private String searchUsername;
 
     public String getName() {return name;}
