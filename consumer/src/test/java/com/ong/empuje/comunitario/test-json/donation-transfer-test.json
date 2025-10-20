@@ -1,0 +1,11 @@
+{
+  "request_id": 100,
+  "organization_id": 1,
+  "items": [
+    {
+      "category_id": 1,
+      "description": "Remeras",
+      "quantity": 20
+    }
+  ]
+}
