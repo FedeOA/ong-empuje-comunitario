@@ -24,12 +24,12 @@ type ParticipationEvent {
     name: String!
     datetime: String!
     description: String!
-    donations: [Donation!]!
+    donations: [Donation]
 }
 
 type Donation {
     id: ID!
-    categoryId: Int!
+    categoryId: Int
     categoryName: String!
     description: String!
     quantity: Int!
