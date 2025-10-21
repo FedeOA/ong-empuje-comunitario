@@ -183,8 +183,6 @@ public class ExcelReportService {
                 row.createCell(2).setCellValue(donation.getQuantity());
             }
             row.createCell(3).setCellValue(donation.getDeleted());
-            row.createCell(4).setCellValue(donation.getCreatedByUsername());
-            row.createCell(5).setCellValue(donation.getUpdatedByUsername());
             if(donation.getUpdatedAt() != null){
                 row.createCell(6).setCellValue(donation.getUpdatedAt().format(dateFormatter));
             }

@@ -23,13 +23,13 @@ public class KafkaController {
         this.objectMapper = objectMapper;
     }
 
-    @PostMapping("/donation-request")
+    @PostMapping("/alta-solicitud-donacion")
     public ResponseEntity<String> publishDonationRequest(@RequestBody Object request) {
-        logger.debug("Received POST /kafka/publish/donation-request");
+        logger.debug("Received POST /kafka/publish/alta-solicitud-donacion");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to solicitud_donaciones: {}", message);
-            kafkaTemplate.send(Topic.ALTA_SOLICITUD_DONACION.name(), message);
+            logger.debug("Publishing message to {}: {}", Topic.ALTA_SOLICITUD_DONACION.getName(), message);
+            kafkaTemplate.send(Topic.ALTA_SOLICITUD_DONACION.getName(), message);
             return ResponseEntity.ok("Donation request published");
         } catch (Exception e) {
             logger.error("Error publishing donation request: {}", e.getMessage(), e);
@@ -37,13 +37,13 @@ public class KafkaController {
         }
     }
 
-    @PostMapping("/donation-cancellation")
+    @PostMapping("/baja-solicitud-donacion")
     public ResponseEntity<String> publishDonationCancellation(@RequestBody Object request) {
-        logger.debug("Received POST /kafka/publish/donation-cancellation");
+        logger.debug("Received POST /kafka/publish/baja-solicitud-donacion");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to baja_solicitud_donaciones: {}", message);
-            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACION.name(), message);
+            logger.debug("Publishing message to {}: {}", Topic.BAJA_SOLICITUD_DONACION.getName(), message);
+            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACION.getName(), message);
             return ResponseEntity.ok("Donation cancellation published");
         } catch (Exception e) {
             logger.error("Error publishing donation cancellation: {}", e.getMessage(), e);

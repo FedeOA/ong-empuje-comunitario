@@ -18,7 +18,8 @@ class DonationService(donation_pb2_grpc.DonationServiceServicer):
                 is_deleted=False,
                 category_id=request.categoria,
                 created_at=datetime.datetime.utcnow(),
-                created_by=user_id.id if user_id else None
+                created_by=user_id.id if user_id else None,
+                user_id=user_id.id if user_id else None
             )
             session.add(new_donation)
             session.commit()

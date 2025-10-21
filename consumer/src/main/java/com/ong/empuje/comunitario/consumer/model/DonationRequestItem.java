@@ -1,5 +1,6 @@
 package com.ong.empuje.comunitario.consumer.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.io.Serializable;
@@ -13,11 +14,11 @@ public class DonationRequestItem implements Serializable {
     @JsonProperty("id")
     private Integer id;
     
-    @Column(name = "request_id")
+    @Column(name = "request_id", insertable = false, updatable = false)
     @JsonProperty("requestId")
     private Integer requestId;
     
-    @Column(name = "organization_id")
+    @Column(name = "organization_id", insertable = false, updatable = false)
     @JsonProperty("organizationId")
     private Integer organizationId;
     
@@ -28,6 +29,14 @@ public class DonationRequestItem implements Serializable {
     @Column(name = "description")
     @JsonProperty("description")
     private String description;
+
+    @ManyToOne
+    @JoinColumns({
+        @JoinColumn(name = "organization_id", referencedColumnName = "organization_id"),
+        @JoinColumn(name = "request_id", referencedColumnName = "request_id")
+    })
+    @JsonBackReference
+    private DonationRequest donationRequest;
     
     // Constructors
     public DonationRequestItem() {}
@@ -47,4 +56,7 @@ public class DonationRequestItem implements Serializable {
     
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public DonationRequest getDonationRequest() { return donationRequest; }
+    public void setDonationRequest(DonationRequest donationRequest) { this.donationRequest = donationRequest; }
 }

@@ -60,7 +60,7 @@ export default function DonationRequests() {
 
       console.log("Submitting donation request payload:", JSON.stringify(payload, null, 2));
 
-      const response = await fetch("http://localhost:8081/kafka/publish/donation-request", {
+      const response = await fetch("http://localhost:8081/kafka/publish/alta-solicitud-donacion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export default function DonationRequests() {
   const handleCancelRequest = async (requestId, orgId) => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch("http://localhost:8081/kafka/publish/donation-cancellation", {
+      const response = await fetch("http://localhost:8081/kafka/publish/baja-solicitud-donacion", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
