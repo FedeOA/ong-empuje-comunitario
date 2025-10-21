@@ -1,6 +1,6 @@
 package com.ong.empuje.comunitario.web_services.controller;
 
-import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 import com.ong.empuje.comunitario.web_services.service.EventService;
 import org.springframework.graphql.data.method.annotation.Argument;

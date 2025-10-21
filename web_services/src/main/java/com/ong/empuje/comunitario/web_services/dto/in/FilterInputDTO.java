@@ -1,8 +1,8 @@
-package com.ong.empuje.comunitario.web_services.dto;
+package com.ong.empuje.comunitario.web_services.dto.in;
 
 import java.time.LocalDateTime;
 
-public class FilterInput {
+public class FilterInputDTO {
     private String name;
     private Integer categoryId;
     private LocalDateTime startDate;
@@ -10,10 +10,10 @@ public class FilterInput {
     private Boolean deleted;
     private String username;
 
-    public FilterInput() {
+    public FilterInputDTO() {
     }
 
-    public FilterInput(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted, String username) {
+    public FilterInputDTO(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted, String username) {
         this.name = name;
         this.categoryId = categoryId;
         this.startDate = startDate;

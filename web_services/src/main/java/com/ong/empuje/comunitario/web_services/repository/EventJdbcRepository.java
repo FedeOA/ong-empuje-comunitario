@@ -1,7 +1,7 @@
 package com.ong.empuje.comunitario.web_services.repository;
 
-import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 

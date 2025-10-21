@@ -1,4 +1,4 @@
-package com.ong.empuje.comunitario.web_services.Constants;
+package com.ong.empuje.comunitario.web_services.constants;
 
 public class Constants {
 

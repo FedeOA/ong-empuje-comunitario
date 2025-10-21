@@ -5,23 +5,80 @@ type Query {
         endDate: String,
         distribution: DonationDistributionFilter
     ): [ParticipationEvent]
+    
+    donationReport(categoryId: Int, startDate: String, endDate: String, deleted: Boolean): [DonationReportGroup!]!
+    savedFilters: [SavedFilter!]!
+    savedFilter(id: ID!): SavedFilter
+    categories: [Category!]!
+    category(id: Int!): Category
+    getUserId(usernameOrEmail: String!): ID!
+}
+
+type Mutation {
+    saveFilter(input: FilterInput!): SavedFilter!
+    updateFilter(id: ID!, input: FilterInput!): SavedFilter!
+    deleteFilter(id: ID!): Boolean!
 }
 
 type ParticipationEvent {
     name: String!
-    date: String!
+    datetime: String!
     description: String!
-    donations: [Donation]
+    donations: [Donation!]!
 }
 
 type Donation {
-    category: String!
+    id: ID!
+    categoryId: Int!
+    categoryName: String!
     description: String!
-    quantity: String!
+    quantity: Int!
+    createdAt: String!
+    updatedAt: String
+    createdById: Int!
+    createdByUsername: String!
+    updatedById: Int
+    updatedByUsername: String
+    deleted: Boolean!
 }
 
 enum DonationDistributionFilter {
     YES
     NO
     BOTH
+}
+
+type DonationReportGroup {
+    categoryId: Int!
+    categoryName: String!
+    deleted: Boolean!
+    totalQuantity: Int!
+    donations: [Donation!]!
+}
+
+type SavedFilter {
+    id: ID!
+    name: String!
+    categoryId: Int
+    categoryName: String
+    userId: Int!
+    username: String!
+    startDate: String
+    endDate: String
+    isDeleted: Boolean!
+}
+
+type Category {
+    id: Int!
+    name: String!
+    description: String
+}
+
+input FilterInput {
+    name: String!
+    categoryId: Int
+    startDate: String
+    endDate: String
+    deleted: Boolean
+    username: String!
 }

@@ -1,4 +1,4 @@
-package com.ong.empuje.comunitario.web_services.dto;
+package com.ong.empuje.comunitario.web_services.dto.in;
 
 public class DonationDTO {
 
