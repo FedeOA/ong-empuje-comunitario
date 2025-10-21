@@ -293,21 +293,16 @@ export default function DonationReport() {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ query, variables }),
+        body: JSON.stringify({ query: mutation, variables }), // Use mutation instead of query
       });
 
       if (!response.ok) {
         const text = await response.text();
-        console.error(`[fetchDonationReport] Error: ${response.status} ${response.statusText}`, text);
+        console.error(`[handleSubmitFilter] Error: ${response.status} ${response.statusText}`, text);
         throw new Error(`Error: ${response.status} ${response.statusText}: ${text}`);
       }
 
       console.log("[handleSubmitFilter] Response status:", response.status);
-      if (!response.ok) {
-        console.error("[handleSubmitFilter] Network error:", { status: response.status, statusText: response.statusText });
-        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
-      }
-
       const data = await response.json();
       console.log("[handleSubmitFilter] Response data:", data);
       if (data.errors) {
@@ -358,6 +353,8 @@ export default function DonationReport() {
         }
       `;
 
+      const variables = { id: filterId }; // Define variables for the mutation
+
       console.log("[handleDeleteFilter] Sending request to:", `${baseUrlWebServices}/graphql`);
       const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
@@ -365,21 +362,16 @@ export default function DonationReport() {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify({ query, variables }),
+        body: JSON.stringify({ query: mutation, variables }), // Use mutation here
       });
 
       if (!response.ok) {
         const text = await response.text();
-        console.error(`[fetchDonationReport] Error: ${response.status} ${response.statusText}`, text);
+        console.error(`[handleDeleteFilter] Error: ${response.status} ${response.statusText}`, text);
         throw new Error(`Error: ${response.status} ${response.statusText}: ${text}`);
       }
 
       console.log("[handleDeleteFilter] Response status:", response.status);
-      if (!response.ok) {
-        console.error("[handleDeleteFilter] Network error:", { status: response.status, statusText: response.statusText });
-        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
-      }
-
       const data = await response.json();
       console.log("[handleDeleteFilter] Response data:", data);
       if (data.errors) {

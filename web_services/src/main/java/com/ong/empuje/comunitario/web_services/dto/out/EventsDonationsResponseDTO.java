@@ -1,6 +1,8 @@
-package com.ong.empuje.comunitario.web_services.dto.in;
+package com.ong.empuje.comunitario.web_services.dto.out;
 
 import java.util.List;
+
+import com.ong.empuje.comunitario.web_services.dto.in.DonationDTO;
 
 public class EventsDonationsResponseDTO {
 

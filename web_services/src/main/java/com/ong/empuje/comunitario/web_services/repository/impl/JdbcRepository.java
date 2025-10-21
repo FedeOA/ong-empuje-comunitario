@@ -2,8 +2,8 @@ package com.ong.empuje.comunitario.web_services.repository.impl;
 
 import com.ong.empuje.comunitario.web_services.dto.in.DonationDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
-import com.ong.empuje.comunitario.web_services.dto.in.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
+import com.ong.empuje.comunitario.web_services.dto.out.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 import com.ong.empuje.comunitario.web_services.repository.EventJdbcRepository;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

@@ -15,7 +15,7 @@ const PARTICIPATION_EVENTS_QUERY = `
       datetime
       description
       donations {
-        category
+        categoryId
         description
         quantity
       }
@@ -120,39 +120,48 @@ const FiltersModal = ({ onClose, onApplyFilters, onSaveFilter }) => {
   };
 
   const executeGraphQLFilter = async () => {
-    if (!filters.searchUsername.trim()) {
-      showToast("El campo 'Usuario a filtrar' es obligatorio", "error");
-      return;
-    }
+      if (!filters.searchUsername.trim()) {
+          showToast("El campo 'Usuario a filtrar' es obligatorio", "error");
+          return;
+      }
 
-    try {
-      const token = localStorage.getItem("token");
+      try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`${baseUrlWebServices}/graphql`, {
+              method: "POST",
+              headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                  query: PARTICIPATION_EVENTS_QUERY,
+                  variables: {
+                      username: filters.searchUsername,
+                      startDate: filters.startDate || null,
+                      endDate: filters.endDate || null,
+                      distribution: filters.distribution.toUpperCase(),
+                  },
+              }),
+          });
 
-      const response = await fetch(`${baseUrlWebServices}/graphql`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          query: PARTICIPATION_EVENTS_QUERY,
-          variables: {
-            username: filters.searchUsername,
-            startDate: filters.startDate || null,
-            endDate: filters.endDate || null,
-            distribution: filters.distribution.toUpperCase(),
-          },
-        }),
-      });
+          const result = await response.json();
+          if (result.errors) {
+              console.error("GraphQL Errors:", result.errors);
+              throw new Error(result.errors[0].message);
+          }
 
-      const result = await response.json();
-      if (result.errors) throw new Error(result.errors[0].message);
-
-      onApplyFilters(result.data.participationEvents);
-    } catch (error) {
-      console.error("GraphQL filter error:", error);
-      showToast("Error al aplicar el filtro", "error");
-    }
+          const events = result.data.participationEvents.map(event => ({
+              ...event,
+              donations: event.donations.map(donation => ({
+                  ...donation,
+                  category: donation.categoryId ? { id: donation.categoryId, name: `Category ${donation.categoryId}` } : { id: null, name: "Sin categoría" }
+              }))
+          }));
+          onApplyFilters(events);
+      } catch (error) {
+          console.error("GraphQL filter error:", error);
+          showToast("Error al aplicar el filtro: " + error.message, "error");
+      }
   };
 
   return (
