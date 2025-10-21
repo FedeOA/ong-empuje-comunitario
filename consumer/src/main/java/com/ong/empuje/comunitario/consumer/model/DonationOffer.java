@@ -1,20 +1,15 @@
 package com.ong.empuje.comunitario.consumer.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "donation_offers")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class DonationOffer {
     
     @Id
@@ -31,35 +26,30 @@ public class DonationOffer {
     private boolean available = true;
     
     @Column(name = "created_at", nullable = false)
+    @JsonFormat(pattern = "yy:MM:dd")
     private LocalDateTime createdAt;
     
     @Column(name = "expires_at")
+    @JsonFormat(pattern = "yy:MM:dd")
     private LocalDateTime expiresAt;
     
-    @OneToMany(mappedBy = "offer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "offer", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<DonationOfferItem> items = new ArrayList<>();
 
-    public DonationOffer(){}
+    public DonationOffer() {}
 
-    //getters setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    
     public int getOfferId() { return offerId; }
     public void setOfferId(int offerId) { this.offerId = offerId; }
-    
     public int getOrganizationId() { return organizationId; }
     public void setOrganizationId(int organizationId) { this.organizationId = organizationId; }
-    
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean available) { this.available = available; }
-    
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
-    
     public List<DonationOfferItem> getItems() { return items; }
     public void setItems(List<DonationOfferItem> items) { this.items = items; }
 

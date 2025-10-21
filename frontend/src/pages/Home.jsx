@@ -6,6 +6,7 @@ import DonationRequestsPage from "./DonationRequests";
 import ExternalEventsPage from "./ExternalEventsPage";
 import DonationReportsPage from "./DonationReports";
 import DonationReportExcelPage from "./DonationReportExcel";
+import DonationOffersPage from "./DonationOffers";
 import SoapDataPage from "./SoapData";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
@@ -44,6 +45,8 @@ export default function Home() {
         return <DonationReportExcelPage/>
       case "soap-data":
         return <SoapDataPage />;
+      case "donation-offers":
+        return <DonationOffersPage />;
       default:
         return null;
     }
@@ -99,6 +102,18 @@ export default function Home() {
               onClick={() => setActiveSection("donation-requests")}
             >
               Solicitudes de Donación
+            </button>
+          )}
+          {hasPermission(user?.role, "donation-offers") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "donation-offers"
+                  ? "bg-empuje-green text-white"
+                  : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("donation-offers")}
+            >
+              Oferta de Donaciones
             </button>
           )}
           {hasPermission(user?.role, "externalEvents") && (
