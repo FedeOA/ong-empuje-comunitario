@@ -1,16 +1,16 @@
-package com.ong.empuje.comunitario.web_services.dto;
+package com.ong.empuje.comunitario.web_services.dto.in;
 
 import java.time.LocalDateTime;
 
-public class DonationExcelRequest {
+public class DonationExcelRequestDTO {
     private Integer categoryId;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Boolean deleted;
 
-    public DonationExcelRequest(){}
+    public DonationExcelRequestDTO(){}
 
-    public DonationExcelRequest(Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted){
+    public DonationExcelRequestDTO(Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted){
         this.categoryId = categoryId;
         this.startDate = startDate;
         this.endDate = endDate;

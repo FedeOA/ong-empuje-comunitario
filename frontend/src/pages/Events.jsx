@@ -27,6 +27,9 @@ export default function Events() {
     setDonationsModalOpen(true);
   };
 
+
+
+
   const today = new Date();
   const { user } = useAuth();
 
@@ -178,11 +181,13 @@ export default function Events() {
 
   const handleUpdateUsers = async () => {
     await fetchEvents();
+
     const updated = events.find(e => e.id === selectedEvent.id);
     if (updated) setSelectedEvent(updated);
   };
 
   const handlePublishEvent = async (event) => {
+    
     try {
       const token = localStorage.getItem("token");
 
@@ -192,6 +197,7 @@ export default function Events() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
+
         body: JSON.stringify({
           name: event.name,
           description: event.description,
@@ -208,178 +214,183 @@ export default function Events() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
+          
         body: JSON.stringify({
-          organization_id: 1, // id de organización fija por ahora
+          organization_id: 1 ,// id de organización fija por ahora
           event_id: event.id,
           name: event.name,
           description: event.description,
           datetime: event.datetime
         })
+
       });
 
-      if (!response.ok) throw new Error("Error al publicar el evento");
-      await fetchEvents();
-      showToast("Evento publicado correctamente", "success");
-    } catch (error) {
-      console.error(error);
-      showToast("Hubo un problema al publicar el evento", "error");
-    }
-  };
+    
+    if (!response.ok) throw new Error("Error al publicar el evento");
+    await fetchEvents();
 
-  return (
-    <div className="min-h-screen bg-empuje-bg p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-empuje-green">Eventos Solidarios</h1>
-        <div className="flex gap-4">
-          <button
-            className="bg-empuje-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-            onClick={handleAddEvent}
-          >
-            Agregar Evento
-          </button>
-          <button
-            className="bg-empuje-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
-            onClick={() => setIsFilterModalOpen(true)}
-          >
-            Filtros
-          </button>
-        </div>
+    showToast("Evento publicado correctamente", "success");
+  } catch (error) {
+    console.error(error);
+    showToast("Hubo un problema al publicar el evento", "error");
+  }
+};
+return (
+  <div className="min-h-screen bg-empuje-bg p-6">
+    {/* Header */}
+    <div className="flex justify-between items-center mb-6">
+      <h1 className="text-3xl font-bold text-empuje-green">Eventos Solidarios</h1>
+      <div className="flex gap-4">
+        <button
+          className="bg-empuje-green text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+          onClick={handleAddEvent}
+        >
+          Agregar Evento
+        </button>
+        <button
+          className="bg-empuje-orange text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition"
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          Filtros
+        </button>   
       </div>
-
-      {/* Table */}
-      <div className="bg-white shadow-md rounded-xl overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-empuje-green text-white">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
-              <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
-              <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
-              <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
-              <th className="px-6 py-3 text-center text-sm font-medium">Donaciones</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y divide-gray-200">
-            {events.map(event => {
-              const eventDate = new Date(event.datetime);
-              const isFuture = eventDate > today;
-              const isAlreadyJoined = event.users?.includes(user.username);
-
-              return (
-                <React.Fragment key={event.id}>
-                  <tr>
-                    <td className="px-6 py-4">{event.name}</td>
-                    <td className="px-6 py-4">{event.description}</td>
-                    <td className="px-6 py-4">{eventDate.toLocaleString("es-AR")}</td>
-
-                    {/* Miembros */}
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center">
-                        <button
-                          className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setIsMembersModalOpen(true);
-                          }}
-                        >
-                          Ver
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Acciones */}
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center">
-                        <button
-                          className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setIsActionsModalOpen(true);
-                          }}
-                        >
-                          Ver
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Donaciones */}
-                    <td className="px-6 py-4">
-                      <div className="flex justify-center">
-                        <button
-                          className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
-                          onClick={() => handleOpenDonationsModal(event.donations)}
-                        >
-                          Ver
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* Modal de acciones */}
-                  {isActionsModalOpen && selectedEvent?.id === event.id && (
-                    <ActionsModal
-                      key={`actions-${event.id}`} // Unique key for ActionsModal
-                      event={selectedEvent}
-                      user={user}
-                      isAlreadyJoined={isAlreadyJoined}
-                      isFuture={isFuture}
-                      onClose={() => setIsActionsModalOpen(false)}
-                      onJoin={handleJoinEvent}
-                      onLeave={handleLeaveEvent}
-                      onEdit={handleEditEvent}
-                      onDelete={handleDeleteEvent}
-                      onPublish={handlePublishEvent}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modals */}
-      <EventModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        onSubmit={handleSubmitEvent}
-        eventToEdit={eventToEdit}
-      />
-
-      <MembersModal
-        isOpen={isMembersModalOpen}
-        onClose={() => setIsMembersModalOpen(false)}
-        event={selectedEvent}
-        onUpdateMembers={handleUpdateUsers}
-        user={user}
-      />
-
-      {donationsModalOpen && (
-        <DonationEventModal
-          donations={selectedDonations}
-          onClose={() => setDonationsModalOpen(false)}
-        />
-      )}
-
-      {isFilterModalOpen && (
-        <FiltersModal
-          onClose={() => setIsFilterModalOpen(false)}
-          onApplyFilters={(filteredEvents) => {
-            setEvents(filteredEvents);
-            setIsFilterModalOpen(false);
-          }}
-          onSaveFilter={(newFilter) => {
-            setSavedFilters((prev) => [...prev, newFilter]);
-          }}
-          savedFilters={savedFilters}
-        />
-      )}
-
-      {toast.message && (
-        <Toast message={toast.message} type={toast.type} />
-      )}
     </div>
-  );
+
+    {/* Table */}
+    <div className="bg-white shadow-md rounded-xl overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-empuje-green text-white">
+          <tr>
+            <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
+            <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
+            <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
+            <th className="px-6 py-3 text-center text-sm font-medium">Donaciones</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y divide-gray-200">
+          {events.map(event => {
+            const eventDate = new Date(event.datetime);
+            const isFuture = eventDate > today;
+            const isAlreadyJoined = event.users?.includes(user.username);
+
+            return (
+              <React.Fragment key={event.id}>
+                <tr>
+                  <td className="px-6 py-4">{event.name}</td>
+                  <td className="px-6 py-4">{event.description}</td>
+                  <td className="px-6 py-4">{eventDate.toLocaleString("es-AR")}</td>
+
+                  {/* Miembros */}
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsMembersModalOpen(true);
+                        }}
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  </td>
+
+                  {/* Acciones */}
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setIsActionsModalOpen(true);
+                        }}
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  </td>
+
+                  {/* Donaciones */}
+                  
+                  <td className="px-6 py-4">
+                    <div className="flex justify-center">
+                      <button
+                        className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+                        onClick={() => handleOpenDonationsModal(event.donations)}
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                {/* Modal de acciones */}
+                {isActionsModalOpen && selectedEvent?.id === event.id && (
+                  <ActionsModal
+                    event={selectedEvent}
+                    user={user}
+                    isAlreadyJoined={isAlreadyJoined}
+                    isFuture={isFuture}
+                    onClose={() => setIsActionsModalOpen(false)}
+                    onJoin={handleJoinEvent}
+                    onLeave={handleLeaveEvent}
+                    onEdit={handleEditEvent}
+                    onDelete={handleDeleteEvent}
+                    onPublish={handlePublishEvent}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Modals */}
+    <EventModal
+      isOpen={isEventModalOpen}
+      onClose={() => setIsEventModalOpen(false)}
+      onSubmit={handleSubmitEvent}
+      eventToEdit={eventToEdit}
+    />
+
+    <MembersModal
+      isOpen={isMembersModalOpen}
+      onClose={() => setIsMembersModalOpen(false)}
+      event={selectedEvent}
+      onUpdateMembers={handleUpdateUsers}
+      user={user}
+    />
+
+    
+    {donationsModalOpen && (
+      <DonationEventModal
+        donations={selectedDonations}
+        onClose={() => setDonationsModalOpen(false)}
+      />
+    )}
+
+    {isFilterModalOpen && (
+      <FiltersModal
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={(filteredEvents) => {
+          setEvents(filteredEvents); 
+          setIsFilterModalOpen(false);
+        }}
+        onSaveFilter={(newFilter) => {
+          setSavedFilters((prev) => [...prev, newFilter]);
+        }}
+        savedFilters={savedFilters}
+      />
+    )}
+
+
+    {toast.message && (
+      <Toast message={toast.message} type={toast.type} />
+    )}
+  </div>
+);
 }

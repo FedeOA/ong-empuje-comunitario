@@ -31,6 +31,10 @@ public class User {
     @Column(name = "is_active", nullable = false)
     private Boolean active = true;
 
+    @ManyToOne
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organization organization;
+
     public User() {
     }
 
@@ -96,5 +100,18 @@ public class User {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
+    // Convenience method to get organizationId for DTO compatibility
+    public Integer getOrganizationId() {
+        return organization != null ? organization.getId() : null;
     }
 }
