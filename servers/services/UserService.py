@@ -92,7 +92,7 @@ class UserService(UserServiceServicer):
     def ListUsers(self, request, context):
         session = get_session()
         try:
-            db_users = session.query(User).filter(User.is_active == True).all()
+            db_users = session.query(User).filter().all()
             users = [
                 UserMessage(
                     id=user.id,
