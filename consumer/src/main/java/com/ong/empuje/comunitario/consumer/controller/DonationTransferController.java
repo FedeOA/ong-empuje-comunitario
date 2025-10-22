@@ -8,9 +8,9 @@ import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
 import com.ong.empuje.comunitario.consumer.service.DonationTransferService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -28,7 +28,6 @@ public class DonationTransferController {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final Random random = new Random();
 
-    @Autowired
     public DonationTransferController(
             DonationTransferService donationTransferService,
             ObjectMapper objectMapper,
@@ -40,6 +39,7 @@ public class DonationTransferController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<List<DonationTransfer>> listDonationTransfers() {
         logger.info("Received GET /api/donation-transfers");
         try {
@@ -56,10 +56,10 @@ public class DonationTransferController {
     }
 
     @PostMapping("/create")
+    @Transactional
     public ResponseEntity<String> createDonationTransfer(@RequestBody DonationTransferDTO payload) {
         logger.info("Received POST /api/donation-transfers/create with payload: organizationId={}", payload.organizationId());
         try {
-            // Generate unique transferId and requestId
             Integer newId = generateUniqueId();
             if (newId == null) {
                 logger.error("Failed to generate a unique ID after multiple attempts");
@@ -68,7 +68,7 @@ public class DonationTransferController {
 
             DonationTransfer transfer = new DonationTransfer();
             transfer.setTransferId(newId);
-            transfer.setRequestId(newId); // Use same ID for both, adjust if they must differ
+            transfer.setRequestId(newId);
             transfer.setOrganizationId(payload.organizationId());
             transfer.setReceived(false);
             transfer.setProcessed(false);
@@ -79,7 +79,6 @@ public class DonationTransferController {
                 item.setCategoryId(itemDTO.categoryId());
                 item.setDescription(itemDTO.description());
                 item.setQuantity(itemDTO.quantity());
-                // Remove if created_at column does not exist in donation_transfer_item
                 item.setCreatedAt(LocalDateTime.now());
                 transfer.addItem(item);
             }
@@ -87,9 +86,8 @@ public class DonationTransferController {
             donationTransferService.save(transfer);
             logger.info("Donation transfer created: transferId={}", transfer.getTransferId());
 
-            // Update payload with generated IDs for Kafka
             DonationTransferDTO responsePayload = new DonationTransferDTO(
-                newId, // request_id
+                newId,
                 payload.organizationId(),
                 payload.items()
             );
@@ -104,6 +102,7 @@ public class DonationTransferController {
     }
 
     @PutMapping("/{id}")
+    @Transactional
     public ResponseEntity<String> updateDonationTransfer(@PathVariable Integer id, @RequestBody DonationTransferDTO payload) {
         logger.info("Received PUT /api/donation-transfers/{} with payload: organizationId={}, requestId={}",
                 id, payload.organizationId(), payload.requestId());
@@ -115,7 +114,7 @@ public class DonationTransferController {
             }
 
             DonationTransfer transfer = optionalTransfer.get();
-            // Check if transfer_id is being changed and ensure no duplicate
+            // Check for duplicate transfer_id
             if (transfer.getTransferId() != payload.requestId()) {
                 Optional<DonationTransfer> existingTransfer = donationTransferService.findByTransferId(payload.requestId());
                 if (existingTransfer.isPresent()) {
@@ -124,26 +123,41 @@ public class DonationTransferController {
                 }
             }
 
+            // Update scalar fields
             transfer.setTransferId(payload.requestId());
             transfer.setOrganizationId(payload.organizationId());
             transfer.setRequestId(payload.requestId() > 0 ? payload.requestId() : null);
             transfer.setCreatedAt(LocalDateTime.now());
 
+            // Update items: Clear existing items and add new ones
             transfer.getItems().clear();
             for (DonationTransferItemDTO itemDTO : payload.items()) {
                 DonationTransferItem item = new DonationTransferItem();
                 item.setCategoryId(itemDTO.categoryId());
                 item.setDescription(itemDTO.description());
                 item.setQuantity(itemDTO.quantity());
-                // Remove if created_at column does not exist
                 item.setCreatedAt(LocalDateTime.now());
-                transfer.addItem(item);
+                item.setTransfer(transfer); // Explicitly set the parent
+                transfer.getItems().add(item);
             }
 
             donationTransferService.save(transfer);
             logger.info("Donation transfer updated: id={}", id);
 
-            String jsonPayload = objectMapper.writeValueAsString(payload);
+            // Send Kafka message with updated payload
+            DonationTransferDTO responsePayload = new DonationTransferDTO(
+                transfer.getTransferId(),
+                transfer.getOrganizationId(),
+                transfer.getItems().stream()
+                    .map(item -> new DonationTransferItemDTO(
+                        item.getId(),
+                        item.getCategoryId(),
+                        item.getDescription(),
+                        item.getQuantity()
+                    ))
+                    .toList()
+            );
+            String jsonPayload = objectMapper.writeValueAsString(responsePayload);
             kafkaTemplate.send("modificar-transferencia-donacion", jsonPayload);
 
             return ResponseEntity.ok("Donation transfer updated successfully");
@@ -154,6 +168,7 @@ public class DonationTransferController {
     }
 
     @PatchMapping("/{transferId}")
+    @Transactional
     public ResponseEntity<String> deleteDonationTransfer(@PathVariable Integer transferId) {
         logger.info("Received PATCH /api/donation-transfers/{}", transferId);
         try {
@@ -168,7 +183,19 @@ public class DonationTransferController {
             donationTransferService.save(transfer);
             logger.info("Donation transfer deleted: transferId={}", transferId);
 
-            String jsonPayload = objectMapper.writeValueAsString(transfer);
+            DonationTransferDTO payload = new DonationTransferDTO(
+                transfer.getTransferId(),
+                transfer.getOrganizationId(),
+                transfer.getItems().stream()
+                    .map(item -> new DonationTransferItemDTO(
+                        item.getId(),
+                        item.getCategoryId(),
+                        item.getDescription(),
+                        item.getQuantity()
+                    ))
+                    .toList()
+            );
+            String jsonPayload = objectMapper.writeValueAsString(payload);
             kafkaTemplate.send("baja-transferencia-donacion", jsonPayload);
 
             return ResponseEntity.ok("Donation transfer deleted successfully");
@@ -181,13 +208,12 @@ public class DonationTransferController {
     private Integer generateUniqueId() {
         int maxAttempts = 10;
         for (int i = 0; i < maxAttempts; i++) {
-            // Generate a random ID between 1 and 100000 (adjust range as needed)
             Integer newId = random.nextInt(100000) + 1;
             Optional<DonationTransfer> existingTransfer = donationTransferService.findByTransferId(newId);
             if (!existingTransfer.isPresent()) {
                 return newId;
             }
         }
-        return null; // Return null if no unique ID is found after max attempts
+        return null;
     }
 }

@@ -3,8 +3,16 @@ package com.ong.empuje.comunitario.consumer.dto.in;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record DonationTransferItemDTO(
-    @JsonProperty("category_id") int categoryId,
+    @JsonProperty("item_id") Integer itemId,
+    @JsonProperty("category_id") Integer categoryId,
     @JsonProperty("description") String description,
-    @JsonProperty("quantity") int quantity
-) {   
+    @JsonProperty("quantity") Integer quantity
+) {
+    // Explicit constructor for mapping from DonationTransferItem
+    public DonationTransferItemDTO(Integer itemId, Integer categoryId, String description, Integer quantity) {
+        this.itemId = itemId;
+        this.categoryId = categoryId;
+        this.description = description;
+        this.quantity = quantity;
+    }
 }

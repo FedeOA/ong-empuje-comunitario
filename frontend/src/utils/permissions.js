@@ -1,10 +1,10 @@
 import { roles } from "../constants/roles";
 
 export const rolePermissions = {
-  [roles.PRESIDENTE]: ["users", "events", "donations", "externalEvents", "donation-requests", "donation-offers", "donation-transfers", "donation-reports", "donation-report-excel", "soap-data"],
-  [roles.VOCAL]: ["donations"],
+  [roles.PRESIDENTE]: ["users", "events", "externalEvents", "donations", "donation-requests", "donation-offers", "donation-transfers", "donation-reports", "donation-report-excel", "soap-data"],
+  [roles.VOCAL]: ["donations", "donation-requests", "donation-offers", "donation-transfers", "donation-reports", "donation-report-excel", "soap-data"],
   [roles.COORDINADOR]: ["events","externalEvents"],
-  [roles.VOLUNTARIO]: ["events"],
+  [roles.VOLUNTARIO]: ["events", "externalEvents"],
 };
 
 export function hasPermission(role, section) {

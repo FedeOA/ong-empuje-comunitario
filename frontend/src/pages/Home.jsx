@@ -85,6 +85,16 @@ export default function Home() {
               Gestión de Eventos
             </button>
           )}
+          {hasPermission(user?.role, "externalEvents") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "externalEvents" ? "bg-empuje-green text-white" : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("externalEvents")}
+            >
+              Eventos Externos
+            </button>
+          )}
           {hasPermission(user?.role, "donations") && (
             <button
               className={`text-left px-3 py-2 rounded ${
@@ -129,16 +139,6 @@ export default function Home() {
               onClick={() => setActiveSection("donation-transfers")}
             >
               Transferencia de Donaciones
-            </button>
-          )}
-          {hasPermission(user?.role, "externalEvents") && (
-            <button
-              className={`text-left px-3 py-2 rounded ${
-                activeSection === "externalEvents" ? "bg-empuje-green text-white" : "text-gray-700"
-              }`}
-              onClick={() => setActiveSection("externalEvents")}
-            >
-              Eventos Externos
             </button>
           )}
           {hasPermission(user?.role, "donation-reports") && (

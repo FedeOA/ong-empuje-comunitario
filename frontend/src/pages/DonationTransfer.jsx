@@ -301,7 +301,7 @@ export default function DonationTransfer() {
                       className="bg-empuje-orange text-white px-3 py-1 rounded hover:bg-orange-700 transition"
                       onClick={() => handleDeleteTransfer(transfer)}
                     >
-                      Eliminar
+                      Procesar
                     </button>
                   </td>
                 </tr>

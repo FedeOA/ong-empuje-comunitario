@@ -2,21 +2,21 @@ package com.ong.empuje.comunitario.consumer.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.empuje.comunitario.consumer.dto.in.CancelDonationOfferPayloadDTO;
-import com.ong.empuje.comunitario.consumer.dto.in.DonationOfferItemPayloadDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationOfferPayloadDTO;
 import com.ong.empuje.comunitario.consumer.model.DonationOffer;
 import com.ong.empuje.comunitario.consumer.service.DonationOfferService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.ong.empuje.comunitario.consumer.dto.in.DonationOfferItemPayloadDTO;
 import com.ong.empuje.comunitario.consumer.model.DonationOfferItem;
 
 @RestController
@@ -27,7 +27,6 @@ public class DonationOfferController {
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Autowired
     public DonationOfferController(
             DonationOfferService donationOfferService,
             ObjectMapper objectMapper,
@@ -39,6 +38,7 @@ public class DonationOfferController {
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public ResponseEntity<List<DonationOffer>> listDonationOffers() {
         logger.info("Received GET /api/donation-offers");
         try {
@@ -53,6 +53,7 @@ public class DonationOfferController {
     }
 
     @PostMapping("/create")
+    @Transactional
     public ResponseEntity<String> createDonationOffer(@RequestBody DonationOfferPayloadDTO payload) {
         logger.info("Received POST /api/donation-offers/create with payload: organizationId={}, offerId={}",
                 payload.getOrganizationId(), payload.getOfferId());
@@ -88,6 +89,7 @@ public class DonationOfferController {
     }
 
     @PostMapping("/cancel")
+    @Transactional
     public ResponseEntity<String> cancelDonationOffer(@RequestBody CancelDonationOfferPayloadDTO payload) {
         logger.info("Received POST /api/donation-offers/cancel with offerId={}, organizationId={}",
                 payload.getOfferId(), payload.getOrganizationId());

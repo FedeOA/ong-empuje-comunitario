@@ -4,6 +4,7 @@ public class DonationRequestItemDTO {
     private Integer id;
     private Integer categoryId;
     private String description;
+    private Integer quantity;
 
     // Constructors
     public DonationRequestItemDTO() {}
@@ -17,4 +18,7 @@ public class DonationRequestItemDTO {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }
