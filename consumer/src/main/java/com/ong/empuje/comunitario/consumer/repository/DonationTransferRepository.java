@@ -12,6 +12,6 @@ import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
 public interface DonationTransferRepository extends JpaRepository<DonationTransfer, Integer> {
     
     Optional<DonationTransfer> findByTransferIdAndOrganizationId(int transferId, int organizationId);
-   
     Optional<DonationTransfer> findByTransferId(int transferId);
+    Optional<DonationTransfer> findById(int id);
 }

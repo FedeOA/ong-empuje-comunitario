@@ -6,6 +6,7 @@ import UsersPage from "../pages/Users";
 import DonationsPage from "../pages/Donations";
 import DonationRequestsPage from "../pages/DonationRequests";
 import DonationOffersPage from "../pages/DonationOffers";
+import DonationTransferPage from "../pages/DonationTransfer";
 import DonationReportsPage from "../pages/DonationReports";
 import SoapDataPage from "../pages/SoapData";
 import ForbiddenPage from "../pages/Forbidden";
@@ -70,6 +71,15 @@ const AppRouter = () => {
           element={
             <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
               <DonationOffersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/donation-transfers"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE]}>
+              <DonationTransferPage />
             </ProtectedRoute>
           }
         />
