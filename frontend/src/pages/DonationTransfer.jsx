@@ -88,7 +88,6 @@ export default function DonationTransfer() {
     setIsModalOpen(true);
   };
 
-  
   const handleSubmitTransfer = async (data) => {
     if (!user || !user.username) {
       console.error("[handleSubmitTransfer] No user or username found:", { user });
@@ -103,9 +102,11 @@ export default function DonationTransfer() {
     }
 
     try {
-      const { id, ...payload } = data;
+      const { id, transferId, ...payload } = data;
+      const isEdit = id && id > 0;
       const transformedPayload = {
         organization_id: payload.organizationId,
+        ...(isEdit && { request_id: transferId }), // Include request_id only for updates
         items: payload.items.map(item => ({
           category_id: item.categoryId,
           description: item.description,
@@ -114,7 +115,6 @@ export default function DonationTransfer() {
       };
       console.log("[handleSubmitTransfer] Submitting transfer payload:", JSON.stringify(transformedPayload, null, 2));
 
-      const isEdit = id && id !== null && id !== undefined;
       const url = isEdit
         ? `http://localhost:8092/api/donation-transfers/${id}`
         : `http://localhost:8092/api/donation-transfers/create`;

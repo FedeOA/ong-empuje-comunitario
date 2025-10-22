@@ -31,7 +31,8 @@ export default function DonationTransferModal({ isOpen, onClose, onSubmit, trans
       return;
     }
     const formData = {
-      id: transferToEdit?.id, // Include id for edit operations
+      id: transferToEdit?.id,
+      transferId: transferToEdit?.transferId, // Add for updates
       organizationId: parseInt(organizationId),
       items: items.map(item => ({
         categoryId: parseInt(item.categoryId),

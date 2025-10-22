@@ -17,10 +17,10 @@ public class DonationTransfer {
     private Integer id;
     
     @Column(name = "transfer_id", nullable = false, unique = true)
-    private int transferId;
+    private Integer transferId;
     
     @Column(name = "organization_id", nullable = false)
-    private int organizationId;
+    private Integer organizationId;
     
     @Column(name = "request_id")
     private Integer requestId;
@@ -43,10 +43,10 @@ public class DonationTransfer {
     // Getters and setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public int getTransferId() { return transferId; }
-    public void setTransferId(int transferId) { this.transferId = transferId; }
-    public int getOrganizationId() { return organizationId; }
-    public void setOrganizationId(int organizationId) { this.organizationId = organizationId; }
+    public Integer getTransferId() { return transferId; }
+    public void setTransferId(Integer transferId) { this.transferId = transferId; }
+    public Integer getOrganizationId() { return organizationId; }
+    public void setOrganizationId(Integer organizationId) { this.organizationId = organizationId; }
     public Integer getRequestId() { return requestId; }
     public void setRequestId(Integer requestId) { this.requestId = requestId; }
     public boolean isReceived() { return received; }

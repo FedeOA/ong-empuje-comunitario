@@ -107,6 +107,12 @@ public class DonationTransferController {
         logger.info("Received PUT /api/donation-transfers/{} with payload: organizationId={}, requestId={}",
                 id, payload.organizationId(), payload.requestId());
         try {
+            // Validate requestId
+            if (payload.requestId() <= 0) {
+                logger.warn("Invalid requestId: {}", payload.requestId());
+                return ResponseEntity.status(400).body("Invalid request_id: must be a positive integer");
+            }
+
             Optional<DonationTransfer> optionalTransfer = donationTransferService.findById(id);
             if (!optionalTransfer.isPresent()) {
                 logger.warn("Donation transfer not found: id={}", id);
@@ -114,10 +120,10 @@ public class DonationTransferController {
             }
 
             DonationTransfer transfer = optionalTransfer.get();
-            // Check for duplicate transfer_id
-            if (transfer.getTransferId() != payload.requestId()) {
+            // Check for duplicate transfer_id, excluding the current transfer
+            if (!transfer.getTransferId().equals(payload.requestId())) {
                 Optional<DonationTransfer> existingTransfer = donationTransferService.findByTransferId(payload.requestId());
-                if (existingTransfer.isPresent()) {
+                if (existingTransfer.isPresent() && !existingTransfer.get().getId().equals(id)) {
                     logger.warn("Duplicate transfer_id found: {}", payload.requestId());
                     return ResponseEntity.status(400).body("Duplicate transfer_id: " + payload.requestId());
                 }
@@ -137,7 +143,7 @@ public class DonationTransferController {
                 item.setDescription(itemDTO.description());
                 item.setQuantity(itemDTO.quantity());
                 item.setCreatedAt(LocalDateTime.now());
-                item.setTransfer(transfer); // Explicitly set the parent
+                item.setTransfer(transfer);
                 transfer.getItems().add(item);
             }
 
