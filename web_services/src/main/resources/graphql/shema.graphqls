@@ -9,7 +9,7 @@ type Query {
 
 type ParticipationEvent {
     name: String!
-    date: String!
+    datetime: String!
     description: String!
     donations: [Donation]
 }
