@@ -1,6 +1,6 @@
-package com.ong.empuje.comunitario.consumer.dto.payload;
+package com.ong.empuje.comunitario.consumer.dto.in;
 
-public class DonationOfferItemPayload {
+public class DonationOfferItemPayloadDTO {
     private int categoryId;
     private String description;
     private int quantity;

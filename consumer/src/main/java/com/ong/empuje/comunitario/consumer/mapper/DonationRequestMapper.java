@@ -12,6 +12,8 @@ import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
 
 @Mapper(componentModel = "spring")
 public interface DonationRequestMapper {
+    DonationRequestMapper INSTANCE = Mappers.getMapper(DonationRequestMapper.class);
+
     @Mapping(source = "requestId", target = "requestId")
     @Mapping(source = "organizationId", target = "organizationId")
     @Mapping(target = "deleted", constant = "false")

@@ -1,6 +1,6 @@
-package com.ong.empuje.comunitario.consumer.dto.payload;
+package com.ong.empuje.comunitario.consumer.dto.in;
 
-public class CancelDonationTransferPayload {
+public class CancelDonationTransferPayloadDTO {
     private int transferId;
     private int organizationId;
 

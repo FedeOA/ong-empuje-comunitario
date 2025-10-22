@@ -7,7 +7,6 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface VoluntaryMapper {
-
     VoluntaryMapper INSTANCE = Mappers.getMapper(VoluntaryMapper.class);
 
     Voluntary toEntity(VoluntaryDTO voluntary);

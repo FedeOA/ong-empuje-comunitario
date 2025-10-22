@@ -1,4 +1,4 @@
-package com.ong.empuje.comunitario.consumer.dto.payload;
+package com.ong.empuje.comunitario.consumer.dto.in;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
@@ -6,12 +6,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-public class DonationOfferPayload {
+public class DonationOfferPayloadDTO {
     private int offerId;
     private int organizationId;
     @JsonFormat(pattern = "yy:MM:dd") // Expect YY:MM:DD format from frontend
     private String expiresAt;
-    private List<DonationOfferItemPayload> items;
+    private List<DonationOfferItemPayloadDTO> items;
 
     public int getOfferId() { return offerId; }
     public void setOfferId(int offerId) { this.offerId = offerId; }
@@ -19,8 +19,8 @@ public class DonationOfferPayload {
     public void setOrganizationId(int organizationId) { this.organizationId = organizationId; }
     public String getExpiresAt() { return expiresAt; }
     public void setExpiresAt(String expiresAt) { this.expiresAt = expiresAt; }
-    public List<DonationOfferItemPayload> getItems() { return items; }
-    public void setItems(List<DonationOfferItemPayload> items) { this.items = items; }
+    public List<DonationOfferItemPayloadDTO> getItems() { return items; }
+    public void setItems(List<DonationOfferItemPayloadDTO> items) { this.items = items; }
 
     public LocalDateTime getExpiresAtAsLocalDateTime() {
         if (expiresAt == null || expiresAt.isEmpty()) {

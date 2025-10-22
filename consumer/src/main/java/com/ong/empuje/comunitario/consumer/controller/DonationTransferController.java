@@ -5,7 +5,7 @@ import com.ong.empuje.comunitario.consumer.dto.in.DonationTransferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationTransferItemDTO;
 import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
 import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
-import com.ong.empuje.comunitario.consumer.repository.DonationTransferRepository;
+import com.ong.empuje.comunitario.consumer.service.DonationTransferService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +23,18 @@ import java.util.Random;
 @CrossOrigin(origins = "http://localhost:5173", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH})
 public class DonationTransferController {
     private static final Logger logger = LoggerFactory.getLogger(DonationTransferController.class);
-    private final DonationTransferRepository donationTransferRepository;
+    private final DonationTransferService donationTransferService;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final Random random = new Random();
 
     @Autowired
     public DonationTransferController(
-            DonationTransferRepository donationTransferRepository,
+            DonationTransferService donationTransferService,
             ObjectMapper objectMapper,
             KafkaTemplate<String, String> kafkaTemplate
     ) {
-        this.donationTransferRepository = donationTransferRepository;
+        this.donationTransferService = donationTransferService;
         this.objectMapper = objectMapper;
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -43,7 +43,7 @@ public class DonationTransferController {
     public ResponseEntity<List<DonationTransfer>> listDonationTransfers() {
         logger.info("Received GET /api/donation-transfers");
         try {
-            List<DonationTransfer> transfers = donationTransferRepository.findAll()
+            List<DonationTransfer> transfers = donationTransferService.findAll()
                     .stream()
                     .filter(transfer -> !transfer.isProcessed())
                     .toList();
@@ -84,7 +84,7 @@ public class DonationTransferController {
                 transfer.addItem(item);
             }
 
-            donationTransferRepository.save(transfer);
+            donationTransferService.save(transfer);
             logger.info("Donation transfer created: transferId={}", transfer.getTransferId());
 
             // Update payload with generated IDs for Kafka
@@ -108,7 +108,7 @@ public class DonationTransferController {
         logger.info("Received PUT /api/donation-transfers/{} with payload: organizationId={}, requestId={}",
                 id, payload.organizationId(), payload.requestId());
         try {
-            Optional<DonationTransfer> optionalTransfer = donationTransferRepository.findById(id);
+            Optional<DonationTransfer> optionalTransfer = donationTransferService.findById(id);
             if (!optionalTransfer.isPresent()) {
                 logger.warn("Donation transfer not found: id={}", id);
                 return ResponseEntity.status(404).body("Donation transfer not found");
@@ -117,7 +117,7 @@ public class DonationTransferController {
             DonationTransfer transfer = optionalTransfer.get();
             // Check if transfer_id is being changed and ensure no duplicate
             if (transfer.getTransferId() != payload.requestId()) {
-                Optional<DonationTransfer> existingTransfer = donationTransferRepository.findByTransferId(payload.requestId());
+                Optional<DonationTransfer> existingTransfer = donationTransferService.findByTransferId(payload.requestId());
                 if (existingTransfer.isPresent()) {
                     logger.warn("Duplicate transfer_id found: {}", payload.requestId());
                     return ResponseEntity.status(400).body("Duplicate transfer_id: " + payload.requestId());
@@ -140,7 +140,7 @@ public class DonationTransferController {
                 transfer.addItem(item);
             }
 
-            donationTransferRepository.save(transfer);
+            donationTransferService.save(transfer);
             logger.info("Donation transfer updated: id={}", id);
 
             String jsonPayload = objectMapper.writeValueAsString(payload);
@@ -157,7 +157,7 @@ public class DonationTransferController {
     public ResponseEntity<String> deleteDonationTransfer(@PathVariable Integer transferId) {
         logger.info("Received PATCH /api/donation-transfers/{}", transferId);
         try {
-            Optional<DonationTransfer> optionalTransfer = donationTransferRepository.findByTransferId(transferId);
+            Optional<DonationTransfer> optionalTransfer = donationTransferService.findByTransferId(transferId);
             if (!optionalTransfer.isPresent()) {
                 logger.warn("Donation transfer not found: transferId={}", transferId);
                 return ResponseEntity.status(404).body("Donation transfer not found");
@@ -165,7 +165,7 @@ public class DonationTransferController {
 
             DonationTransfer transfer = optionalTransfer.get();
             transfer.setProcessed(true);
-            donationTransferRepository.save(transfer);
+            donationTransferService.save(transfer);
             logger.info("Donation transfer deleted: transferId={}", transferId);
 
             String jsonPayload = objectMapper.writeValueAsString(transfer);
@@ -183,7 +183,7 @@ public class DonationTransferController {
         for (int i = 0; i < maxAttempts; i++) {
             // Generate a random ID between 1 and 100000 (adjust range as needed)
             Integer newId = random.nextInt(100000) + 1;
-            Optional<DonationTransfer> existingTransfer = donationTransferRepository.findByTransferId(newId);
+            Optional<DonationTransfer> existingTransfer = donationTransferService.findByTransferId(newId);
             if (!existingTransfer.isPresent()) {
                 return newId;
             }
