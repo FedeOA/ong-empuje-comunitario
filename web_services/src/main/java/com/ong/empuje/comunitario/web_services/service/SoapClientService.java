@@ -28,7 +28,7 @@ public class SoapClientService {
     
     private static final Logger logger = LoggerFactory.getLogger(SoapClientService.class);
     private final RestTemplate restTemplate;
-    private static final String SOAP_URL = "https://soap-app-latest.onrender.com/";
+    private static final String SOAP_URL = "https://soap-app-latest.onrender.com/?wsdl";
 
     public SoapClientService(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
@@ -95,27 +95,27 @@ public class SoapClientService {
     //SOAP REQUEST
     private String buildOrganizationsSoapRequest(List<Integer> orgIds){
         StringBuilder soapRequest = new StringBuilder();
-        soapRequest.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-                .append("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
-                .append("xmlns:auth=\"auth.headers\" ")
-                .append("xmlns:tns=\"soap.backend\">")
-                .append("<soapenv:Header>")
-                .append("<auth:Auth>")
-                .append("<auth:Grupo>GrupoA-TM</auth:Grupo>")
-                .append("<auth:Clave>clave-tm-a</auth:Clave>")
-                .append("</auth:Auth>")
-                .append("</soapenv:Header>")
-                .append("<soapenv:Body>")
-                .append("<tns:list_associations>")
-                .append("<tns:org_ids>");
+        soapRequest.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+                .append("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" \n")
+                .append("xmlns:auth=\"auth.headers\" \n")
+                .append("xmlns:tns=\"soap.backend\">\n")
+                .append("<soapenv:Header>\n")
+                .append("<auth:Auth>\n")
+                .append("<auth:Grupo>GrupoA-TM</auth:Grupo>\n")
+                .append("<auth:Clave>clave-tm-a</auth:Clave>\n")
+                .append("</auth:Auth>\n")
+                .append("</soapenv:Header>\n")
+                .append("<soapenv:Body>\n")
+                .append("<tns:list_associations>\n")
+                .append("<tns:org_ids>\n");
 
         for(Integer orgId : orgIds){
-            soapRequest.append("<tns:string>").append(orgId).append("</tns:string");
+            soapRequest.append("<tns:string>").append(orgId).append("</tns:string>\n");
         }
 
-        soapRequest.append("</tns:org_ids>")
-                .append("</tns:list_associations>")
-                .append("</soapenv:Body>")
+        soapRequest.append("</tns:org_ids>\n")
+                .append("</tns:list_associations>\n")
+                .append("</soapenv:Body>\n")
                 .append("</soapenv:Envelope>");
 
         return soapRequest.toString();
@@ -123,27 +123,27 @@ public class SoapClientService {
 
     private String buildPresidentsSoapRequest(List<Integer> orgIds){
         StringBuilder soapRequest = new StringBuilder();
-        soapRequest.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
-                .append("<soapenv:Envelope xmlns:soapenv=\\\"http://schemas.xmlsoap.org/soap/envelope/\" ")
-                .append("xmlns:auth=\"auth.headers\" ")
-                .append("xmlns:tns=\"soap.backend\">")
-                .append("<soapenv:Header>")
-                .append("<auth:Auth>")
-                .append("<auth:Grupo>GrupoA-TM</auth:Grupo>")
-                .append("<auth:Clave>clave-tm-a</auth:Clave>")
-                .append("</auth:Auth>")
-                .append("</soapenv:Header>")
-                .append("<soapenv:Body>")
-                .append("<tns:list_presidents>")
-                .append("<tns:org_ids>");
+        soapRequest.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+                .append("<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" \n")
+                .append("xmlns:auth=\"auth.headers\" \n")
+                .append("xmlns:tns=\"soap.backend\">\n")
+                .append("<soapenv:Header>\n")
+                .append("<auth:Auth>\n")
+                .append("<auth:Grupo>GrupoA-TM</auth:Grupo>\n")
+                .append("<auth:Clave>clave-tm-a</auth:Clave>\n")
+                .append("</auth:Auth>\n")
+                .append("</soapenv:Header>\n")
+                .append("<soapenv:Body>\n")
+                .append("<tns:list_presidents>\n")
+                .append("<tns:org_ids>\n");
 
         for(Integer orgId : orgIds){
-            soapRequest.append("<tns:string>").append(orgId).append("</tns:string");
+            soapRequest.append("<tns:string>").append(orgId).append("</tns:string>\n");
         }
 
-        soapRequest.append("</tns:org_ids>")
-                .append("</tns:list_presidents>")
-                .append("</soapenv:Body>")
+        soapRequest.append("</tns:org_ids>\n")
+                .append("</tns:list_presidents>\n")
+                .append("</soapenv:Body>\n")
                 .append("</soapenv:Envelope>");
 
         return soapRequest.toString();
@@ -155,11 +155,17 @@ public class SoapClientService {
         int i;
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(new ByteArrayInputStream(soapResponse.getBytes()));
         
         NodeList orgNodes = document.getElementsByTagNameNS("models", "OrganizationType");
+        logger.debug("Organizaciones encontradas: {}", orgNodes.getLength());
 
+        if(orgNodes.getLength()==0){
+            orgNodes = document.getElementsByTagName("OrganizationType");
+            logger.debug("Organizaciones encontradas sin namespace: {}", orgNodes.getLength());
+        }
         for(i = 0; i<orgNodes.getLength();i++){
             Element orgElement = (Element) orgNodes.item(i);
             OrganizationDTO org = new OrganizationDTO();
@@ -179,10 +185,17 @@ public class SoapClientService {
         int i;
 
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(new ByteArrayInputStream(soapResponse.getBytes()));
         
         NodeList presidentNodes = document.getElementsByTagNameNS("models", "PresidentType");
+        logger.debug("Presidentes encontrados:{}", presidentNodes.getLength());
+
+        if(presidentNodes.getLength() == 0){
+            presidentNodes = document.getElementsByTagName("PresidentType");
+            logger.debug("Presidentes encontrados sin namespace: {}",presidentNodes.getLength());
+        }
 
         for(i = 0; i<presidentNodes.getLength();i++){
             Element presidentElement = (Element) presidentNodes.item(i);
