@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DonationReportFilterModal from "../components/DonationReportFilterModal";
 import { baseUrlGraphQL } from "../constants/constants.js";
-import { categoriesIndexes } from "../constants/Categories.js";
 import { useAuth } from "../context/AuthContext";
 
 export default function DonationReport() {
@@ -53,12 +52,12 @@ export default function DonationReport() {
 
       const variables = {
         categoryId: filters.categoryId ? parseInt(filters.categoryId) : null,
-        startDate: filters.startDate ? `${filters.startDate}` : null,
-        endDate: filters.endDate ? `${filters.endDate}` : null,
-        deleted: filters.deleted === "YES" ? true : filters.deleted === "NO" ? false : null,
+        startDate: filters.startDate || null,
+        endDate: filters.endDate || null,
+        deleted: filters.filterDeleted === true ? true : filters.filterDeleted === false ? false : null,
       };
 
-      if (variables.startDate && variables.endDate && variables.startDate > variables.endDate) {
+      if (variables.startDate && variables.endDate && new Date(variables.startDate) > new Date(variables.endDate)) {
         throw new Error("La fecha de fin no puede ser anterior a la fecha de inicio");
       }
 
@@ -80,8 +79,6 @@ export default function DonationReport() {
       }
 
       const data = await response.json();
-      console.log("Fetched donation report:", JSON.stringify(data, null, 2));
-
       if (data.errors) {
         const errorMessage = data.errors[0]?.message || "Error desconocido en el servidor";
         throw new Error(errorMessage);
@@ -113,6 +110,7 @@ export default function DonationReport() {
             startDate
             endDate
             isDeleted
+            filterDeleted
             userId
             username
           }
@@ -138,7 +136,6 @@ export default function DonationReport() {
         throw new Error(data.errors[0]?.message || "Error desconocido en el servidor");
       }
 
-      // Filter saved filters by username and isDeleted = false
       const userFilters = data.data.savedFilters.filter(
         (filter) => filter.username === user.username && !filter.isDeleted
       );
@@ -166,6 +163,15 @@ export default function DonationReport() {
     setIsModalOpen(true);
   };
 
+  const handleResetFilter = () => {
+    if (!user || !user.username) {
+      showToast("Debes iniciar sesión para resetear filtros", "error");
+      return;
+    }
+    fetchDonationReport({}); // Fetch all donations with no filters
+    showToast("Filtros reseteados, mostrando todas las donaciones", "success");
+  };
+
   const handleSubmitFilter = async (formData) => {
     if (!user || !user.username) {
       showToast("Debes iniciar sesión y tener un nombre de usuario válido para guardar filtros", "error");
@@ -181,6 +187,7 @@ export default function DonationReport() {
           startDate
           endDate
           isDeleted
+          filterDeleted
           userId
           username
         }
@@ -194,6 +201,7 @@ export default function DonationReport() {
           startDate
           endDate
           isDeleted
+          filterDeleted
           userId
           username
         }
@@ -201,13 +209,13 @@ export default function DonationReport() {
     `;
 
     const variables = {
-      id: formData.id,
+      ...(formData.id && { id: formData.id }),
       input: {
         name: formData.name,
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
         startDate: formData.startDate || null,
         endDate: formData.endDate || null,
-        deleted: formData.deleted === "YES" ? true : formData.deleted === "NO" ? false : null, // Still works with form UI
+        filterDeleted: formData.filterDeleted === true ? true : formData.filterDeleted === false ? false : null,
         username: user.username,
       },
     };
@@ -298,7 +306,7 @@ export default function DonationReport() {
       categoryId: filter.categoryId,
       startDate: filter.startDate,
       endDate: filter.endDate,
-      deleted: filter.isDeleted === true ? "YES" : filter.isDeleted === false ? "NO" : null,
+      filterDeleted: filter.filterDeleted === true ? true : filter.filterDeleted === false ? false : null,
     };
     fetchDonationReport(appliedFilters);
     showToast(`Filtro "${filter.name}" aplicado`);
@@ -340,6 +348,12 @@ export default function DonationReport() {
           >
             Nuevo Filtro
           </button>
+          <button
+            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition"
+            onClick={handleResetFilter}
+          >
+            Resetear Filtro
+          </button>
         </div>
       </div>
 
@@ -351,7 +365,7 @@ export default function DonationReport() {
               <li key={filter.id} className="flex justify-between items-center">
                 <span>
                   {filter.name} - {filter.categoryName || "Todas"} -{" "}
-                  {filter.isDeleted === true ? "Eliminados" : filter.isDeleted === false ? "Activos" : "Todos"}
+                  {filter.filterDeleted === true ? "Inactivos" : filter.filterDeleted === false ? "Activos" : "Todos"}
                 </span>
                 <div className="flex gap-2">
                   <button
@@ -398,42 +412,39 @@ export default function DonationReport() {
               <thead className="bg-empuje-green text-white">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium">Categoría</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
                   <th className="px-6 py-3 text-left text-sm font-medium">Estado</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium">Cantidad Total</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium">Acciones</th>
+                  <th className="px-6 py-3 text-right text-sm font-medium">Cantidad</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {reports.map((group) => (
-                  <tr
-                    key={`${group.categoryId}-${group.deleted}`}
-                    className={group.deleted ? "opacity-60" : ""}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {group.categoryName} (ID: {group.categoryId})
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={group.deleted ? "text-red-600" : "text-green-600"}>
-                        {group.deleted ? "Eliminado" : "Activo"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {group.totalQuantity}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition text-sm"
-                        onClick={() => openFilterModal(null, group.categoryId)}
-                      >
-                        Filtrar por Categoría
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {reports.flatMap((group) =>
+                  group.donations.map((donation) => (
+                    <tr
+                      key={donation.id}
+                      className={donation.deleted ? "opacity-60" : ""}
+                    >
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {group.categoryName}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {donation.description}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {donation.createdAt}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={donation.deleted ? "text-red-600" : "text-green-600"}>
+                          {donation.deleted ? "Inactivo" : "Activo"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm text-gray-900">
+                        {donation.quantity}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

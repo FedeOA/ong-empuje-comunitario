@@ -46,6 +46,7 @@ type SavedFilter {
     username: String!
     startDate: String
     endDate: String
+    filterDeleted: Boolean
     isDeleted: Boolean!
 }
 
@@ -61,5 +62,6 @@ input FilterInput {
     startDate: String
     endDate: String
     deleted: Boolean
+    filterDeleted: Boolean
     username: String!
 }

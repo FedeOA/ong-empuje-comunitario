@@ -14,7 +14,7 @@ export default function DonationReportFilterModal({
     categoryId: "",
     startDate: "",
     endDate: "",
-    deleted: "",
+    filterDeleted: "",
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
@@ -27,21 +27,21 @@ export default function DonationReportFilterModal({
           console.error("filterToEdit is missing id:", filterToEdit);
           setError("El filtro seleccionado no tiene un ID válido");
         }
-      setFormData({
-        id: filterToEdit.id,
-        name: filterToEdit.name || "",
-        categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
-        startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
-        endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
-        deleted: filterToEdit.isDeleted === true ? "YES" : filterToEdit.isDeleted === false ? "NO" : "",
-      });
+        setFormData({
+          id: filterToEdit.id,
+          name: filterToEdit.name || "",
+          categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
+          startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
+          endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
+          filterDeleted: filterToEdit.filterDeleted === true ? "true" : filterToEdit.filterDeleted === false ? "false" : "",
+        });
       } else {
         setFormData({
           name: "",
           categoryId: initialCategoryId ? initialCategoryId.toString() : "",
           startDate: "",
           endDate: "",
-          deleted: "",
+          filterDeleted: "",
         });
       }
       setError("");
@@ -91,11 +91,27 @@ export default function DonationReportFilterModal({
       setError("No se puede actualizar un filtro sin un ID válido");
       return;
     }
+    if (!formData.categoryId) {
+      setError("Debes seleccionar una categoría");
+      return;
+    }
+    if (!formData.filterDeleted) {
+      setError("Debes seleccionar un estado (Activos o Inactivos)");
+      return;
+    }
     if (!filterToEdit && !formData.name.trim()) {
-      onSearch(formData);
+      const searchData = {
+        ...formData,
+        filterDeleted: formData.filterDeleted === "true" ? true : formData.filterDeleted === "false" ? false : null,
+      };
+      onSearch(searchData);
       onClose();
     } else {
-      onSubmit(formData);
+      const submitData = {
+        ...formData,
+        filterDeleted: formData.filterDeleted === "true" ? true : formData.filterDeleted === "false" ? false : null,
+      };
+      onSubmit(submitData);
     }
   };
 
@@ -122,11 +138,9 @@ export default function DonationReportFilterModal({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* La condición fue eliminada, ahora el campo siempre es visible */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {/* Usamos un texto dinámico para la etiqueta */}
-                {filterToEdit ? "Nombre del Filtro" : "Nombre del Filtro (opcional para buscar)"}
+                {filterToEdit ? "Nombre del Filtro" : "Nombre del Filtro"}
               </label>
               <input
                 type="text"
@@ -146,7 +160,9 @@ export default function DonationReportFilterModal({
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
               >
-                <option value="">Todas las categorías</option>
+                <option value="" disabled>
+                  Selecciona una categoría
+                </option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -179,16 +195,18 @@ export default function DonationReportFilterModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Estado Eliminado</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
               <select
-                name="deleted"
-                value={formData.deleted}
+                name="filterDeleted"
+                value={formData.filterDeleted}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
               >
-                <option value="">Todos</option>
-                <option value="NO">Activos</option>
-                <option value="YES">Eliminados</option>
+                <option value="" disabled>
+                  Selecciona un estado
+                </option>
+                <option value="false">Activos</option>
+                <option value="true">Inactivos</option>
               </select>
             </div>
 

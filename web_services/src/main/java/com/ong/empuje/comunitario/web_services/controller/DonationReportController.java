@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class DonationReportController {
             if (startDate != null && !startDate.isEmpty()) {
                 try {
                     startDateTime = LocalDateTime.parse(startDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     logger.error("Invalid startDate format: {}", startDate, e);
                     throw new GraphQLException("Invalid startDate format: " + startDate);
                 }
@@ -74,7 +75,7 @@ public class DonationReportController {
             if (endDate != null && !endDate.isEmpty()) {
                 try {
                     endDateTime = LocalDateTime.parse(endDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                } catch (Exception e) {
+                } catch (DateTimeParseException e) {
                     logger.error("Invalid endDate format: {}", endDate, e);
                     throw new GraphQLException("Invalid endDate format: " + endDate);
                 }
@@ -155,6 +156,12 @@ public class DonationReportController {
         logger.info("Fetching all saved filters");
         try {
             List<SavedFilter> filters = savedFilterRepository.findByIsDeletedFalse();
+            // Ensure no null filterDeleted values
+            filters.forEach(filter -> {
+                if (filter.getFilterDeleted() == null) {
+                    filter.setFilterDeleted(false);
+                }
+            });
             logger.info("Retrieved {} saved filters", filters.size());
             return filters;
         } catch (Exception e) {
@@ -167,8 +174,10 @@ public class DonationReportController {
     public SavedFilter savedFilter(@Argument Integer id) {
         logger.info("Fetching saved filter with id: {}", id);
         try {
-            SavedFilter filter = savedFilterRepository.findById(id)
-                    .orElseThrow(() -> new GraphQLException("Filter not found"));
+            SavedFilter filter = savedFilterRepository.findById(id).orElseThrow(() -> new GraphQLException("Filter not found"));
+            if (filter.getFilterDeleted() == null) {
+                filter.setFilterDeleted(false);
+            }
             return filter;
         } catch (Exception e) {
             logger.error("Error fetching saved filter with id {}: {}", id, e.getMessage(), e);
@@ -203,6 +212,7 @@ public class DonationReportController {
             filter.setStartDate(input.getStartDate());
             filter.setEndDate(input.getEndDate());
             filter.setIsDeleted(false);
+            filter.setFilterDeleted(input.getFilterDeleted() != null ? input.getFilterDeleted() : false); // Default to false
 
             SavedFilter saved = savedFilterRepository.save(filter);
             logger.info("Saved filter with id: {} for user {}", saved.getId(), input.getUsername());
@@ -217,60 +227,54 @@ public class DonationReportController {
     }
 
     @MutationMapping
-    @Transactional // 1. Add Transactional annotation
+    @Transactional
     public SavedFilter updateFilter(@Argument Integer id, @Argument FilterInput input) {
         logger.info("Updating filter with id: {}", id);
+        try {
+            if (id == null) {
+                throw new IllegalArgumentException("Filter ID is required");
+            }
+            if (input.getName() == null || input.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Filter name is required");
+            }
+            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
+                throw new IllegalArgumentException("Username is required");
+            }
 
-        // 2. Validate input first (this is good practice)
-        if (id == null) {
-            throw new IllegalArgumentException("Filter ID is required");
+            SavedFilter filter = savedFilterRepository.findByIdAndUserUsername(id, input.getUsername())
+                    .orElseThrow(() -> new IllegalArgumentException("Filter with ID " + id + " not found or you don't have permission to edit it."));
+
+            filter.setName(input.getName().trim());
+            filter.setStartDate(input.getStartDate());
+            filter.setEndDate(input.getEndDate());
+            filter.setFilterDeleted(input.getFilterDeleted() != null ? input.getFilterDeleted() : false); // Default to false
+
+            if (input.getCategoryId() != null) {
+                Category category = categoryRepository.findById(input.getCategoryId())
+                        .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
+                filter.setCategory(category);
+            } else {
+                filter.setCategory(null);
+            }
+
+            logger.info("Updated filter with id: {} for user {}, new name: {}", filter.getId(), input.getUsername(), filter.getName());
+            return savedFilterRepository.save(filter); // Explicit save
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error updating filter: {}", e.getMessage());
+            throw new GraphQLException(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error updating filter: {}", e.getMessage(), e);
+            throw new GraphQLException("Failed to update filter: " + e.getMessage());
         }
-        if (input.getName() == null || input.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("Filter name is required");
-        }
-        if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
-            throw new IllegalArgumentException("Username is required");
-        }
-
-        // 3. Fetch the filter and verify ownership in a single step
-        //    This uses the existing findByIdAndUserUsername method in your repository.
-        SavedFilter filter = savedFilterRepository.findByIdAndUserUsername(id, input.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Filter with ID " + id + " not found or you don't have permission to edit it."));
-
-        // 4. Update the managed entity's fields
-        filter.setName(input.getName().trim());
-        filter.setStartDate(input.getStartDate());
-        filter.setEndDate(input.getEndDate());
-        filter.setIsDeleted(input.getDeleted());
-
-        // Handle category update
-        if (input.getCategoryId() != null) {
-            Category category = categoryRepository.findById(input.getCategoryId())
-                    .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
-            filter.setCategory(category);
-        } else {
-            filter.setCategory(null);
-        }
-
-        // 5. No need to call .save()!
-        //    The transaction will commit automatically when the method exits,
-        //    and Hibernate will write the changes to the database.
-        logger.info("Updated filter with id: {} for user {}, new name: {}", filter.getId(), input.getUsername(), filter.getName());
-        return filter;
     }
 
     @MutationMapping
     public Boolean deleteFilter(@Argument Integer id) {
         logger.info("Soft-deleting filter with id: {}", id);
         try {
-            if (id == null) {
-                throw new IllegalArgumentException("Filter ID is required");
-            }
-
             SavedFilter filter = savedFilterRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
-
-            filter.setIsDeleted(true); // Soft delete
+            filter.setIsDeleted(true);
             savedFilterRepository.save(filter);
             logger.info("Soft-deleted filter with id: {}", id);
             return true;
@@ -287,13 +291,8 @@ public class DonationReportController {
     public Integer getUserId(@Argument String usernameOrEmail) {
         logger.info("Fetching user ID for usernameOrEmail: {}", usernameOrEmail);
         try {
-            if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty()) {
-                throw new IllegalArgumentException("Username or email is required");
-            }
-
             User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
                     .orElseThrow(() -> new IllegalArgumentException("No user found for username or email: " + usernameOrEmail));
-
             logger.info("Found user ID: {} for usernameOrEmail: {}", user.getId(), usernameOrEmail);
             return user.getId();
         } catch (IllegalArgumentException e) {
