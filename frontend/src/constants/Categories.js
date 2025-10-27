@@ -1,6 +1,6 @@
 export const categories = {
-  ROPA: "ROPA",
   ALIMENTOS: "ALIMENTOS",
+  ROPA: "ROPA",
   UTILES_ESCOLARES: "UTILES ESCOLARES",
   JUGUETES: "JUGUETES",
 };

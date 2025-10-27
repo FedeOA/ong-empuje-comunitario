@@ -75,11 +75,13 @@ class EventService(event_pb2_grpc.EventServiceServicer):
                 .options(
                     joinedload(Event.user_events).joinedload(UserEvent.user),
                     joinedload(Event.voluntary_events).joinedload(VoluntaryEvent.voluntary),
+                    joinedload(Event.event_donations).joinedload(EventDonation.donation),
                 )
                 .filter(Event.remote_id.is_(None))
                 .all()
             )
 
+            print("Donation in event:")
             event_list = EventList()
 
             for event in events:
@@ -90,6 +92,14 @@ class EventService(event_pb2_grpc.EventServiceServicer):
                     fecha_hora=event.event_datetime.isoformat(),
                     is_published=event.is_published,
                 )
+
+                for ed in event.event_donations:
+                    print("Donation in event:", ed)
+                    if ed.donation:
+                        new_donation = new_event.donations.add()
+                        new_donation.category_id = ed.donation.category_id
+                        new_donation.description = ed.donation.description
+                        new_donation.quantity_used = ed.quantity_used
 
                 for ue in event.user_events:
                     if ue.user:

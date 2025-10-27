@@ -41,6 +41,7 @@ class Donation(Base):
     updated_by = Column(Integer, ForeignKey('users.id'))
     category_id = Column(Integer, ForeignKey('categories.id'))
     user_id = Column(Integer, ForeignKey('users.id'))
+    event_donations = relationship("EventDonation", back_populates="donation")
 
 class Event(Base):
     __tablename__ = 'events'
@@ -48,11 +49,12 @@ class Event(Base):
     name = Column(String(255))
     description = Column(String(255))
     event_datetime = Column(DateTime)
-    remote_id = Column(Integer,nullable=True)
+    remote_id = Column(Integer, nullable=True)
     is_published = Column(Boolean, default=False)
 
     user_events = relationship("UserEvent", back_populates="event")
-    organization_id = Column(Integer, ForeignKey('organizations.id'), default=1) # 1 id de nuestra organización
+    event_donations = relationship("EventDonation", back_populates="event")  
+    organization_id = Column(Integer, ForeignKey('organizations.id'), default=1) #1 id de nuestra organización
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -79,6 +81,9 @@ class EventDonation(Base):
     quantity_used = Column(Integer)
     event_id = Column(Integer, ForeignKey('events.id'))
     donation_id = Column(Integer, ForeignKey('donations.id'))
+    event = relationship("Event", back_populates="event_donations")
+    donation = relationship("Donation", back_populates="event_donations")
+
 
 class VoluntaryEvent(Base):
     __tablename__ = 'voluntary_events'
