@@ -26,6 +26,13 @@ message Event {
     string fecha_hora = 4;
     bool is_published = 5;
     repeated string users = 6;
+    repeated DonationWithQuantity donations = 7;
+}
+
+message DonationWithQuantity {
+  int32 category_id = 1;
+  string description = 2;
+  int32 quantity_used = 3;
 }
 
 message EventList {
