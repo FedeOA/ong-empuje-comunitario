@@ -30,10 +30,6 @@ type Donation {
     quantity: Int!
     createdAt: String!
     updatedAt: String
-    createdById: Int!
-    createdByUsername: String!
-    updatedById: Int
-    updatedByUsername: String
     deleted: Boolean!
 }
 

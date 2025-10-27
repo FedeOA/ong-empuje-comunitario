@@ -39,7 +39,6 @@ export default function DonationReport() {
               description
               quantity
               createdAt
-              createdByUsername
               deleted
             }
           }
