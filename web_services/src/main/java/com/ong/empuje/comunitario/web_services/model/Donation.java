@@ -24,19 +24,7 @@ public class Donation {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "created_by_id", nullable = false)
-    private Integer createdById;
-
-    @Column(name = "created_by_username", nullable = false)
-    private String createdByUsername;
-
-    @Column(name = "updated_by_id")
-    private Integer updatedById;
-
-    @Column(name = "updated_by_username")
-    private String updatedByUsername;
-
+    
     @Column(name = "is_deleted", nullable = false)
     private boolean deleted;
 
@@ -48,18 +36,13 @@ public class Donation {
     }
 
     public Donation(Integer id, Integer categoryId, String description, Integer quantity, LocalDateTime createdAt, 
-                    LocalDateTime updatedAt, Integer createdById, String createdByUsername, 
-                    Integer updatedById, String updatedByUsername, boolean deleted, Category category) {
+                    LocalDateTime updatedAt, boolean deleted, Category category) {
         this.id = id;
         this.categoryId = categoryId;
         this.description = description;
         this.quantity = quantity;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
-        this.createdById = createdById;
-        this.createdByUsername = createdByUsername;
-        this.updatedById = updatedById;
-        this.updatedByUsername = updatedByUsername;
         this.deleted = deleted;
         this.category = category;
     }
@@ -116,38 +99,6 @@ public class Donation {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Integer getCreatedById() {
-        return createdById;
-    }
-
-    public void setCreatedById(Integer createdById) {
-        this.createdById = createdById;
-    }
-
-    public String getCreatedByUsername() {
-        return createdByUsername;
-    }
-
-    public void setCreatedByUsername(String createdByUsername) {
-        this.createdByUsername = createdByUsername;
-    }
-
-    public Integer getUpdatedById() {
-        return updatedById;
-    }
-
-    public void setUpdatedById(Integer updatedById) {
-        this.updatedById = updatedById;
-    }
-
-    public String getUpdatedByUsername() {
-        return updatedByUsername;
-    }
-
-    public void setUpdatedByUsername(String updatedByUsername) {
-        this.updatedByUsername = updatedByUsername;
     }
 
     public boolean getDeleted() {

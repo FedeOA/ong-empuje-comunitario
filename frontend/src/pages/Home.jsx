@@ -3,8 +3,12 @@ import UsersPage from "./Users";
 import EventsPage from "./Events";
 import DonationsPage from "./Donations";
 import DonationRequestsPage from "./DonationRequests";
+import DonationTransferPage from "./DonationTransfer";
 import ExternalEventsPage from "./ExternalEventsPage";
 import DonationReportsPage from "./DonationReports";
+import DonationReportExcelPage from "./DonationReportExcel";
+import DonationOffersPage from "./DonationOffers";
+import SoapDataPage from "./SoapData";
 import { useAuth } from "../context/AuthContext";
 import { hasPermission, getDefaultSection } from "../utils/permissions";
 import UserProfile from "../components/UserProfile";
@@ -38,6 +42,14 @@ export default function Home() {
         return <ExternalEventsPage />;
       case "donation-reports":
         return <DonationReportsPage/>;
+      case "donation-report-excel":
+        return <DonationReportExcelPage/>
+      case "soap-data":
+        return <SoapDataPage />;
+      case "donation-offers":
+        return <DonationOffersPage />;
+      case "donation-transfers":
+        return <DonationTransferPage />;
       default:
         return null;
     }
@@ -73,6 +85,16 @@ export default function Home() {
               Gestión de Eventos
             </button>
           )}
+          {hasPermission(user?.role, "externalEvents") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "externalEvents" ? "bg-empuje-green text-white" : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("externalEvents")}
+            >
+              Eventos Externos
+            </button>
+          )}
           {hasPermission(user?.role, "donations") && (
             <button
               className={`text-left px-3 py-2 rounded ${
@@ -95,14 +117,28 @@ export default function Home() {
               Solicitudes de Donación
             </button>
           )}
-          {hasPermission(user?.role, "externalEvents") && (
+          {hasPermission(user?.role, "donation-offers") && (
             <button
               className={`text-left px-3 py-2 rounded ${
-                activeSection === "externalEvents" ? "bg-empuje-green text-white" : "text-gray-700"
+                activeSection === "donation-offers"
+                  ? "bg-empuje-green text-white"
+                  : "text-gray-700"
               }`}
-              onClick={() => setActiveSection("externalEvents")}
+              onClick={() => setActiveSection("donation-offers")}
             >
-              Eventos Externos
+              Oferta de Donaciones
+            </button>
+          )}
+          {hasPermission(user?.role, "donation-transfers") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "donation-transfers"
+                  ? "bg-empuje-green text-white"
+                  : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("donation-transfers")}
+            >
+              Transferencia de Donaciones
             </button>
           )}
           {hasPermission(user?.role, "donation-reports") && (
@@ -113,6 +149,26 @@ export default function Home() {
               onClick={() => setActiveSection("donation-reports")}
             >
               Reporte de Donaciones
+            </button>
+          )}
+          {hasPermission(user?.role, "donation-report-excel") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "donation-report-excel" ? "bg-empuje-green text-white" : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("donation-report-excel")}
+            >
+              Exportar Reporte Donaciones
+            </button>
+          )}
+          {hasPermission(user?.role, "soap-data") && (
+            <button
+              className={`text-left px-3 py-2 rounded ${
+                activeSection === "soap-data" ? "bg-empuje-green text-white" : "text-gray-700"
+              }`}
+              onClick={() => setActiveSection("soap-data")}
+            >
+              Consulta ONGs
             </button>
           )}
         </nav>

@@ -3,7 +3,7 @@ package com.ong.empuje.comunitario.consumer.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.empuje.comunitario.consumer.model.DonationRequest;
 import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
-import com.ong.empuje.comunitario.consumer.repository.DonationRequestRepository;
+import com.ong.empuje.comunitario.consumer.service.DonationRequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +17,11 @@ import java.util.List;
 @RequestMapping("/api/donation-requests")
 public class DonationRequestController {
     private static final Logger logger = LoggerFactory.getLogger(DonationRequestController.class);
-    private final DonationRequestRepository donationRequestRepository;
+    private final DonationRequestService donationRequestService;
     private final ObjectMapper objectMapper;
 
-    public DonationRequestController(DonationRequestRepository donationRequestRepository, ObjectMapper objectMapper) {
-        this.donationRequestRepository = donationRequestRepository;
+    public DonationRequestController(DonationRequestService donationRequestService, ObjectMapper objectMapper) {
+        this.donationRequestService = donationRequestService;
         this.objectMapper = objectMapper;
     }
 
@@ -29,7 +29,7 @@ public class DonationRequestController {
     public ResponseEntity<List<DonationRequest>> listDonationRequests() {
         logger.info("Received GET /api/donation-requests");
         try {
-            List<DonationRequest> requests = donationRequestRepository.findAll();
+            List<DonationRequest> requests = donationRequestService.findAll();
             logger.info("Fetched {} donation requests", requests.size());
             for (DonationRequest request : requests) {
                 logger.debug("Raw donation request: organizationId={}, requestId={}, deleted={}",

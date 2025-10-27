@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ong.empuje.comunitario.web_services.dto.DonationExcelRequest;
+import com.ong.empuje.comunitario.web_services.dto.in.DonationExcelRequestDTO;
 import com.ong.empuje.comunitario.web_services.service.ExcelReportService;
 
 
@@ -30,7 +30,7 @@ public class ExcelReportController {
     }
 
     @PostMapping(value = "/donations/excel", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> generateDonationExcelReport(@RequestBody DonationExcelRequest request) {
+    public ResponseEntity<byte[]> generateDonationExcelReport(@RequestBody DonationExcelRequestDTO request) {
         
         logger.info("Solicitando reporte Excel de donaciones: ");
 

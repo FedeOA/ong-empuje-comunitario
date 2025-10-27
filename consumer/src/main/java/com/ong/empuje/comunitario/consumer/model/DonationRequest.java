@@ -1,5 +1,6 @@
 package com.ong.empuje.comunitario.consumer.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.io.Serializable;
@@ -25,11 +26,8 @@ public class DonationRequest implements Serializable {
     @JsonProperty("deleted")
     private Boolean deleted = false;
     
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumns({
-        @JoinColumn(name = "request_id", referencedColumnName = "request_id"),
-        @JoinColumn(name = "organization_id", referencedColumnName = "organization_id")
-    })
+    @OneToMany(mappedBy = "donationRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     @JsonProperty("items")
     private List<DonationRequestItem> items = new ArrayList<>();
     

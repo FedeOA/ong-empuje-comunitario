@@ -21,9 +21,7 @@ public class DonationClient {
 
     public Response createDonation(DonationDTO donationReq){
         try {
-
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-
             Donation donation = Donation.
                     newBuilder()
                     .setCantidad(donationReq.quantity())
@@ -31,7 +29,6 @@ public class DonationClient {
                     .setCategoria(idFromName(donationReq.category()))
                     .setUsername(username)
                     .build();
-
             return stub.createDonation(donation);
         } catch (Exception e) {
             throw new GrpcClientException("Error al ingresar nueva donacion", e);

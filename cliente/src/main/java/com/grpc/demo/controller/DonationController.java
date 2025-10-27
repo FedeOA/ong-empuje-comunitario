@@ -46,11 +46,8 @@ public class DonationController {
     @PostMapping()
     public ResponseEntity<ResponseDTO> createDonation(@RequestBody DonationDTO donation) {
         try {
-
             Response serverResponse = donationClient.createDonation(donation);
-
             ResponseDTO response = new ResponseDTO(serverResponse.getSuccess(),serverResponse.getMessage());
-
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(

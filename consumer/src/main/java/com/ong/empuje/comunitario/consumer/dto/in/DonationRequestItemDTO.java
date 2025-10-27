@@ -1,27 +1,24 @@
 package com.ong.empuje.comunitario.consumer.dto.in;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class DonationRequestItemDTO {
-    @JsonProperty("categoryId")
+    private Integer id;
     private Integer categoryId;
-
-    @JsonProperty("description")
     private String description;
+    private Integer quantity;
 
-    public Integer getCategoryId() {
-        return categoryId;
-    }
+    // Constructors
+    public DonationRequestItemDTO() {}
 
-    public void setCategoryId(Integer categoryId) {
-        this.categoryId = categoryId;
-    }
+    // Getters and Setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public String getDescription() {
-        return description;
-    }
+    public Integer getCategoryId() { return categoryId; }
+    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 }

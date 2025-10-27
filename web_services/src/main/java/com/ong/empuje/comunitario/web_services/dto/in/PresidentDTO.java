@@ -1,20 +1,22 @@
-package com.ong.empuje.comunitario.web_services.dto;
+package com.ong.empuje.comunitario.web_services.dto.in;
 
 
-public class OrganizationDTO {
+public class PresidentDTO {
     
     private int id;
     private String name;
     private String address;
     private String phone;
+    private int organizationId;
 
-    public OrganizationDTO(){}
+    public PresidentDTO(){}
 
-    public OrganizationDTO(int id, String name, String address, String phone){
+    public PresidentDTO(int id, String name, String address, String phone, int organizationId){
         this.id = id;
         this.name = name;
         this.address = address;
         this.phone = phone;
+        this.organizationId = organizationId;
     }
 
     public int getId() { return id; }
@@ -28,4 +30,7 @@ public class OrganizationDTO {
     
     public String getPhone() { return phone; }
     public void setPhone(String value) { this.phone = value; }
+    
+    public int getOrganizationId() { return organizationId; }
+    public void setOrganizationId(int value) { this.organizationId = value; }
 }

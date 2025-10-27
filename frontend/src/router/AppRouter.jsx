@@ -5,7 +5,10 @@ import EventsPage from "../pages/Events";
 import UsersPage from "../pages/Users";
 import DonationsPage from "../pages/Donations";
 import DonationRequestsPage from "../pages/DonationRequests";
+import DonationOffersPage from "../pages/DonationOffers";
+import DonationTransferPage from "../pages/DonationTransfer";
 import DonationReportsPage from "../pages/DonationReports";
+import SoapDataPage from "../pages/SoapData";
 import ForbiddenPage from "../pages/Forbidden";
 import ProtectedRoute from "../components/ProtectedRoute";
 import { roles } from "../constants/roles";
@@ -64,10 +67,46 @@ const AppRouter = () => {
         />
 
         <Route
+          path="/donation-offers"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
+              <DonationOffersPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/donation-transfers"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE]}>
+              <DonationTransferPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/donation-reports"
           element={
             <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
               <DonationReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/donation-report-excel"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
+              <DonationReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/soap-data"
+          element={
+            <ProtectedRoute allowedRoles={[roles.PRESIDENTE, roles.VOCAL]}>
+              <SoapDataPage />
             </ProtectedRoute>
           }
         />

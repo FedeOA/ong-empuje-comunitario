@@ -20,8 +20,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import com.ong.empuje.comunitario.web_services.dto.OrganizationDTO;
-import com.ong.empuje.comunitario.web_services.dto.PresidentDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.OrganizationDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.PresidentDTO;
 
 @Service
 public class SoapClientService {
@@ -88,7 +88,7 @@ public class SoapClientService {
                 throw new RuntimeException("Error en respuesta SOAP: "+response.getStatusCode());
             }
 
-        }catch(Exception e){
+        }catch(RuntimeException e){
             throw new RuntimeException("Error enviando request SOAP: "+ e.getMessage(),e);
         }
     }

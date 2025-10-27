@@ -1,8 +1,8 @@
 package com.grpc.demo.enums;
 
 public enum Category {
-    ROPA(1),
-    ALIMENTOS(2),
+    ALIMENTOS(1),
+    ROPA(2),
     JUGUETES(3),
     UTILES_ESCOLARES(4);
 

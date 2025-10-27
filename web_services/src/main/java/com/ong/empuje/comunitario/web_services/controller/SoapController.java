@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ong.empuje.comunitario.web_services.dto.OrganizationDTO;
-import com.ong.empuje.comunitario.web_services.dto.PresidentDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.OrganizationDTO;
+import com.ong.empuje.comunitario.web_services.dto.in.PresidentDTO;
 import com.ong.empuje.comunitario.web_services.service.SoapClientService;
 
 
@@ -20,13 +20,11 @@ import com.ong.empuje.comunitario.web_services.service.SoapClientService;
 public class SoapController {
     
     private static final Logger logger = LoggerFactory.getLogger(SoapController.class);
-
     private final SoapClientService soapClientService;
 
     public SoapController(SoapClientService soapClientService){
         this.soapClientService = soapClientService;
     }
-
 
     @PostMapping("/organizations")
     public ResponseEntity<List<OrganizationDTO>> getOrganizations(@RequestBody List<Integer> orgIds) {
@@ -51,6 +49,4 @@ public class SoapController {
             return ResponseEntity.badRequest().body(null);
         }
     }
-    
-
 }

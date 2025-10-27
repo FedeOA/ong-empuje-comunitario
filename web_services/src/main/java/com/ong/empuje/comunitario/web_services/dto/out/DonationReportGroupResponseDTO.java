@@ -1,30 +1,28 @@
-package com.ong.empuje.comunitario.web_services.dto;
+package com.ong.empuje.comunitario.web_services.dto.out;
 
 import com.ong.empuje.comunitario.web_services.model.Donation;
+
 import java.util.List;
 
-public class DonationReportGroup {
+public class DonationReportGroupResponseDTO {
+
     private Integer categoryId;
     private String categoryName;
     private Boolean deleted;
     private Integer totalQuantity;
     private List<Donation> donations;
-    
+
     // Constructor vacío requerido por GraphQL
-    public DonationReportGroup() {}
+    public DonationReportGroupResponseDTO() {}
 
-    
-
-    public DonationReportGroup(Integer categoryId, String categoryName, Boolean deleted, Integer totalQuantity,
-            List<Donation> donations) {
+    public DonationReportGroupResponseDTO(Integer categoryId, String categoryName, Boolean deleted, Integer totalQuantity,
+                                         List<Donation> donations) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
         this.deleted = deleted;
         this.totalQuantity = totalQuantity;
         this.donations = donations;
     }
-
-
 
     public Integer getCategoryId() {
         return categoryId;
@@ -65,7 +63,4 @@ public class DonationReportGroup {
     public void setDonations(List<Donation> donations) {
         this.donations = donations;
     }
-    
-
-    
 }

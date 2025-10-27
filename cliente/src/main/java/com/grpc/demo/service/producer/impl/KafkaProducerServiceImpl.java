@@ -15,11 +15,6 @@ import com.grpc.demo.dto.producer.DonationTransferItemDTO;
 import com.grpc.demo.enums.Topic;
 import com.grpc.demo.service.producer.IProducer;
 
-
-
-
-
-
 @Service
 public class KafkaProducerServiceImpl implements IProducer {
 
@@ -40,7 +35,6 @@ public class KafkaProducerServiceImpl implements IProducer {
     }
 
     public void publicDonationTransfer(int targetOrganizationId, int requestId, List<DonationTransferItemDTO> items) {
-        
         try{
             DonationTransferDTO transfer = new DonationTransferDTO(requestId, organizationId, items);
             String message = objectMapper.writeValueAsString(transfer);

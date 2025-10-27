@@ -1,6 +1,5 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\service\impl\KafkaConsumerImpl.java
-
 package com.ong.empuje.comunitario.consumer.service.impl;
+
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -20,24 +19,11 @@ import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestItemDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventVoluntaryDTO;
 import com.ong.empuje.comunitario.consumer.mapper.EventMapper;
-import com.ong.empuje.comunitario.consumer.model.DonationOffer;
-import com.ong.empuje.comunitario.consumer.model.DonationOfferItem;
-import com.ong.empuje.comunitario.consumer.model.DonationRequest;
-import com.ong.empuje.comunitario.consumer.model.DonationRequestId;
-import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
-import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
-import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
-import com.ong.empuje.comunitario.consumer.model.Event;
-import com.ong.empuje.comunitario.consumer.model.Organization;
-import com.ong.empuje.comunitario.consumer.repository.DonationOfferRepository;
-import com.ong.empuje.comunitario.consumer.repository.DonationRequestRepository;
-import com.ong.empuje.comunitario.consumer.repository.DonationTransferRepository;
-import com.ong.empuje.comunitario.consumer.repository.EventRepository;
-import com.ong.empuje.comunitario.consumer.repository.OrganizationRepository;
 import com.ong.empuje.comunitario.consumer.mapper.VoluntaryMapper;
 import com.ong.empuje.comunitario.consumer.model.*;
 import com.ong.empuje.comunitario.consumer.repository.*;
 import com.ong.empuje.comunitario.consumer.service.IConsumer;
+import com.ong.empuje.comunitario.consumer.enums.Topic;
 
 import org.slf4j.Logger;
 
@@ -58,19 +44,20 @@ public class KafkaConsumerImpl implements IConsumer {
     private final DonationTransferRepository donationTransferRepository;
     private final DonationOfferRepository donationOfferRepository;
     private static final int MAX_ID_GENERATION_ATTEMPTS = 3;
-    private static final List<Integer> VALID_CATEGORIES = Arrays.asList(1, 2, 3, 4); // ALIMENTOS, ROPA, JUGUETES, UTILES_ESCOLARES
+    private static final List<Integer> VALID_CATEGORIES = Arrays.asList(1, 2, 3, 4); // ALIMENTOS, ROPA, JUGUETES,
+                                                                                     // UTILES_ESCOLARES
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerImpl.class);
 
     public KafkaConsumerImpl(EventRepository eventRepository,
-                             OrganizationRepository organizationRepository,
-                             VoluntaryRepository voluntaryRepository,
-                             VoluntaryEventsRepository registrationEventsRepository,
-                             ObjectMapper objectMapper,
-                             UserRepository userRepository,
-                             UserEventsRepository userEventsRepository,
-                             DonationRequestRepository donationRequestRepository,
-                             DonationTransferRepository donationTransferRepository,
-                             DonationOfferRepository donationOfferRepository) {
+            OrganizationRepository organizationRepository,
+            VoluntaryRepository voluntaryRepository,
+            VoluntaryEventsRepository registrationEventsRepository,
+            ObjectMapper objectMapper,
+            UserRepository userRepository,
+            UserEventsRepository userEventsRepository,
+            DonationRequestRepository donationRequestRepository,
+            DonationTransferRepository donationTransferRepository,
+            DonationOfferRepository donationOfferRepository) {
 
         this.eventRepository = eventRepository;
         this.donationRequestRepository = donationRequestRepository;
@@ -94,61 +81,30 @@ public class KafkaConsumerImpl implements IConsumer {
             logger.error("Exception in event listener: {} - {}", e.getCause(), e.getMessage(), e);
         }
     }
-    
+
+    @Override
     @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
-    @Override
     public void listenDonationRequests(String message) {
+        logger.info("Received message from {}: {}", Topic.ALTA_SOLICITUD_DONACION.getName(), message);
         try {
-            logger.info("Received message from solicitud_donaciones: {}", message);
             DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
             logger.debug("Parsed DTO: requestId={}, organizationId={}, items={}",
                     dto.getRequestId(), dto.getOrganizationId(), dto.getItems());
 
+            // Validation
             if (dto.getOrganizationId() == null) {
                 logger.error("Invalid donation request: organizationId is null");
                 return;
             }
-
+            if (!validateOrganization(dto.getOrganizationId())) {
+                logger.error("Invalid organizationId: {}", dto.getOrganizationId());
+                return;
+            }
             if (dto.getItems() == null || dto.getItems().isEmpty()) {
                 logger.error("Invalid donation request: items list is null or empty");
                 return;
             }
-
-            Integer requestId = dto.getRequestId();
-            DonationRequestId id = new DonationRequestId();
-            id.setOrganizationId(dto.getOrganizationId());
-
-            // Generate random requestId if not provided
-            if (requestId == null) {
-                for (int attempt = 1; attempt <= MAX_ID_GENERATION_ATTEMPTS; attempt++) {
-                    requestId = ThreadLocalRandom.current().nextInt(1, 1000000); // Random ID between 1 and 999999
-                    id.setRequestId(requestId);
-                    if (!donationRequestRepository.findById(id).isPresent()) {
-                        logger.info("Generated unique requestId: {}", requestId);
-                        break;
-                    }
-                    logger.warn("Generated requestId {} already exists, retrying (attempt {}/{})", requestId, attempt, MAX_ID_GENERATION_ATTEMPTS);
-                    if (attempt == MAX_ID_GENERATION_ATTEMPTS) {
-                        logger.error("Failed to generate unique requestId after {} attempts", MAX_ID_GENERATION_ATTEMPTS);
-                        return;
-                    }
-                }
-            } else {
-                id.setRequestId(requestId);
-                // Check if the provided requestId already exists
-                if (donationRequestRepository.findById(id).isPresent()) {
-                    logger.warn("Donation request already exists: requestId={}, organizationId={}",
-                            requestId, dto.getOrganizationId());
-                    return; // Idempotent: skip if already processed
-                }
-            }
-
-            DonationRequest donationRequest = new DonationRequest();
-            donationRequest.setRequestId(requestId);
-            donationRequest.setOrganizationId(dto.getOrganizationId());
-            donationRequest.setDeleted(false);
-
             for (DonationRequestItemDTO itemDTO : dto.getItems()) {
                 if (itemDTO.getCategoryId() == null || !VALID_CATEGORIES.contains(itemDTO.getCategoryId())) {
                     logger.error("Invalid item: categoryId is null or invalid ({})", itemDTO.getCategoryId());
@@ -158,15 +114,39 @@ public class KafkaConsumerImpl implements IConsumer {
                     logger.error("Invalid item: description is null or empty");
                     return;
                 }
-
-                DonationRequestItem item = new DonationRequestItem();
-                item.setRequestId(requestId);
-                item.setOrganizationId(dto.getOrganizationId());
-                item.setCategoryId(itemDTO.getCategoryId());
-                item.setDescription(itemDTO.getDescription());
-                donationRequest.getItems().add(item);
             }
 
+            // Idempotency check
+            Integer requestId = dto.getRequestId();
+            DonationRequestId id = new DonationRequestId();
+            id.setOrganizationId(dto.getOrganizationId());
+            if (requestId == null) {
+                for (int attempt = 1; attempt <= MAX_ID_GENERATION_ATTEMPTS; attempt++) {
+                    requestId = ThreadLocalRandom.current().nextInt(1, 1000000);
+                    id.setRequestId(requestId);
+                    if (!donationRequestRepository.findById(id).isPresent()) {
+                        logger.info("Generated unique requestId: {}", requestId);
+                        break;
+                    }
+                    logger.warn("Generated requestId {} already exists, retrying (attempt {}/{})",
+                            requestId, attempt, MAX_ID_GENERATION_ATTEMPTS);
+                    if (attempt == MAX_ID_GENERATION_ATTEMPTS) {
+                        logger.error("Failed to generate unique requestId after {} attempts", MAX_ID_GENERATION_ATTEMPTS);
+                        return;
+                    }
+                }
+            } else {
+                id.setRequestId(requestId);
+                if (donationRequestRepository.findById(id).isPresent()) {
+                    logger.warn("Donation request already exists: requestId={}, organizationId={}",
+                            requestId, dto.getOrganizationId());
+                    return;
+                }
+            }
+
+            // Build and save
+            DonationRequest donationRequest = buildDonationRequest(dto);
+            donationRequest.setRequestId(requestId);
             donationRequestRepository.save(donationRequest);
             logger.info("Saved donation request: requestId={}, organizationId={}",
                     donationRequest.getRequestId(), donationRequest.getOrganizationId());
@@ -176,23 +156,38 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "baja-solicitud-donaciones", groupId = "ong-empuje-comunitario")
-    @Transactional
     @Override
+    @KafkaListener(topics = "baja-solicitud-donacion", groupId = "ong-empuje-comunitario")
+    @Transactional
     public void listenDonationCancellations(String message) {
+        logger.info("Received message from {}: {}", Topic.BAJA_SOLICITUD_DONACION.getName(), message);
         try {
-            logger.info("Received message from baja_solicitud_donaciones: {}", message);
             DonationCancellationDTO dto = objectMapper.readValue(message, DonationCancellationDTO.class);
+            logger.debug("Parsed DonationCancellationDTO: requestId={}, organizationId={}",
+                    dto.getRequestId(), dto.getOrganizationId());
+
+            // Validation
             if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
                 logger.error("Invalid cancellation request: requestId or organizationId is null");
                 return;
             }
+            if (!validateOrganization(dto.getOrganizationId())) {
+                logger.error("Invalid organizationId: {}", dto.getOrganizationId());
+                return;
+            }
+
+            // Idempotency check
             DonationRequestId id = new DonationRequestId();
             id.setRequestId(dto.getRequestId());
             id.setOrganizationId(dto.getOrganizationId());
             Optional<DonationRequest> existingRequest = donationRequestRepository.findById(id);
             if (existingRequest.isPresent()) {
                 DonationRequest request = existingRequest.get();
+                if (request.getDeleted()) {
+                    logger.warn("Donation request already marked as deleted: requestId={}, organizationId={}",
+                            dto.getRequestId(), dto.getOrganizationId());
+                    return;
+                }
                 request.setDeleted(true);
                 donationRequestRepository.save(request);
                 logger.info("Marked donation request as deleted: requestId={}, organizationId={}",
@@ -207,107 +202,20 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
-    @Transactional
-    public void consumeDonationRequest(String message) {
-        try {
-            logger.info("Received message from solicitud_donaciones: {}", message);
-            DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
-            logger.debug("Parsed DTO: requestId={}, organizationId={}, items={}",
-                    dto.getRequestId(), dto.getOrganizationId(), dto.getItems());
-
-            if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
-                logger.error("Invalid donation request: requestId or organizationId is null");
-                return;
-            }
-
-            if (dto.getItems() == null || dto.getItems().isEmpty()) {
-                logger.error("Invalid donation request: items list is null or empty");
-                return;
-            }
-
-            // Check if the donation request already exists
-            DonationRequestId id = new DonationRequestId();
-            id.setRequestId(dto.getRequestId());
-            id.setOrganizationId(dto.getOrganizationId());
-            Optional<DonationRequest> existingRequest = donationRequestRepository.findById(id);
-            if (existingRequest.isPresent()) {
-                logger.warn("Donation request already exists: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-                return; // Idempotent: skip if already processed
-            }
-
-            DonationRequest donationRequest = new DonationRequest();
-            donationRequest.setRequestId(dto.getRequestId());
-            donationRequest.setOrganizationId(dto.getOrganizationId());
-            donationRequest.setDeleted(false);
-
-            for (DonationRequestItemDTO itemDTO : dto.getItems()) {
-                if (itemDTO.getCategoryId() == null || !VALID_CATEGORIES.contains(itemDTO.getCategoryId())) {
-                    logger.error("Invalid item: categoryId is null or invalid ({})", itemDTO.getCategoryId());
-                    return;
-                }
-                if (itemDTO.getDescription() == null || itemDTO.getDescription().trim().isEmpty()) {
-                    logger.error("Invalid item: description is null or empty");
-                    return;
-                }
-
-                DonationRequestItem item = new DonationRequestItem();
-                item.setRequestId(dto.getRequestId());
-                item.setOrganizationId(dto.getOrganizationId());
-                item.setCategoryId(itemDTO.getCategoryId());
-                item.setDescription(itemDTO.getDescription());
-                donationRequest.getItems().add(item);
-            }
-
-            donationRequestRepository.save(donationRequest);
-            logger.info("Saved donation request: requestId={}, organizationId={}",
-                    donationRequest.getRequestId(), donationRequest.getOrganizationId());
-        } catch (JsonProcessingException e) {
-            logger.error("Error processing donation request message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation request", e); // Ensure transaction rollback
-        }
-    }
-
-    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
-    @Transactional
-    public void consumeDonationCancellation(String message) {
-        try {
-            logger.info("Received message from baja_solicitud_donaciones: {}", message);
-            DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
-            if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
-                logger.error("Invalid cancellation request: requestId or organizationId is null");
-                return;
-            }
-            int updated = donationRequestRepository.setDeletedByRequestIdAndOrganizationId(dto.getRequestId(), dto.getOrganizationId());
-            if (updated > 0) {
-                logger.info("Marked donation request as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-            } else {
-                logger.warn("No donation request found to mark as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-            }
-        } catch (JsonProcessingException e) {
-            logger.error("Error processing donation cancellation message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation cancellation", e);
-        }
-    }
-
     @Override
     @KafkaListener(topics = "transferencia-donaciones-${ong.id:1}", groupId = "ong-empuje-comunitario")
     @Transactional
-    public void listenDonationTransfers(String message){
+    public void listenDonationTransfers(String message) {
         try {
             DonationTransferDTO transferDto = objectMapper.readValue(message, DonationTransferDTO.class);
-            Optional<DonationTransfer> optionalTransfer = donationTransferRepository.findByTransferIdAndOrganizationId(transferDto.requestId(), transferDto.organizationId());
-            if(optionalTransfer.isPresent()){
+            Optional<DonationTransfer> optionalTransfer = donationTransferRepository
+                    .findByTransferIdAndOrganizationId(transferDto.requestId(), transferDto.organizationId());
+            if (optionalTransfer.isPresent()) {
                 System.out.println("Processed donation transfer: " + transferDto.requestId());
                 return;
             }
             DonationTransfer transfer = buildDonationTransfer(transferDto);
             donationTransferRepository.save(transfer);
-
-
             System.out.println("Successful transfer");
         } catch (Exception e) {
             System.out.println("Exception in donation transfer listener: " + e.getCause() + e.getMessage());
@@ -317,11 +225,12 @@ public class KafkaConsumerImpl implements IConsumer {
     @Override
     @KafkaListener(topics = "oferta-donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
-    public void listenDonationOffers(String message){
+    public void listenDonationOffers(String message) {
         try {
             DonationOfferDTO offerDto = objectMapper.readValue(message, DonationOfferDTO.class);
-            Optional<DonationOffer> optionalOffer = donationOfferRepository.findByOfferIdAndOrganizationId(offerDto.offerId(), offerDto.organizationId());
-            if(optionalOffer.isPresent()){
+            Optional<DonationOffer> optionalOffer = donationOfferRepository
+                    .findByOfferIdAndOrganizationId(offerDto.offerId(), offerDto.organizationId());
+            if (optionalOffer.isPresent()) {
                 System.out.println("Processed donation offer: " + offerDto.offerId());
                 return;
             }
@@ -332,62 +241,41 @@ public class KafkaConsumerImpl implements IConsumer {
         } catch (Exception e) {
             System.out.println("Exception in donation offer listener: " + e.getCause() + e.getMessage());
         }
-
-    }
-
-    private Event buildEvent(EventDTO message) throws Exception {
-        Optional<Organization> organization = organizationRepository.findById(Integer.valueOf(message.organizationId()));
-
-        if (organization.isPresent() && organization.get().getId() != 1) {
-            Event event = EventMapper.INSTANCE.toEntity(message);
-            event.setOrganization(organization.get());
-            return event;
-        } else {
-            throw new Exception("no existe la organizacion");
-        }
     }
 
     @Override
     @KafkaListener(topics = "baja-evento-solidario", groupId = "ong-empuje-comunitario")
     public void listenDeleteEvents(String message) {
-
         try {
-            EventDTO deleteEvent = objectMapper.readValue(message,EventDTO.class);
-
-            if(Integer.parseInt(deleteEvent.organizationId()) != 1) { // Id de organizacion propia
-                eventRepository.deleteByRemoteIdAndOrganizationId(deleteEvent.eventId(), Integer.valueOf(deleteEvent.organizationId()));
+            EventDTO deleteEvent = objectMapper.readValue(message, EventDTO.class);
+            if (Integer.parseInt(deleteEvent.organizationId()) != 1) { // Id de organizacion propia
+                eventRepository.deleteByRemoteIdAndOrganizationId(deleteEvent.eventId(),
+                        Integer.valueOf(deleteEvent.organizationId()));
             }
-
-            }catch (Exception e){
-            System.out.println("Exception : "+ e.getCause() + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Exception : " + e.getCause() + e.getMessage());
         }
     }
 
     @Override
-    @KafkaListener(topics = "adhesion-evento",groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "adhesion-evento", groupId = "ong-empuje-comunitario")
     public void listenAddVoluntary(String message) {
-
         try {
-
             EventVoluntaryDTO eventVoluntary = objectMapper.readValue(message, EventVoluntaryDTO.class);
             Voluntary voluntary = VoluntaryMapper.INSTANCE.toEntity(eventVoluntary.voluntary());
 
-
             if (eventVoluntary.originOrganizationId() == 1) { // evento de mi organización
-
                 Optional<Event> event = eventRepository.findById(eventVoluntary.remoteId());
                 Voluntary toSave;
-
                 Optional<Voluntary> toUpdate = voluntaryRepository
-                            .findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
+                        .findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
 
-                if (toUpdate.isPresent()){
+                if (toUpdate.isPresent()) {
                     Voluntary existing = toUpdate.get();
                     existing.setName(voluntary.getName());
                     existing.setLastName(voluntary.getLastName());
                     existing.setPhone(voluntary.getPhone());
                     existing.setEmail(voluntary.getEmail());
-
                     toSave = voluntaryRepository.save(existing);
                 } else {
                     toSave = voluntaryRepository.save(voluntary);
@@ -400,22 +288,19 @@ public class KafkaConsumerImpl implements IConsumer {
                     voluntaryEvents.setRegistrationDate(new Date());
                     voluntaryEventsRepository.save(voluntaryEvents);
                 }
-
-                } else if (voluntary.getOrganizationId() == 1){ // usuario de mi organizacion
-
-                    Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
-                    Optional<User> user = userRepository.findById(voluntary.getVoluntaryId());
-
-                    if(user.isPresent() && event.isPresent()){
-                        UserEvents userEvents = new UserEvents();
-                        userEvents.setEvent(event.get());
-                        userEvents.setUser(user.get());
-                        userEvents.setRegistrationDate(new Date());
-                        userEventsRepository.save(userEvents);
-                    }
+            } else if (voluntary.getOrganizationId() == 1) { // usuario de mi organizacion
+                Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
+                Optional<User> user = userRepository.findById(voluntary.getVoluntaryId());
+                if (user.isPresent() && event.isPresent()) {
+                    UserEvents userEvents = new UserEvents();
+                    userEvents.setEvent(event.get());
+                    userEvents.setUser(user.get());
+                    userEvents.setRegistrationDate(new Date());
+                    userEventsRepository.save(userEvents);
                 }
-        }catch (Exception e){
-            System.out.println("Exception : "+ e.getCause() + e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println("Exception : " + e.getCause() + e.getMessage());
         }
     }
 
@@ -423,34 +308,45 @@ public class KafkaConsumerImpl implements IConsumer {
         return organizationRepository.findById(orgId).isPresent();
     }
 
+    private Event buildEvent(EventDTO message) throws Exception {
+        Optional<Organization> organization = organizationRepository
+                .findById(Integer.valueOf(message.organizationId()));
+
+        if (organization.isPresent() && organization.get().getId() != 1) {
+            Event event = EventMapper.INSTANCE.toEntity(message);
+            event.setOrganization(organization.get());
+            return event;
+        } else {
+            throw new Exception("no existe la organizacion");
+        }
+    }
 
     private DonationRequest buildDonationRequest(DonationRequestDTO dto) {
-        // Busca si ya existe la solicitud
-        DonationRequest request = donationRequestRepository.findByRequestIdAndOrganizationId(
-            dto.getRequestId(), dto.getOrganizationId()
-        ).orElse(new DonationRequest());
+        DonationRequest request = donationRequestRepository
+            .findByRequestIdAndOrganizationId(dto.getRequestId(), dto.getOrganizationId())
+            .orElse(new DonationRequest());
 
-        // Configura los campos
-        request.setRequestId(dto.getRequestId()); // Clave primaria
+        request.setRequestId(dto.getRequestId());
         request.setOrganizationId(dto.getOrganizationId());
         request.setDeleted(false);
 
-        // Limpia ítems existentes si es necesario
         request.getItems().clear();
 
-        // Añade nuevos ítems
         for (var itemDto : dto.getItems()) {
             DonationRequestItem item = new DonationRequestItem();
             item.setCategoryId(itemDto.getCategoryId());
             item.setDescription(itemDto.getDescription());
+            item.setDonationRequest(request); // Set the parent reference
             request.getItems().add(item);
         }
-        
+
         return request;
     }
 
-    private DonationTransfer buildDonationTransfer(DonationTransferDTO dto){
-        DonationTransfer transfer = donationTransferRepository.findByTransferIdAndOrganizationId(dto.requestId(), dto.organizationId()).orElse(new DonationTransfer());
+    private DonationTransfer buildDonationTransfer(DonationTransferDTO dto) {
+        DonationTransfer transfer = donationTransferRepository
+                .findByTransferIdAndOrganizationId(dto.requestId(), dto.organizationId())
+                .orElse(new DonationTransfer());
 
         transfer.setTransferId(dto.requestId());
         transfer.setOrganizationId(dto.organizationId());
@@ -460,7 +356,7 @@ public class KafkaConsumerImpl implements IConsumer {
 
         transfer.getItems().clear();
 
-        for (var itemDto : dto.items()){
+        for (var itemDto : dto.items()) {
             DonationTransferItem item = new DonationTransferItem();
             item.setCategoryId(itemDto.categoryId());
             item.setDescription(itemDto.description());
@@ -472,8 +368,9 @@ public class KafkaConsumerImpl implements IConsumer {
         return transfer;
     }
 
-    private DonationOffer buildDonationOffer(DonationOfferDTO dto){
-        DonationOffer offer = donationOfferRepository.findByOfferIdAndOrganizationId(dto.offerId(), dto.organizationId()).orElse(new DonationOffer());
+    private DonationOffer buildDonationOffer(DonationOfferDTO dto) {
+        DonationOffer offer = donationOfferRepository
+                .findByOfferIdAndOrganizationId(dto.offerId(), dto.organizationId()).orElse(new DonationOffer());
 
         offer.setOfferId(dto.offerId());
         offer.setOrganizationId(dto.organizationId());
@@ -482,7 +379,7 @@ public class KafkaConsumerImpl implements IConsumer {
 
         offer.getItems().clear();
 
-        for(var itemDto : dto.items()){
+        for (var itemDto : dto.items()) {
             DonationOfferItem item = new DonationOfferItem();
             item.setCategoryId(itemDto.categoryId());
             item.setDescription(itemDto.description());

@@ -1,7 +1,5 @@
 package com.grpc.demo.config;
 
-import com.grpc.demo.auth.JwtAuthenticationFilter;
-import com.grpc.demo.enums.Role;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -11,6 +9,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.grpc.demo.auth.JwtAuthenticationFilter;
+import com.grpc.demo.enums.Role;
 
 @Configuration
 @EnableMethodSecurity
@@ -27,7 +28,7 @@ public class SecurityConfig {
                          * LOGIN
                          * Accesible para todos los usuarios sin autenticación
                          */
-                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/login","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll()
 
                         /**
                          * USERS

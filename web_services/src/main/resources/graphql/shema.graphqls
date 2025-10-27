@@ -1,5 +1,11 @@
-# web_services/src/main/resources/graphql/schema.graphqls
 type Query {
+    participationEvents(
+        username: String!,
+        startDate: String,
+        endDate: String,
+        distribution: DonationDistributionFilter
+    ): [ParticipationEvent]
+    
     donationReport(categoryId: Int, startDate: String, endDate: String, deleted: Boolean): [DonationReportGroup!]!
     savedFilters: [SavedFilter!]!
     savedFilter(id: ID!): SavedFilter
@@ -14,27 +20,38 @@ type Mutation {
     deleteFilter(id: ID!): Boolean!
 }
 
-type DonationReportGroup {
-    categoryId: Int!
-    categoryName: String!
-    deleted: Boolean!
-    totalQuantity: Int!
-    donations: [Donation!]!
+type ParticipationEvent {
+    name: String!
+    datetime: String!
+    description: String!
+    donations: [Donation]
 }
 
 type Donation {
     id: ID!
-    categoryId: Int!
+    categoryId: Int
     categoryName: String!
     description: String!
     quantity: Int!
     createdAt: String!
     updatedAt: String
     createdById: Int!
-    createdByUsername: String!
     updatedById: Int
-    updatedByUsername: String
     deleted: Boolean!
+}
+
+enum DonationDistributionFilter {
+    YES
+    NO
+    BOTH
+}
+
+type DonationReportGroup {
+    categoryId: Int!
+    categoryName: String!
+    deleted: Boolean!
+    totalQuantity: Int!
+    donations: [Donation!]!
 }
 
 type SavedFilter {
