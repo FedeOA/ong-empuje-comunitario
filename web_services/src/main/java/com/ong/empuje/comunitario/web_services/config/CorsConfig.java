@@ -28,6 +28,7 @@ public class CorsConfig {
         config.addAllowedMethod("OPTIONS");
         config.setMaxAge(3600L);
         source.registerCorsConfiguration("/graphql/**", config);
+        source.registerCorsConfiguration("/api/**", config);
         return new CorsFilter(source);
     }
 
@@ -41,6 +42,14 @@ public class CorsConfig {
                         .allowedMethods("GET", "POST", "OPTIONS")
                         .allowedHeaders("Authorization", "Content-Type", "Accept", "Apollo-Require-Preflight")
                         .exposedHeaders("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials")
+                        .allowCredentials(true)
+                        .maxAge(3600);
+
+                registry.addMapping("/api/**")
+                        .allowedOrigins("http://localhost:5173")
+                        .allowedMethods("GET", "POST", "OPTIONS")
+                        .allowedHeaders("Authorization", "Content-Type", "Accept")
+                        .exposedHeaders("Content-Disposition")
                         .allowCredentials(true)
                         .maxAge(3600);
             }
