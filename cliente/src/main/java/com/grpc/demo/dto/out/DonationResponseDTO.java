@@ -8,3 +8,4 @@ public record DonationResponseDTO(
         String username
 ) {
 }
+

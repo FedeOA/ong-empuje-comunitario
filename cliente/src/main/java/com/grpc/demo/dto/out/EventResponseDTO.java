@@ -12,6 +12,6 @@ public record EventResponseDTO(
         @JsonProperty("is_published")
         boolean isPublished,
         List<String> users,
-        List<DonationEventDTO> donations
+        List<DonationResponseDTO> donations
 ) {
 }
