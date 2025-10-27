@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DonationRequestModal from "../components/DonationRequestModal";
 import Toast from "../components/Toast";
-import { baseUrl } from "../constants/constants.js";
 import { categoriesIndexes } from "../constants/Categories.js";
 import { organizationById } from "../constants/organizations.js";
 

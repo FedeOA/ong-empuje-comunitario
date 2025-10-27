@@ -1,5 +1,3 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\service\impl\KafkaConsumerImpl.java
-
 package com.ong.empuje.comunitario.consumer.service.impl;
 import java.time.LocalDateTime;
 import java.util.ArrayList;

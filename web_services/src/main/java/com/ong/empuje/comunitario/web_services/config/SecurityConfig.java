@@ -1,44 +1,26 @@
 package com.ong.empuje.comunitario.web_services.config;
 
+import com.ong.empuje.comunitario.web_services.auth.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            // Configure CORS using the defined CorsConfigurationSource
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // Disable CSRF as per original configuration
-            .csrf(csrf -> csrf.disable())
-            // Allow all requests without authentication
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll()
-            );
-        return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        return request -> {
-            CorsConfiguration config = new CorsConfiguration();
-            config.setAllowCredentials(true);
-            config.addAllowedOrigin("http://localhost:5173");
-            config.addAllowedHeader("Authorization");
-            config.addAllowedHeader("Content-Type");
-            config.addAllowedHeader("Accept");
-            config.addAllowedHeader("Apollo-Require-Preflight");
-            config.addAllowedMethod("GET");
-            config.addAllowedMethod("POST");
-            config.addAllowedMethod("OPTIONS");
-            config.setMaxAge(3600L);
-            return config;
-        };
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 }
