@@ -5,8 +5,8 @@ public enum Topic {
     EVENTOS_SOLIDARIOS("eventos-solidarios"),
     ADHESION_EVENTO("adhesion-evento"),
     BAJA_EVENTO_SOLIDARIO("baja-evento-solidario"),
-    ALTA_SOLICITUD_DONACION("alta-solicitud-donacion"),
-    BAJA_SOLICITUD_DONACION("baja-solicitud-donacion"),
+    SOLICITUD_DONACIONES("solicitud_donaciones"),
+    BAJA_SOLICITUD_DONACIONES("baja_solicitud_donaciones"),
     TRANSFERENCIA_DONACIONES("transferencia-donaciones"),
     OFERTA_DONACIONES("oferta-donaciones");
 

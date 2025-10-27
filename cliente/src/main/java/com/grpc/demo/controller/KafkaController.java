@@ -1,6 +1,8 @@
 package com.grpc.demo.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.grpc.demo.dto.in.DonationCancellationDTO;
+import com.grpc.demo.dto.in.DonationRequestDTO;
 import com.grpc.demo.enums.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,12 +26,12 @@ public class KafkaController {
     }
 
     @PostMapping("/donation-request")
-    public ResponseEntity<String> publishDonationRequest(@RequestBody Object request) {
+    public ResponseEntity<String> publishDonationRequest(@RequestBody DonationRequestDTO request) {
         logger.debug("Received POST /kafka/publish/donation-request");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to solicitud_donaciones: {}", message);
-            kafkaTemplate.send(Topic.ALTA_SOLICITUD_DONACION.name(), message);
+            logger.debug("Publishing message to {}: {}", Topic.SOLICITUD_DONACIONES.getName(), message);
+            kafkaTemplate.send(Topic.SOLICITUD_DONACIONES.getName(), message);
             return ResponseEntity.ok("Donation request published");
         } catch (Exception e) {
             logger.error("Error publishing donation request: {}", e.getMessage(), e);
@@ -38,12 +40,12 @@ public class KafkaController {
     }
 
     @PostMapping("/donation-cancellation")
-    public ResponseEntity<String> publishDonationCancellation(@RequestBody Object request) {
+    public ResponseEntity<String> publishDonationCancellation(@RequestBody DonationCancellationDTO request) {
         logger.debug("Received POST /kafka/publish/donation-cancellation");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to baja_solicitud_donaciones: {}", message);
-            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACION.name(), message);
+            logger.debug("Publishing message to {}: {}", Topic.BAJA_SOLICITUD_DONACIONES.getName(), message);
+            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACIONES.getName(), message);
             return ResponseEntity.ok("Donation cancellation published");
         } catch (Exception e) {
             logger.error("Error publishing donation cancellation: {}", e.getMessage(), e);
