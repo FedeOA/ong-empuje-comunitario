@@ -98,3 +98,4 @@ class Organization(Base):
     __tablename__ = 'organizations'
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
+    

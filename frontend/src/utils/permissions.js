@@ -1,8 +1,8 @@
 import { roles } from "../constants/roles";
 
 export const rolePermissions = {
-  [roles.PRESIDENTE]: ["users", "events", "donations","externalEvents","donation-requests"],
-  [roles.VOCAL]: ["donations"],
+  [roles.PRESIDENTE]: ["users", "events", "donations", "externalEvents", "donation-requests", "donation-reports"],
+  [roles.VOCAL]: ["donations", "donation-requests", "donation-reports"],
   [roles.COORDINADOR]: ["events","externalEvents"],
   [roles.VOLUNTARIO]: ["events"],
 };

@@ -1,5 +1,6 @@
 package com.ong.empuje.comunitario.consumer.service.impl;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -18,20 +19,6 @@ import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestItemDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventVoluntaryDTO;
 import com.ong.empuje.comunitario.consumer.mapper.EventMapper;
-import com.ong.empuje.comunitario.consumer.model.DonationOffer;
-import com.ong.empuje.comunitario.consumer.model.DonationOfferItem;
-import com.ong.empuje.comunitario.consumer.model.DonationRequest;
-import com.ong.empuje.comunitario.consumer.model.DonationRequestId;
-import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
-import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
-import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
-import com.ong.empuje.comunitario.consumer.model.Event;
-import com.ong.empuje.comunitario.consumer.model.Organization;
-import com.ong.empuje.comunitario.consumer.repository.DonationOfferRepository;
-import com.ong.empuje.comunitario.consumer.repository.DonationRequestRepository;
-import com.ong.empuje.comunitario.consumer.repository.DonationTransferRepository;
-import com.ong.empuje.comunitario.consumer.repository.EventRepository;
-import com.ong.empuje.comunitario.consumer.repository.OrganizationRepository;
 import com.ong.empuje.comunitario.consumer.mapper.VoluntaryMapper;
 import com.ong.empuje.comunitario.consumer.model.*;
 import com.ong.empuje.comunitario.consumer.repository.*;
@@ -93,201 +80,102 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
     
-    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
-    @Override
     public void listenDonationRequests(String message) {
         try {
             logger.info("Received message from solicitud_donaciones: {}", message);
             DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
-            logger.debug("Parsed DTO: requestId={}, organizationId={}, items={}",
-                    dto.getRequestId(), dto.getOrganizationId(), dto.getItems());
+            logger.debug("Parsed DTO: requestId={}, organizationId={}, items count={}", 
+                        dto.getRequestId(), dto.getOrganizationId(), dto.getItems() != null ? dto.getItems().size() : 0);
 
             if (dto.getOrganizationId() == null) {
                 logger.error("Invalid donation request: organizationId is null");
                 return;
             }
-
             if (dto.getItems() == null || dto.getItems().isEmpty()) {
-                logger.error("Invalid donation request: items list is null or empty");
+                logger.error("Invalid donation request: items null/empty");
                 return;
             }
 
             Integer requestId = dto.getRequestId();
-            DonationRequestId id = new DonationRequestId();
-            id.setOrganizationId(dto.getOrganizationId());
-
-            // Generate random requestId if not provided
             if (requestId == null) {
+                // Generate unique ID
                 for (int attempt = 1; attempt <= MAX_ID_GENERATION_ATTEMPTS; attempt++) {
-                    requestId = ThreadLocalRandom.current().nextInt(1, 1000000); // Random ID between 1 and 999999
-                    id.setRequestId(requestId);
-                    if (!donationRequestRepository.findById(id).isPresent()) {
+                    requestId = ThreadLocalRandom.current().nextInt(100000, 999999);
+                    DonationRequestId tempId = new DonationRequestId(dto.getOrganizationId(), requestId);
+                    if (!donationRequestRepository.findById(tempId).isPresent()) {
                         logger.info("Generated unique requestId: {}", requestId);
                         break;
                     }
-                    logger.warn("Generated requestId {} already exists, retrying (attempt {}/{})", requestId, attempt, MAX_ID_GENERATION_ATTEMPTS);
                     if (attempt == MAX_ID_GENERATION_ATTEMPTS) {
-                        logger.error("Failed to generate unique requestId after {} attempts", MAX_ID_GENERATION_ATTEMPTS);
+                        logger.error("Failed to generate unique requestId");
                         return;
                     }
                 }
             } else {
-                id.setRequestId(requestId);
-                // Check if the provided requestId already exists
+                DonationRequestId id = new DonationRequestId(dto.getOrganizationId(), requestId);
                 if (donationRequestRepository.findById(id).isPresent()) {
-                    logger.warn("Donation request already exists: requestId={}, organizationId={}",
-                            requestId, dto.getOrganizationId());
-                    return; // Idempotent: skip if already processed
+                    logger.warn("Duplicate requestId: {}", requestId);
+                    return;
                 }
             }
 
-            DonationRequest donationRequest = new DonationRequest();
-            donationRequest.setRequestId(requestId);
-            donationRequest.setOrganizationId(dto.getOrganizationId());
-            donationRequest.setDeleted(false);
-
+            // Validate items
             for (DonationRequestItemDTO itemDTO : dto.getItems()) {
-                if (itemDTO.getCategoryId() == null || !VALID_CATEGORIES.contains(itemDTO.getCategoryId())) {
-                    logger.error("Invalid item: categoryId is null or invalid ({})", itemDTO.getCategoryId());
+                if (itemDTO.getCategoryId() == null || !VALID_CATEGORIES.contains(itemDTO.getCategoryId()) ||
+                    itemDTO.getDescription() == null || itemDTO.getDescription().trim().isEmpty()) {
+                    logger.error("Invalid item: categoryId={}, desc={}", itemDTO.getCategoryId(), itemDTO.getDescription());
                     return;
                 }
-                if (itemDTO.getDescription() == null || itemDTO.getDescription().trim().isEmpty()) {
-                    logger.error("Invalid item: description is null or empty");
-                    return;
-                }
-
-                DonationRequestItem item = new DonationRequestItem();
-                item.setRequestId(requestId);
-                item.setOrganizationId(dto.getOrganizationId());
-                item.setCategoryId(itemDTO.getCategoryId());
-                item.setDescription(itemDTO.getDescription());
-                donationRequest.getItems().add(item);
             }
 
-            donationRequestRepository.save(donationRequest);
-            logger.info("Saved donation request: requestId={}, organizationId={}",
-                    donationRequest.getRequestId(), donationRequest.getOrganizationId());
+            DonationRequest donationRequest = buildDonationRequest(dto, requestId);
+            donationRequestRepository.saveAndFlush(donationRequest); // Immediate flush for debugging
+            logger.info("Saved donation request: requestId={}, orgId={}", requestId, dto.getOrganizationId());
+        } catch (JsonProcessingException e) {
+            logger.error("JSON parse error in donation request: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("Error processing donation request message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation request", e);
+            logger.error("Error processing donation request: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process donation request", e); // Rollback
         }
     }
 
-    @KafkaListener(topics = "baja-solicitud-donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "baja_solicitud_donaciones", groupId = "ong-empuje-comunitario")
     @Transactional
-    @Override
     public void listenDonationCancellations(String message) {
         try {
             logger.info("Received message from baja_solicitud_donaciones: {}", message);
             DonationCancellationDTO dto = objectMapper.readValue(message, DonationCancellationDTO.class);
             if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
-                logger.error("Invalid cancellation request: requestId or organizationId is null");
+                logger.error("Invalid cancellation: requestId or organizationId is null");
                 return;
             }
-            DonationRequestId id = new DonationRequestId();
-            id.setRequestId(dto.getRequestId());
-            id.setOrganizationId(dto.getOrganizationId());
-            Optional<DonationRequest> existingRequest = donationRequestRepository.findById(id);
-            if (existingRequest.isPresent()) {
-                DonationRequest request = existingRequest.get();
-                request.setDeleted(true);
-                donationRequestRepository.save(request);
-                logger.info("Marked donation request as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-            } else {
-                logger.warn("No donation request found to mark as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
+
+            DonationRequestId id = new DonationRequestId(dto.getOrganizationId(), dto.getRequestId());
+            Optional<DonationRequest> existing = donationRequestRepository.findByRequestIdAndOrganizationId(dto.getRequestId(), dto.getOrganizationId());
+            if (existing.isEmpty()) {
+                logger.warn("No donation request found for cancellation: requestId={}, orgId={}", 
+                            dto.getRequestId(), dto.getOrganizationId());
+                return;
             }
+
+            DonationRequest request = existing.get();
+            if (request.getDeleted()) {
+                logger.debug("Request already deleted: requestId={}, orgId={}", 
+                            dto.getRequestId(), dto.getOrganizationId());
+                return;
+            }
+
+            request.setDeleted(true);
+            donationRequestRepository.saveAndFlush(request); // Immediate flush for debugging
+            logger.info("Marked as deleted: requestId={}, orgId={}", 
+                        dto.getRequestId(), dto.getOrganizationId());
+        } catch (JsonProcessingException e) {
+            logger.error("JSON parse error in cancellation: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("Error processing donation cancellation message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation cancellation", e);
-        }
-    }
-
-    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
-    @Transactional
-    public void consumeDonationRequest(String message) {
-        try {
-            logger.info("Received message from solicitud_donaciones: {}", message);
-            DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
-            logger.debug("Parsed DTO: requestId={}, organizationId={}, items={}",
-                    dto.getRequestId(), dto.getOrganizationId(), dto.getItems());
-
-            if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
-                logger.error("Invalid donation request: requestId or organizationId is null");
-                return;
-            }
-
-            if (dto.getItems() == null || dto.getItems().isEmpty()) {
-                logger.error("Invalid donation request: items list is null or empty");
-                return;
-            }
-
-            // Check if the donation request already exists
-            DonationRequestId id = new DonationRequestId();
-            id.setRequestId(dto.getRequestId());
-            id.setOrganizationId(dto.getOrganizationId());
-            Optional<DonationRequest> existingRequest = donationRequestRepository.findById(id);
-            if (existingRequest.isPresent()) {
-                logger.warn("Donation request already exists: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-                return; // Idempotent: skip if already processed
-            }
-
-            DonationRequest donationRequest = new DonationRequest();
-            donationRequest.setRequestId(dto.getRequestId());
-            donationRequest.setOrganizationId(dto.getOrganizationId());
-            donationRequest.setDeleted(false);
-
-            for (DonationRequestItemDTO itemDTO : dto.getItems()) {
-                if (itemDTO.getCategoryId() == null || !VALID_CATEGORIES.contains(itemDTO.getCategoryId())) {
-                    logger.error("Invalid item: categoryId is null or invalid ({})", itemDTO.getCategoryId());
-                    return;
-                }
-                if (itemDTO.getDescription() == null || itemDTO.getDescription().trim().isEmpty()) {
-                    logger.error("Invalid item: description is null or empty");
-                    return;
-                }
-
-                DonationRequestItem item = new DonationRequestItem();
-                item.setRequestId(dto.getRequestId());
-                item.setOrganizationId(dto.getOrganizationId());
-                item.setCategoryId(itemDTO.getCategoryId());
-                item.setDescription(itemDTO.getDescription());
-                donationRequest.getItems().add(item);
-            }
-
-            donationRequestRepository.save(donationRequest);
-            logger.info("Saved donation request: requestId={}, organizationId={}",
-                    donationRequest.getRequestId(), donationRequest.getOrganizationId());
-        } catch (JsonProcessingException e) {
-            logger.error("Error processing donation request message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation request", e); // Ensure transaction rollback
-        }
-    }
-
-    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
-    @Transactional
-    public void consumeDonationCancellation(String message) {
-        try {
-            logger.info("Received message from baja_solicitud_donaciones: {}", message);
-            DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
-            if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
-                logger.error("Invalid cancellation request: requestId or organizationId is null");
-                return;
-            }
-            int updated = donationRequestRepository.setDeletedByRequestIdAndOrganizationId(dto.getRequestId(), dto.getOrganizationId());
-            if (updated > 0) {
-                logger.info("Marked donation request as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-            } else {
-                logger.warn("No donation request found to mark as deleted: requestId={}, organizationId={}",
-                        dto.getRequestId(), dto.getOrganizationId());
-            }
-        } catch (JsonProcessingException e) {
-            logger.error("Error processing donation cancellation message: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to process donation cancellation", e);
+            logger.error("Error processing cancellation: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process cancellation", e);
         }
     }
 
@@ -422,29 +310,25 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
 
-    private DonationRequest buildDonationRequest(DonationRequestDTO dto) {
-        // Busca si ya existe la solicitud
-        DonationRequest request = donationRequestRepository.findByRequestIdAndOrganizationId(
-            dto.getRequestId(), dto.getOrganizationId()
-        ).orElse(new DonationRequest());
+    private DonationRequest buildDonationRequest(DonationRequestDTO dto, Integer requestId) {
+        DonationRequest donationRequest = new DonationRequest();
+        donationRequest.setOrganizationId(dto.getOrganizationId());
+        donationRequest.setRequestId(requestId);
+        donationRequest.setDeleted(false);
 
-        // Configura los campos
-        request.setRequestId(dto.getRequestId()); // Clave primaria
-        request.setOrganizationId(dto.getOrganizationId());
-        request.setDeleted(false);
-
-        // Limpia ítems existentes si es necesario
-        request.getItems().clear();
-
-        // Añade nuevos ítems
-        for (var itemDto : dto.getItems()) {
+        List<DonationRequestItem> items = new ArrayList<>();
+        for (DonationRequestItemDTO itemDTO : dto.getItems()) {
             DonationRequestItem item = new DonationRequestItem();
-            item.setCategoryId(itemDto.getCategoryId());
-            item.setDescription(itemDto.getDescription());
-            request.getItems().add(item);
+            item.setOrganizationId(dto.getOrganizationId());
+            item.setRequestId(requestId); // Ensure requestId is set
+            item.setCategoryId(itemDTO.getCategoryId());
+            item.setDescription(itemDTO.getDescription());
+            items.add(item);
         }
-        
-        return request;
+        donationRequest.setItems(items);
+        logger.debug("Built donation request: requestId={}, orgId={}, items count={}", 
+                    requestId, dto.getOrganizationId(), items.size());
+        return donationRequest;
     }
 
     private DonationTransfer buildDonationTransfer(DonationTransferDTO dto){
