@@ -7,6 +7,8 @@ import com.ong.empuje.comunitario.web_services.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.List;
+import com.ong.empuje.comunitario.web_services.model.Role;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,5 +29,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> findByUsernameOrEmail(String username, String email) {
         return userRepository.findByUsernameOrEmail(username, email);
+    }
+
+    @Override
+    public List<User> findByRoleAndOrganizationIdIn(Role role, List<Integer> orgIds) {
+        return userRepository.findByRoleAndOrganizationIdIn(role, orgIds);
     }
 }

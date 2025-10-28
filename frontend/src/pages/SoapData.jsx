@@ -1,4 +1,3 @@
-// frontend/src/pages/SoapData.jsx
 import React, { useState } from "react";
 import { baseUrlWebServices } from "../constants/constants";
 import { useAuth } from "../context/AuthContext";
@@ -118,8 +117,6 @@ const SoapData = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-medium">ID</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
-                <th className="px-6 py-3 text-left text-sm font-medium">Direccion</th>
-                <th className="px-6 py-3 text-left text-sm font-medium">Teléfono</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -134,8 +131,6 @@ const SoapData = () => {
                   <tr key={org.id}>
                     <td className="px-6 py-4 text-sm text-gray-600">{org.id}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{org.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{org.address}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{org.phone || 'N/A'}</td>
                   </tr>
                 ))
               )}
@@ -150,8 +145,11 @@ const SoapData = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-sm font-medium">ID</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">Usuario</th>
-                <th className="px-6 py-3 text-left text-sm font-medium">Direccion</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Apellido</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Email</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">Teléfono</th>
+                <th className="px-6 py-3 text-left text-sm font-medium">Rol</th>
                 <th className="px-6 py-3 text-left text-sm font-medium">ID Organización</th>
               </tr>
             </thead>
@@ -166,9 +164,12 @@ const SoapData = () => {
                 presidents.map((pres) => (
                   <tr key={pres.id}>
                     <td className="px-6 py-4 text-sm text-gray-600">{pres.id}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{pres.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{pres.address}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{pres.username}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{pres.firstName}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{pres.lastName}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{pres.email}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{pres.phone || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{pres.role}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{pres.organizationId}</td>
                   </tr>
                 ))

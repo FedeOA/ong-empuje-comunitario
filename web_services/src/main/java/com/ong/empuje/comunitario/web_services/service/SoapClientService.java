@@ -169,12 +169,8 @@ public class SoapClientService {
         for(i = 0; i<orgNodes.getLength();i++){
             Element orgElement = (Element) orgNodes.item(i);
             OrganizationDTO org = new OrganizationDTO();
-
             org.setId(Integer.parseInt(getElementText(orgElement, "id")));
             org.setName(getElementText(orgElement,"name"));
-            org.setAddress(getElementText(orgElement, "address"));
-            org.setPhone(getElementText(orgElement,"phone"));
-
             organizations.add(org);
         }
         return organizations;
@@ -202,8 +198,6 @@ public class SoapClientService {
             PresidentDTO president = new PresidentDTO();
 
             president.setId(Integer.parseInt(getElementText(presidentElement, "id")));
-            president.setName(getElementText(presidentElement,"name"));
-            president.setAddress(getElementText(presidentElement, "address"));
             president.setPhone(getElementText(presidentElement,"phone"));
             president.setOrganizationId(Integer.parseInt(getElementText(presidentElement, "organization_id")));
 
