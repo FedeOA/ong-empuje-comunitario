@@ -156,12 +156,6 @@ public class DonationReportController {
         logger.info("Fetching all saved filters");
         try {
             List<SavedFilter> filters = savedFilterService.findByIsDeletedFalse();
-            // Ensure no null filterDeleted values
-            filters.forEach(filter -> {
-                if (filter.getFilterDeleted() == null) {
-                    filter.setFilterDeleted(false);
-                }
-            });
             logger.info("Retrieved {} saved filters", filters.size());
             return filters;
         } catch (Exception e) {
@@ -175,9 +169,6 @@ public class DonationReportController {
         logger.info("Fetching saved filter with id: {}", id);
         try {
             SavedFilter filter = savedFilterService.findById(id).orElseThrow(() -> new GraphQLException("Filter not found"));
-            if (filter.getFilterDeleted() == null) {
-                filter.setFilterDeleted(false);
-            }
             return filter;
         } catch (Exception e) {
             logger.error("Error fetching saved filter with id {}: {}", id, e.getMessage(), e);
@@ -189,31 +180,18 @@ public class DonationReportController {
     public SavedFilter saveFilter(@Argument FilterInputDTO input) {
         logger.info("Saving filter with name: {}", input.getName());
         try {
-            if (input.getName() == null || input.getName().trim().isEmpty()) {
-                throw new IllegalArgumentException("Filter name is required");
-            }
-            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
-                throw new IllegalArgumentException("Username is required");
-            }
-
-            User user = userService.findByUsername(input.getUsername())
-                    .orElseThrow(() -> new IllegalArgumentException("Username " + input.getUsername() + " does not exist"));
-
+            User user = userService.findByUsername(input.getUsername()).orElseThrow(() -> new IllegalArgumentException("Username " + input.getUsername() + " does not exist"));
             SavedFilter filter = new SavedFilter();
             filter.setName(input.getName().trim());
-
             if (input.getCategoryId() != null) {
-                Category category = categoryService.findById(input.getCategoryId())
-                        .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
+                Category category = categoryService.findById(input.getCategoryId()).orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
                 filter.setCategory(category);
             }
-
             filter.setUser(user);
             filter.setStartDate(input.getStartDate());
             filter.setEndDate(input.getEndDate());
             filter.setIsDeleted(false);
-            filter.setFilterDeleted(input.getFilterDeleted() != null ? input.getFilterDeleted() : false); // Default to false
-
+            filter.setFilterDeleted(input.getFilterDeleted());
             SavedFilter saved = savedFilterService.save(filter);
             logger.info("Saved filter with id: {} for user {}", saved.getId(), input.getUsername());
             return saved;
@@ -231,34 +209,19 @@ public class DonationReportController {
     public SavedFilter updateFilter(@Argument Integer id, @Argument FilterInputDTO input) {
         logger.info("Updating filter with id: {}", id);
         try {
-            if (id == null) {
-                throw new IllegalArgumentException("Filter ID is required");
-            }
-            if (input.getName() == null || input.getName().trim().isEmpty()) {
-                throw new IllegalArgumentException("Filter name is required");
-            }
-            if (input.getUsername() == null || input.getUsername().trim().isEmpty()) {
-                throw new IllegalArgumentException("Username is required");
-            }
-
-            SavedFilter filter = savedFilterService.findByIdAndUserUsername(id, input.getUsername())
-                    .orElseThrow(() -> new IllegalArgumentException("Filter with ID " + id + " not found or you don't have permission to edit it."));
-
+            SavedFilter filter = savedFilterService.findByIdAndUserUsername(id, input.getUsername()).orElseThrow(() -> new IllegalArgumentException("Filter with ID " + id + " not found or you don't have permission to edit it."));
             filter.setName(input.getName().trim());
             filter.setStartDate(input.getStartDate());
             filter.setEndDate(input.getEndDate());
-            filter.setFilterDeleted(input.getFilterDeleted() != null ? input.getFilterDeleted() : false); // Default to false
-
+            filter.setFilterDeleted(input.getFilterDeleted());
             if (input.getCategoryId() != null) {
-                Category category = categoryService.findById(input.getCategoryId())
-                        .orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
+                Category category = categoryService.findById(input.getCategoryId()).orElseThrow(() -> new IllegalArgumentException("Category ID " + input.getCategoryId() + " does not exist"));
                 filter.setCategory(category);
             } else {
                 filter.setCategory(null);
             }
-
             logger.info("Updated filter with id: {} for user {}, new name: {}", filter.getId(), input.getUsername(), filter.getName());
-            return savedFilterService.save(filter); // Explicit save
+            return savedFilterService.save(filter); 
         } catch (IllegalArgumentException e) {
             logger.error("Validation error updating filter: {}", e.getMessage());
             throw new GraphQLException(e.getMessage());
@@ -272,8 +235,7 @@ public class DonationReportController {
     public Boolean deleteFilter(@Argument Integer id) {
         logger.info("Soft-deleting filter with id: {}", id);
         try {
-            SavedFilter filter = savedFilterService.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
+            SavedFilter filter = savedFilterService.findById(id).orElseThrow(() -> new IllegalArgumentException("Filter ID " + id + " does not exist"));
             filter.setIsDeleted(true);
             savedFilterService.save(filter);
             logger.info("Soft-deleted filter with id: {}", id);
@@ -291,8 +253,7 @@ public class DonationReportController {
     public Integer getUserId(@Argument String usernameOrEmail) {
         logger.info("Fetching user ID for usernameOrEmail: {}", usernameOrEmail);
         try {
-            User user = userService.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                    .orElseThrow(() -> new IllegalArgumentException("No user found for username or email: " + usernameOrEmail));
+            User user = userService.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElseThrow(() -> new IllegalArgumentException("No user found for username or email: " + usernameOrEmail));
             logger.info("Found user ID: {} for usernameOrEmail: {}", user.getId(), usernameOrEmail);
             return user.getId();
         } catch (IllegalArgumentException e) {

@@ -49,12 +49,18 @@ export default function DonationReport() {
         }
       `;
 
-      const variables = {
-        categoryId: filters.categoryId ? parseInt(filters.categoryId) : null,
-        startDate: filters.startDate || null,
-        endDate: filters.endDate || null,
-        deleted: filters.filterDeleted === true ? true : filters.filterDeleted === false ? false : null,
-      };
+      // Primero, normaliza el valor de "deleted"
+      const deletedValue = filters.filterDeleted === "true" ? true
+                         : filters.filterDeleted === "false" ? false
+                         : (filters.filterDeleted === true || filters.filterDeleted === false) ? filters.filterDeleted // Si ya es boolean, úsalo
+                         : null; // "both", null, o undefined se convierten en null
+
+      const variables = {
+        categoryId: filters.categoryId ? parseInt(filters.categoryId) : null,
+        startDate: filters.startDate || null,
+        endDate: filters.endDate || null,
+        deleted: deletedValue,
+      };
 
       if (variables.startDate && variables.endDate && new Date(variables.startDate) > new Date(variables.endDate)) {
         throw new Error("La fecha de fin no puede ser anterior a la fecha de inicio");
@@ -147,7 +153,7 @@ export default function DonationReport() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      fetchDonationReport();
+      fetchDonationReport({});  // Null dates = all donations
       fetchSavedFilters();
     }
   }, [authLoading, user]);
@@ -167,7 +173,7 @@ export default function DonationReport() {
       showToast("Debes iniciar sesión para resetear filtros", "error");
       return;
     }
-    fetchDonationReport({}); // Fetch all donations with no filters
+    fetchDonationReport({});  // Null dates = all donations
     showToast("Filtros reseteados, mostrando todas las donaciones", "success");
   };
 
@@ -214,7 +220,7 @@ export default function DonationReport() {
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
         startDate: formData.startDate || null,
         endDate: formData.endDate || null,
-        filterDeleted: formData.filterDeleted === true ? true : formData.filterDeleted === false ? false : null,
+        filterDeleted: formData.filterDeleted,
         username: user.username,
       },
     };
@@ -305,7 +311,7 @@ export default function DonationReport() {
       categoryId: filter.categoryId,
       startDate: filter.startDate,
       endDate: filter.endDate,
-      filterDeleted: filter.filterDeleted === true ? true : filter.filterDeleted === false ? false : null,
+      filterDeleted: filter.filterDeleted
     };
     fetchDonationReport(appliedFilters);
     showToast(`Filtro "${filter.name}" aplicado`);
@@ -364,7 +370,9 @@ export default function DonationReport() {
               <li key={filter.id} className="flex justify-between items-center">
                 <span>
                   {filter.name} - {filter.categoryName || "Todas"} -{" "}
-                  {filter.filterDeleted === true ? "Inactivos" : filter.filterDeleted === false ? "Activos" : "Todos"}
+                  {filter.filterDeleted === true ? "Inactivos" 
+                  : filter.filterDeleted === false ? "Activos" 
+                  : "Ambos"}
                 </span>
                 <div className="flex gap-2">
                   <button

@@ -91,14 +91,6 @@ export default function DonationReportFilterModal({
       setError("No se puede actualizar un filtro sin un ID válido");
       return;
     }
-    if (!formData.categoryId) {
-      setError("Debes seleccionar una categoría");
-      return;
-    }
-    if (!formData.filterDeleted) {
-      setError("Debes seleccionar un estado (Activos o Inactivos)");
-      return;
-    }
     if (!filterToEdit && !formData.name.trim()) {
       const searchData = {
         ...formData,
@@ -154,19 +146,10 @@ export default function DonationReportFilterModal({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-              <select
-                name="categoryId"
-                value={formData.categoryId}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
-              >
-                <option value="" disabled>
-                  Selecciona una categoría
-                </option>
+              <select name="categoryId" value={formData.categoryId} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green">
+                <option value="">Todas las categorías</option>
                 {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
+                  <option key={category.id} value={category.id}>{category.name}</option>
                 ))}
               </select>
             </div>
@@ -195,18 +178,16 @@ export default function DonationReportFilterModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+              <label className="block text-sm font-medium text-gray-700">Estado de Donaciones</label>
               <select
                 name="filterDeleted"
-                value={formData.filterDeleted}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
+                value={formData.filterDeleted || "both"}
+                onChange={(e) => setFormData({ ...formData, filterDeleted: e.target.value })}
+                className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-empuje-green focus:border-empuje-green"
               >
-                <option value="" disabled>
-                  Selecciona un estado
-                </option>
-                <option value="false">Activos</option>
-                <option value="true">Inactivos</option>
+                <option value="both">Ambos (Activos y Eliminados)</option>
+                <option value="false">Solo Activos</option>
+                <option value="true">Solo Eliminados</option>
               </select>
             </div>
 

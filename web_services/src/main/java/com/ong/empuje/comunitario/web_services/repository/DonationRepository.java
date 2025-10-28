@@ -17,8 +17,8 @@ public interface DonationRepository extends JpaRepository<Donation, Integer> {
         "AND (:startDate IS NULL OR d.createdAt >= :startDate) " +
         "AND (:endDate IS NULL OR d.createdAt <= :endDate) " +
         "AND (:deleted IS NULL OR d.deleted = :deleted)")
-    List<Donation> findByFilters(@Param("categoryId") Integer categoryId, 
-                                @Param("startDate") LocalDateTime startDate, 
-                                @Param("endDate") LocalDateTime endDate, 
+    List<Donation> findByFilters(@Param("categoryId") Integer categoryId,
+                                @Param("startDate") LocalDateTime startDate,
+                                @Param("endDate") LocalDateTime endDate,
                                 @Param("deleted") Boolean deleted);
 }
