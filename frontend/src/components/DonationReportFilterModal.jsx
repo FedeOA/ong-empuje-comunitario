@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { baseUrlWebServices } from "../constants/constants.js";
-import { useAuth } from "../context/AuthContext"; // Add this import
-import Toast from "../components/Toast"; // Add this import
+import { baseUrlGraphQL } from "../constants/constants.js";
 
 export default function DonationReportFilterModal({
   isOpen,
@@ -11,18 +9,15 @@ export default function DonationReportFilterModal({
   filterToEdit,
   initialCategoryId,
 }) {
-  const { user } = useAuth(); // Add auth context
-  const isPrivileged = user.role === "PRESIDENTE" || user.role === "COORDINADOR"; // Add role check
   const [formData, setFormData] = useState({
     name: "",
     categoryId: "",
     startDate: "",
     endDate: "",
-    deleted: "",
+    filterDeleted: "",
   });
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState("");
-  const [toast, setToast] = useState(null); // Add toast state
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +33,7 @@ export default function DonationReportFilterModal({
           categoryId: filterToEdit.categoryId ? filterToEdit.categoryId.toString() : "",
           startDate: filterToEdit.startDate ? filterToEdit.startDate.slice(0, 16) : "",
           endDate: filterToEdit.endDate ? filterToEdit.endDate.slice(0, 16) : "",
-          deleted: isPrivileged ? (filterToEdit.isDeleted === true ? "YES" : filterToEdit.isDeleted === false ? "NO" : "") : "NO", // Restrict deleted filter for non-privileged
+          filterDeleted: filterToEdit.filterDeleted === true ? "true" : filterToEdit.filterDeleted === false ? "false" : "",
         });
       } else {
         setFormData({
@@ -46,21 +41,21 @@ export default function DonationReportFilterModal({
           categoryId: initialCategoryId ? initialCategoryId.toString() : "",
           startDate: "",
           endDate: "",
-          deleted: isPrivileged ? "" : "NO", // Restrict deleted filter for non-privileged
+          filterDeleted: "",
         });
       }
       setError("");
     }
-  }, [isOpen, filterToEdit, initialCategoryId, isPrivileged]);
+  }, [isOpen, filterToEdit, initialCategoryId]);
 
   const fetchCategories = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${baseUrlWebServices}/graphql`, {
+      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify({
           query: `
@@ -87,39 +82,41 @@ export default function DonationReportFilterModal({
     } catch (error) {
       console.error("Error al cargar categorías:", error);
       setError(`Error al cargar categorías: ${error.message}`);
-      showToast(`Error al cargar categorías: ${error.message}`, "error"); // Add toast
     }
-  };
-
-  const showToast = (message, type = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (filterToEdit && !filterToEdit.id) {
       setError("No se puede actualizar un filtro sin un ID válido");
-      showToast("No se puede actualizar un filtro sin un ID válido", "error");
+      return;
+    }
+    if (!formData.categoryId) {
+      setError("Debes seleccionar una categoría");
+      return;
+    }
+    if (!formData.filterDeleted) {
+      setError("Debes seleccionar un estado (Activos o Inactivos)");
       return;
     }
     if (!filterToEdit && !formData.name.trim()) {
-      onSearch(formData);
+      const searchData = {
+        ...formData,
+        filterDeleted: formData.filterDeleted === "true" ? true : formData.filterDeleted === "false" ? false : null,
+      };
+      onSearch(searchData);
       onClose();
-    } else if (isPrivileged || !formData.name.trim()) { // Allow saving only for privileged users
-      onSubmit(formData);
-      showToast("Filtro guardado correctamente", "success");
     } else {
-      showToast("No tienes permisos para guardar filtros", "error");
+      const submitData = {
+        ...formData,
+        filterDeleted: formData.filterDeleted === "true" ? true : formData.filterDeleted === "false" ? false : null,
+      };
+      onSubmit(submitData);
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "deleted" && !isPrivileged && value !== "NO") { // Restrict deleted filter changes for non-privileged
-      showToast("No tienes permisos para filtrar por estado eliminado", "error");
-      return;
-    }
     setFormData((prev) => ({ ...prev, [name]: value }));
     setError("");
   };
@@ -139,20 +136,18 @@ export default function DonationReportFilterModal({
               {error}
             </div>
           )}
-          {toast && <Toast type={toast.type} message={toast.message} />} {/* Add toast component */}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {filterToEdit ? "Nombre del Filtro" : "Nombre del Filtro (opcional para buscar)"}
+                {filterToEdit ? "Nombre del Filtro" : "Nombre del Filtro"}
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                disabled={!isPrivileged && filterToEdit} // Disable for non-privileged when editing
-                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green ${!isPrivileged && filterToEdit ? "bg-gray-100" : ""}`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
                 placeholder="Ej: Donaciones 2025"
               />
             </div>
@@ -165,7 +160,9 @@ export default function DonationReportFilterModal({
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
               >
-                <option value="">Todas las categorías</option>
+                <option value="" disabled>
+                  Selecciona una categoría
+                </option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -198,17 +195,18 @@ export default function DonationReportFilterModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Estado Eliminado</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
               <select
-                name="deleted"
-                value={formData.deleted}
+                name="filterDeleted"
+                value={formData.filterDeleted}
                 onChange={handleChange}
-                disabled={!isPrivileged} // Disable for non-privileged
-                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green ${!isPrivileged ? "bg-gray-100" : ""}`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-empuje-green"
               >
-                <option value="">Todos</option>
-                <option value="NO">Activos</option>
-                <option value="YES">Eliminados</option>
+                <option value="" disabled>
+                  Selecciona un estado
+                </option>
+                <option value="false">Activos</option>
+                <option value="true">Inactivos</option>
               </select>
             </div>
 

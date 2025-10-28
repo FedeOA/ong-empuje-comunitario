@@ -1,6 +1,7 @@
 package com.grpc.demo.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.grpc.demo.dto.in.DonationDTO;
 
 import java.util.List;
 
@@ -12,6 +13,6 @@ public record EventResponseDTO(
         @JsonProperty("is_published")
         boolean isPublished,
         List<String> users,
-        List<DonationEventDTO> donations
+        List<DonationDTO> donations
 ) {
 }

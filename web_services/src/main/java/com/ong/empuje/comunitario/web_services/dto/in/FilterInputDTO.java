@@ -8,16 +8,18 @@ public class FilterInputDTO {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private Boolean deleted;
+    private Boolean filterDeleted;
     private String username;
 
     public FilterInputDTO() {
     }
 
-    public FilterInputDTO(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted, String username) {
+    public FilterInputDTO(String name, Integer categoryId, LocalDateTime startDate, LocalDateTime endDate, Boolean filterDeleted, Boolean deleted, String username) {
         this.name = name;
         this.categoryId = categoryId;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.filterDeleted = filterDeleted;
         this.deleted = deleted;
         this.username = username;
     }
@@ -68,5 +70,13 @@ public class FilterInputDTO {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Boolean getFilterDeleted() {
+        return filterDeleted;
+    }
+
+    public void setFilterDeleted(Boolean filterDeleted) {
+        this.filterDeleted = filterDeleted;
     }
 }

@@ -1,7 +1,16 @@
 package com.ong.empuje.comunitario.web_services.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "saved_filters")
@@ -27,13 +36,16 @@ public class SavedFilter {
     @Column(name = "end_date")
     private LocalDateTime endDate;
 
+    @Column(name = "filter_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")  
+    private Boolean filterDeleted = false; 
+
     @Column(name = "is_deleted", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private Boolean isDeleted = false;
 
     public SavedFilter() {
     }
 
-    public SavedFilter(Integer id, String name, Category category, User user, LocalDateTime startDate, LocalDateTime endDate, Boolean deleted) {
+    public SavedFilter(Integer id, String name, Category category, User user, LocalDateTime startDate, LocalDateTime endDate, Boolean filterDeleted, Boolean deleted) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -41,9 +53,10 @@ public class SavedFilter {
         this.startDate = startDate;
         this.endDate = endDate;
         this.isDeleted = deleted;
+        this.filterDeleted = filterDeleted;
     }
 
-    public Integer getId() { // Changed from int to Integer
+    public Integer getId() { 
         return id;
     }
 
@@ -113,5 +126,13 @@ public class SavedFilter {
 
     public String getUsername() {
         return user != null ? user.getUsername() : null;
+    }
+
+    public Boolean getFilterDeleted() {
+        return filterDeleted;
+    }
+
+    public void setFilterDeleted(Boolean filterDeleted) {
+        this.filterDeleted = filterDeleted;
     }
 }

@@ -64,6 +64,7 @@ type SavedFilter {
     startDate: String
     endDate: String
     isDeleted: Boolean!
+    filterDeleted: Boolean
 }
 
 type Category {
@@ -79,4 +80,5 @@ input FilterInput {
     endDate: String
     deleted: Boolean
     username: String!
+    filterDeleted: Boolean
 }

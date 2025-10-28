@@ -25,7 +25,7 @@ _sym_db = _symbol_database.Default()
 from services_pb2 import user_pb2 as user__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\x12\x05\x65vent\x1a\nuser.proto\"\x07\n\x05\x45mpty\"\xa3\x01\n\rExternalEvent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x14\n\x0cis_published\x18\x05 \x01(\x08\x12\x11\n\tremote_id\x18\x06 \x01(\x05\x12\x17\n\x0forganization_id\x18\x07 \x01(\x05\x12\r\n\x05users\x18\x08 \x03(\t\"o\n\x05\x45vent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x14\n\x0cis_published\x18\x05 \x01(\x08\x12\r\n\x05users\x18\x06 \x03(\t\"(\n\tEventList\x12\x1b\n\x05\x65vent\x18\x01 \x03(\x0b\x32\x0c.event.Event\"@\n\x11\x45xternalEventList\x12+\n\rexternalEvent\x18\x01 \x03(\x0b\x32\x14.event.ExternalEvent\"6\n\x10UserEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x10\n\x08username\x18\x02 \x01(\t\"=\n\x14\x44onationEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64onation_id\x18\x02 \x01(\x05\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xaf\x03\n\x0c\x45ventService\x12,\n\x0b\x43reateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0bUpdateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0b\x44\x65leteEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\nListEvents\x12\x0c.event.Empty\x1a\x10.event.EventList\x12<\n\x12ListExternalEvents\x12\x0c.event.Empty\x1a\x18.event.ExternalEventList\x12\x33\n\x07\x41\x64\x64User\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12\x36\n\nRemoveUser\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12<\n\x0cUseDonations\x12\x1b.event.DonationEventRequest\x1a\x0f.event.ResponseB\x1f\n\x1b\x63om.grpc.demo.service.eventP\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x65vent.proto\x12\x05\x65vent\x1a\nuser.proto\"\x07\n\x05\x45mpty\"\xa3\x01\n\rExternalEvent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x14\n\x0cis_published\x18\x05 \x01(\x08\x12\x11\n\tremote_id\x18\x06 \x01(\x05\x12\x17\n\x0forganization_id\x18\x07 \x01(\x05\x12\r\n\x05users\x18\x08 \x03(\t\"\x9f\x01\n\x05\x45vent\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12\x12\n\nfecha_hora\x18\x04 \x01(\t\x12\x14\n\x0cis_published\x18\x05 \x01(\x08\x12\r\n\x05users\x18\x06 \x03(\t\x12.\n\tdonations\x18\x07 \x03(\x0b\x32\x1b.event.DonationWithQuantity\"W\n\x14\x44onationWithQuantity\x12\x13\n\x0b\x63\x61tegory_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rquantity_used\x18\x03 \x01(\x05\"(\n\tEventList\x12\x1b\n\x05\x65vent\x18\x01 \x03(\x0b\x32\x0c.event.Event\"@\n\x11\x45xternalEventList\x12+\n\rexternalEvent\x18\x01 \x03(\x0b\x32\x14.event.ExternalEvent\"6\n\x10UserEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x10\n\x08username\x18\x02 \x01(\t\"=\n\x14\x44onationEventRequest\x12\x10\n\x08\x65vent_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64onation_id\x18\x02 \x01(\x05\",\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xaf\x03\n\x0c\x45ventService\x12,\n\x0b\x43reateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0bUpdateEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\x0b\x44\x65leteEvent\x12\x0c.event.Event\x1a\x0f.event.Response\x12,\n\nListEvents\x12\x0c.event.Empty\x1a\x10.event.EventList\x12<\n\x12ListExternalEvents\x12\x0c.event.Empty\x1a\x18.event.ExternalEventList\x12\x33\n\x07\x41\x64\x64User\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12\x36\n\nRemoveUser\x12\x17.event.UserEventRequest\x1a\x0f.event.Response\x12<\n\x0cUseDonations\x12\x1b.event.DonationEventRequest\x1a\x0f.event.ResponseB\x1f\n\x1b\x63om.grpc.demo.service.eventP\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,18 +37,20 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_EMPTY']._serialized_end=41
   _globals['_EXTERNALEVENT']._serialized_start=44
   _globals['_EXTERNALEVENT']._serialized_end=207
-  _globals['_EVENT']._serialized_start=209
-  _globals['_EVENT']._serialized_end=320
-  _globals['_EVENTLIST']._serialized_start=322
-  _globals['_EVENTLIST']._serialized_end=362
-  _globals['_EXTERNALEVENTLIST']._serialized_start=364
-  _globals['_EXTERNALEVENTLIST']._serialized_end=428
-  _globals['_USEREVENTREQUEST']._serialized_start=430
-  _globals['_USEREVENTREQUEST']._serialized_end=484
-  _globals['_DONATIONEVENTREQUEST']._serialized_start=486
-  _globals['_DONATIONEVENTREQUEST']._serialized_end=547
-  _globals['_RESPONSE']._serialized_start=549
-  _globals['_RESPONSE']._serialized_end=593
-  _globals['_EVENTSERVICE']._serialized_start=596
-  _globals['_EVENTSERVICE']._serialized_end=1027
+  _globals['_EVENT']._serialized_start=210
+  _globals['_EVENT']._serialized_end=369
+  _globals['_DONATIONWITHQUANTITY']._serialized_start=371
+  _globals['_DONATIONWITHQUANTITY']._serialized_end=458
+  _globals['_EVENTLIST']._serialized_start=460
+  _globals['_EVENTLIST']._serialized_end=500
+  _globals['_EXTERNALEVENTLIST']._serialized_start=502
+  _globals['_EXTERNALEVENTLIST']._serialized_end=566
+  _globals['_USEREVENTREQUEST']._serialized_start=568
+  _globals['_USEREVENTREQUEST']._serialized_end=622
+  _globals['_DONATIONEVENTREQUEST']._serialized_start=624
+  _globals['_DONATIONEVENTREQUEST']._serialized_end=685
+  _globals['_RESPONSE']._serialized_start=687
+  _globals['_RESPONSE']._serialized_end=731
+  _globals['_EVENTSERVICE']._serialized_start=734
+  _globals['_EVENTSERVICE']._serialized_end=1165
 # @@protoc_insertion_point(module_scope)
