@@ -30,7 +30,7 @@ public class AuthController {
             return ResponseEntity.ok(auth.generateToken(serverResponse));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
-                new LoginResponseDTO(false,"Unexpected Error","Empty","Empty","Empty"));
+                new LoginResponseDTO(false,"Unexpected Error","Empty","Empty","Empty", -1));
         }
     }
     

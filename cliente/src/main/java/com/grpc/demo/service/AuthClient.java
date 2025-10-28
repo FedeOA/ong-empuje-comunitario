@@ -46,16 +46,17 @@ public class AuthClient {
             String jwt = Jwts.builder()
                     .setSubject(loginResponse.getUsername())
                     .claim("role", authority)
+                    .claim("orgId", loginResponse.getOrganizationId())
                     .setIssuedAt(new Date())
                     .setExpiration(new Date(System.currentTimeMillis() + 3600_000)) // 1 hora
                     .signWith(SignatureAlgorithm.HS256, SECRET_KEY_TOKEN.getBytes())
                     .compact();
 
 
-            return new LoginResponseDTO(loginResponse.getSuccess(),loginResponse.getMessage(),authority,loginResponse.getUsername(),jwt);
+            return new LoginResponseDTO(loginResponse.getSuccess(),loginResponse.getMessage(),authority,loginResponse.getUsername(),jwt,loginResponse.getOrganizationId());
         }
 
-        return new LoginResponseDTO(false,loginResponse.getMessage(),"Empty",loginResponse.getUsername(),"Empty");
+        return new LoginResponseDTO(false,loginResponse.getMessage(),"Empty",loginResponse.getUsername(),"Empty",-1);
     }
 
 

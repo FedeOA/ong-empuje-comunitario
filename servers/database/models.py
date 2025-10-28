@@ -17,6 +17,7 @@ class User(Base):
     email = Column(String(255))
     is_active = Column(Boolean)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    organization_id = Column(Integer, ForeignKey('organizations.id'))
     role_id = Column(Integer, ForeignKey('roles.id'))
     user_events = relationship("UserEvent", back_populates="user")
 

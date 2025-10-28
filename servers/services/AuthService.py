@@ -24,33 +24,50 @@ class AuthService(authorize_pb2_grpc.AuthServiceServicer):
                 or_(User.username == request.username_or_email, User.email == request.username_or_email)
             ).first()
 
+            print(f"User query result: {user.username if user else 'None'}")  # Debug log
+
             if not user:
-                return LoginResponse(
+                response = LoginResponse(
                     success=False,
                     message="User not found",
                     role_id=0,
-                    username=""
+                    username="",
+                    organization_id=0
                 )
+                print("Login failed: User not found")  # Debug
+                return response
 
-            if bcrypt.checkpw(request.password.encode('utf-8'), user.password_hash.encode('utf-8')):
+            password_match = bcrypt.checkpw(request.password.encode('utf-8'), user.password_hash.encode('utf-8'))
+            print(f"Password match: {password_match}")  # Debug log
 
-                return LoginResponse(
+            if password_match:
+                response = LoginResponse(
                     success=True,
                     message="Login successful",
                     role_id=user.role_id,
-                    username=user.username
+                    username=user.username,
+                    organization_id=user.organization_id or 0  # Ensure non-null
                 )
+                print(f"Login success: org_id={user.organization_id}")  # Debug
+                return response
             else:
-                return LoginResponse(
+                response = LoginResponse(
                     success=False,
                     message="Invalid password",
                     role_id=0,
-                    username=""
+                    username="",
+                    organization_id=0
                 )
+                print("Login failed: Invalid password")  # Debug
+                return response
         except Exception as e:
+            print(f"Login exception: {str(e)}")  # Debug
             return LoginResponse(
                 success=False,
                 message=str(e),
+                role_id=0,
+                username="",
+                organization_id=0  # Add defaults
             )
         finally:
             session.close()

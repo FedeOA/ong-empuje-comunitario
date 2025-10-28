@@ -16,6 +16,7 @@ message LoginResponse {
     string message = 2;
     int32 role_id = 3;
     string username = 4;
+    int32 organization_id = 5;
 }
 
 message Response {

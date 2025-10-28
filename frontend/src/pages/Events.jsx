@@ -7,6 +7,7 @@ import Toast from "../components/Toast";
 import ActionsModal from "../components/ActionsModal.jsx";
 import FiltersModal from "../components/FiltersModal.jsx";
 import DonationEventModal from "../components/DonationEventModal";
+import { useAuth } from '../context/AuthContext';
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -26,9 +27,6 @@ export default function Events() {
     setSelectedDonations(safeDonations);
     setDonationsModalOpen(true);
   };
-
-
-
 
   const today = new Date();
   const { user } = useAuth();
@@ -216,7 +214,7 @@ export default function Events() {
         },
           
         body: JSON.stringify({
-          organization_id: 1 ,// id de organización fija por ahora
+          organization_id: user?.organization_id, // id de organización fija por ahora
           event_id: event.id,
           name: event.name,
           description: event.description,

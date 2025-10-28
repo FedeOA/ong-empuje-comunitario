@@ -5,7 +5,8 @@ public record LoginResponseDTO(
         String message,
         String role,
         String username,
-        String token
+        String token,
+        int organizationId
 ) {
 }
 

@@ -9,9 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const token = localStorage.getItem("token");
-
-
+    const token = localStorage.getItem("token");
     if (token && typeof token === "string" && token.split(".").length === 3) {
       try {
         const decoded = jwtDecode(token);
@@ -23,35 +21,45 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem("token");
     }
-
     setLoading(false);
   }, []);
 
 
   const login = async (usernameOrEmail, password) => {
     setLoading(true);
-
     const res = await fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ usernameOrEmail, password }),
     });
-
     if (!res.ok) {
       const errorData = await res.json();
       setLoading(false);
       throw new Error(errorData.message || "Credenciales inválidas");
     }
-
-
-    const { token } = await res.json();
-    localStorage.setItem("token", token);
-
-    const decoded = jwtDecode(token);
-    setUser({ username: decoded.sub, role: decoded.role });
+    const data = await res.json();
+    if (!data.token || typeof data.token !== 'string' || data.token === 'Empty') {
+      setLoading(false);
+      throw new Error(data.message || 'Token inválido del servidor');
+    }
+    localStorage.setItem("token", data.token);
+    try {
+      const decoded = jwtDecode(data.token);
+      setUser({
+        username: decoded.sub,
+        role: decoded.role,
+        organizationId: decoded.orgId || 0
+      });
+      console.log("username: ", decoded.sub);
+      console.log("role: ", decoded.role);
+      console.log("organization id: ", decoded.orgId);
+    } catch (err) {
+      console.error("Token decode error:", err);
+      localStorage.removeItem("token");
+      throw new Error("Token inválido");
+    }
     setLoading(false);
-
-    return decoded;
+    return data;
   };
 
   const logout = () => {
