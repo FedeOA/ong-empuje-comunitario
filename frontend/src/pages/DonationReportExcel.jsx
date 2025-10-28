@@ -100,8 +100,9 @@ const DonationReportExcel = () => {
         categoryId,
         startDate: filters.startDate ? new Date(filters.startDate).toISOString() : null,
         endDate: filters.endDate ? new Date(filters.endDate).toISOString() : null,
-        deleted: filters.deleted || null,
+        deleted: filters.deleted === "both" ? null : filters.deleted === "true"  // null for both
       };
+      console.log("Payload deleted:", payload.deleted); 
 
       console.log("[handleDownloadExcel] Payload:", payload);
 
@@ -196,18 +197,21 @@ const DonationReportExcel = () => {
             />
           </div>
           <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="deleted"
-              checked={filters.deleted}
-              onChange={handleChange}
-              className="h-4 w-4 text-empuje-green border-gray-300 rounded focus:ring-empuje-green"
-              disabled={loading || !(user?.role === "PRESIDENTE" || user?.role === "COORDINADOR")}
-              aria-label="Incluir donaciones eliminadas"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">
-              Incluir donaciones eliminadas
-            </label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Estado de Donaciones</label>
+              <select
+                name="deleted"
+                value={filters.deleted || "both"}  // "both" por default
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-empuje-green focus:border-empuje-green"
+                disabled={loading}
+                aria-label="Selecciona estado de donaciones"
+              >
+                <option value="both">Ambos (Activos y Eliminados)</option>
+                <option value="false">Solo Activos</option>
+                <option value="true">Solo Eliminados</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>

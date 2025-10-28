@@ -42,8 +42,7 @@ public class ExcelReportController {
                 request.getDeleted()
             );
 
-            String timestamp = LocalDateTime.now().format(ofPattern("yyyyMMdd_HHmmss"));
-            String filename = String.format("reporte_donaciones_%s.xlsx", timestamp);
+            String filename = String.format("reporte_donaciones");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);

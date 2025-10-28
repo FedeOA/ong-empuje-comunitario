@@ -44,7 +44,9 @@ public class ExcelReportService {
         logger.info("Generando reporte Excel");
 
         try(Workbook workbook = new XSSFWorkbook()){
+            logger.info("Query params - categoryId: {}, startDate: {}, endDate: {}, deleted: {}", categoryId, startDate, endDate, deleted);
             List<Donation> donations = donationRepository.findByFilters(categoryId, startDate, endDate, deleted);
+            logger.info("Found {} donations", donations.size());
             Map<Integer, List<Donation>> donationsByCategory = donations.stream().collect(Collectors.groupingBy(Donation::getCategoryId));
             
             //hoja resumen
@@ -68,7 +70,7 @@ public class ExcelReportService {
         }
     }
 
-    //hoja resumen
+    //hoja resumen - Sin títulos, columnas con min width duplicado
     private void createSumarySheet(Workbook workbook, List<Donation> allDonations, Map<Integer, List<Donation>> donationsByCategory){
         Sheet sheet = workbook.createSheet("Resumen General");
         CellStyle headerStyle = createHeaerStyle(workbook);
@@ -76,33 +78,51 @@ public class ExcelReportService {
         CellStyle boldStyle = createBoldStryle(workbook);
         int i;
         
-        Row titleRow = sheet.createRow(0);
-        Cell titleCell = titleRow.createCell(0);
-        titleCell.setCellValue("INFORME DE DONACIONES - EMPUJE COMUNITARIO");
-        titleCell.setCellStyle(boldStyle);
+        // Eliminar título y sección de filtros
+        int rowNum = 0;
 
-        //filtros
-        int rowNum = 2;
-        Row filtersRow = sheet.createRow(rowNum++);
-        filtersRow.createCell(0).setCellValue("Filtros aplicados");
-        filtersRow.getCell(0).setCellStyle(boldStyle);
+        // Tabla de donaciones detalladas
+        Row detailHeader = sheet.createRow(rowNum++);
+        String[] detailHeaders = {"ID", "Categoría", "Descripción", "Cantidad", "Fecha Alta", "Estado"};
+        for(i = 0; i < detailHeaders.length; i++){
+            Cell cell = detailHeader.createCell(i);
+            cell.setCellValue(detailHeaders[i]);
+            cell.setCellStyle(headerStyle);
+        }
 
-        //Resumen por categoria
-        rowNum++;
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        for(Donation donation : allDonations){
+            Row dataRow = sheet.createRow(rowNum++);
+            dataRow.createCell(0).setCellValue(donation.getId());  // ID
+            Category cat = categoryRepository.findById(donation.getCategoryId()).orElse(null);
+            dataRow.createCell(1).setCellValue(cat != null ? cat.getName() : "Desconocida");  // Categoría
+            dataRow.createCell(2).setCellValue(donation.getDescription());  // Descripción
+            dataRow.createCell(3).setCellValue(donation.getQuantity() != null ? donation.getQuantity() : 0);  // Cantidad
+            dataRow.createCell(4).setCellValue(donation.getCreatedAt() != null ? donation.getCreatedAt().format(dateFormatter) : "");  // Fecha Alta
+            dataRow.createCell(5).setCellValue(donation.getDeleted() ? "Eliminado" : "Activo");  // Estado
+
+            for(i = 0; i < detailHeaders.length; i++){
+                if(dataRow.getCell(i) != null){
+                    dataRow.getCell(i).setCellStyle(dataStyle);
+                }
+            }
+        }
+
+        // Tabla resumen (después del detalle)
+        rowNum += 2;
         Row summaryHeader = sheet.createRow(rowNum++);
-        String[] summaryHeaders = {"Categoria","Cantidad Total","Registros","Activos","Eliminados"};
-        for(i = 0; i<summaryHeaders.length; i++){
+        String[] summaryHeaders = {"Categoría", "Cantidad Total", "Registros", "Activos", "Eliminados"};
+        for(i = 0; i < summaryHeaders.length; i++){
             Cell cell = summaryHeader.createCell(i);
             cell.setCellValue(summaryHeaders[i]);
             cell.setCellStyle(headerStyle);
         }
 
-        //datos
         for(Map.Entry<Integer, List<Donation>> entry : donationsByCategory.entrySet()){
             Integer categoryId = entry.getKey();
             List<Donation> categoryDonations = entry.getValue();
             Category category = categoryRepository.findById(categoryId).orElse(null);
-            String categoryName = category != null ? category.getName() :"Desconocida";
+            String categoryName = category != null ? category.getName() : "Desconocida";
 
             long activeCount = categoryDonations.stream().filter(d -> !d.getDeleted()).count();
             long deletedCount = categoryDonations.stream().filter(Donation::getDeleted).count();
@@ -118,15 +138,14 @@ public class ExcelReportService {
             for(i = 0; i < 5; i++){
                 dataRow.getCell(i).setCellStyle(dataStyle);
             }
-
         }
 
-        //Totales
+        // Total general - Aplicar boldStyle a TODAS las celdas
         if(!donationsByCategory.isEmpty()){
             rowNum++;
             Row totalRow = sheet.createRow(rowNum);
             totalRow.createCell(0).setCellValue("TOTAL GENERAL");
-            totalRow.getCell(0).setCellStyle(boldStyle);
+            totalRow.getCell(0).setCellStyle(boldStyle);  // Ya tenía
 
             int totalQuantity = allDonations.stream().filter(d -> d.getQuantity() != null).mapToInt(Donation::getQuantity).sum();
             long totalActive = allDonations.stream().filter(d -> !d.getDeleted()).count();
@@ -137,12 +156,22 @@ public class ExcelReportService {
             totalRow.createCell(3).setCellValue(totalActive);
             totalRow.createCell(4).setCellValue(totalDeleted);
 
-            for(i = 1; i<5; i++){
+            // Aplicar boldStyle a TODAS las celdas (1 a 4)
+            for(i = 1; i <= 4; i++){
                 totalRow.getCell(i).setCellStyle(boldStyle);
             }
         }
+
+        // Auto-size + min widths DUPLICADOS
+        int[] minWidths = {5120, 7680, 15360, 6144, 9216, 6144};  // Doble del anterior
+        for(i = 0; i < 6; i++){
+            sheet.autoSizeColumn(i);
+            sheet.setColumnWidth(i, Math.max(sheet.getColumnWidth(i), minWidths[i]));
+        }
+        // Resumen reutiliza columnas 0-4
         for(i = 0; i < 5; i++){
             sheet.autoSizeColumn(i);
+            sheet.setColumnWidth(i, Math.max(sheet.getColumnWidth(i), 6144));  // Min 24 chars (~doble de 12)
         }
     }
 
@@ -234,6 +263,8 @@ public class ExcelReportService {
         style.setBorderTop(BorderStyle.THIN);
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
+        style.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
         return style;
     }
 
@@ -244,6 +275,8 @@ public class ExcelReportService {
         style.setBorderLeft(BorderStyle.THIN);
         style.setBorderRight(BorderStyle.THIN);
         style.setWrapText(true);
+        style.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
         return style;
     }
 
@@ -252,6 +285,8 @@ public class ExcelReportService {
         Font font = workbook.createFont();
         font.setBold(true);
         style.setFont(font);
+        style.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
         return style;
     }
 
