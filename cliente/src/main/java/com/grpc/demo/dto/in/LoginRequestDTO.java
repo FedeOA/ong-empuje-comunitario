@@ -4,7 +4,6 @@ public class LoginRequestDTO {
     private String usernameOrEmail;
     private String password;
 
-    // Getters y Setters
     public String getUsernameOrEmail() {
         return usernameOrEmail;
     }

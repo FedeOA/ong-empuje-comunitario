@@ -8,10 +8,8 @@ public class DonationRequestDTO {
     private Boolean deleted;
     private List<DonationRequestItemDTO> items;
 
-    // Constructors
     public DonationRequestDTO() {}
 
-    // Getters and Setters
     public Integer getRequestId() { return requestId; }
     public void setRequestId(Integer requestId) { this.requestId = requestId; }
 

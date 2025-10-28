@@ -336,7 +336,7 @@ public class KafkaConsumerImpl implements IConsumer {
             DonationRequestItem item = new DonationRequestItem();
             item.setCategoryId(itemDto.getCategoryId());
             item.setDescription(itemDto.getDescription());
-            item.setDonationRequest(request); // Set the parent reference
+            item.setDonationRequest(request);
             request.getItems().add(item);
         }
 

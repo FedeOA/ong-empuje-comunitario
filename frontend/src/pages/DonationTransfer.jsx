@@ -106,7 +106,7 @@ export default function DonationTransfer() {
       const isEdit = id && id > 0;
       const transformedPayload = {
         organization_id: payload.organizationId,
-        ...(isEdit && { request_id: transferId }), // Include request_id only for updates
+        ...(isEdit && { request_id: transferId }),
         items: payload.items.map(item => ({
           category_id: item.categoryId,
           description: item.description,

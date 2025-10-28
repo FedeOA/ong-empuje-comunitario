@@ -31,10 +31,8 @@ public class DonationRequest implements Serializable {
     @JsonProperty("items")
     private List<DonationRequestItem> items = new ArrayList<>();
     
-    // Constructors
     public DonationRequest() {}
 
-    // Getters and Setters
     public Integer getRequestId() { return requestId; }
     public void setRequestId(Integer requestId) { this.requestId = requestId; }
     

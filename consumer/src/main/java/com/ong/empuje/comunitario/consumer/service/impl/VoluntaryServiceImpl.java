@@ -121,7 +121,6 @@ public class VoluntaryServiceImpl implements VoluntaryService {
         if (voluntary.getOrganizationId() == null) {
             throw new IllegalArgumentException("Organization ID is required");
         }
-        // Add additional validation as needed, e.g., checking for required fields like name
         if (voluntary.getName() == null || voluntary.getName().isEmpty()) {
             throw new IllegalArgumentException("Voluntary name is required");
         }

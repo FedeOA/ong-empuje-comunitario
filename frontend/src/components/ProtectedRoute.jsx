@@ -5,7 +5,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) return null; // o un spinner
+  if (loading) return null; 
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;

@@ -103,7 +103,6 @@ public class UserEventsServiceImpl implements UserEventsService {
         if (userEvents.getId() == null) {
             throw new IllegalArgumentException("UserEvents ID is required");
         }
-        // Add additional validation as needed, e.g., checking for required fields like userId or eventId
         if (userEvents.getUser() != null || userEvents.getEvent() != null) {
             throw new IllegalArgumentException("User ID and Event ID are required");
         }

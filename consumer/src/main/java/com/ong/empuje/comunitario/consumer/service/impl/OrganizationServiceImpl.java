@@ -104,7 +104,6 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (organization.getId() == null) {
             throw new IllegalArgumentException("Organization ID is required");
         }
-        // Add additional validation as needed, e.g., checking for required fields like name
         if (organization.getName() == null || organization.getName().isEmpty()) {
             throw new IllegalArgumentException("Organization name is required");
         }

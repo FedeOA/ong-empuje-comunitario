@@ -1,5 +1,3 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\repository\DonationRequestRepository.java
-
 package com.ong.empuje.comunitario.consumer.repository;
 
 import java.util.Optional;

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { baseUrl } from "../constants/constants.js";
 import { roles } from "../constants/roles.js";
+import { useAuth } from "../context/AuthContext";
+import Toast from "../components/Toast";
 
 export default function MembersModal({ isOpen, onClose, event, user }) {
   const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [allUsers, setAllUsers] = useState([]);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     if (event?.id) {
@@ -68,8 +71,20 @@ export default function MembersModal({ isOpen, onClose, event, user }) {
     }
   };
 
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleAddUser = async (eventId, username) => {
     const token = localStorage.getItem("token");
+
+    console.log("Login User: ", user.username);
+    console.log("Username search: ", username);
+    if (username === user?.username) {
+      showToast("No puedes agregarte a ti mismo desde esta pantalla. Usa el botón 'Agregarse' en el menú de Acciones.", "error");
+      return;
+    }
 
     try {
       const response = await fetch(`${baseUrl}/events/${eventId}/users/${username}`, {
@@ -98,6 +113,9 @@ export default function MembersModal({ isOpen, onClose, event, user }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md relative">
+
+        {toast && <Toast message={toast.message} type={toast.type} />}
+
         <button
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 font-bold"
           onClick={onClose}

@@ -38,7 +38,7 @@ def main():
     
     try:
         channel = grpc.insecure_channel('localhost:50051')
-        stub_auth = authorize_pb2_grpc.AuthServiceStub(channel)  # Updated stub name
+        stub_auth = authorize_pb2_grpc.AuthServiceStub(channel)
     except Exception as e:
         print(f"Failed to connect to server: {str(e)}")
         return

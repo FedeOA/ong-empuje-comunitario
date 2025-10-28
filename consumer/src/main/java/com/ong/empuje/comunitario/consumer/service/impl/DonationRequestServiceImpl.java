@@ -110,7 +110,7 @@ public class DonationRequestServiceImpl implements DonationRequestService {
             throw new IllegalArgumentException("Request ID and Organization ID are required");
         }
         if (donationRequest.getDeleted() == null) {
-            donationRequest.setDeleted(false); // Ensure default value for new requests
+            donationRequest.setDeleted(false); 
         }
     }
 }

@@ -50,7 +50,6 @@ export default function ExternalEventsPage() {
 
       if (!response.ok) throw new Error("Error en la adhesión");
 
-      // Actualizar el estado local para reflejar el cambio
       setEvents(prev =>
         prev.map(event =>
           event.remote_id === eventId

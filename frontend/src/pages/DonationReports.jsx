@@ -49,11 +49,10 @@ export default function DonationReport() {
         }
       `;
 
-      // Primero, normaliza el valor de "deleted"
       const deletedValue = filters.filterDeleted === "true" ? true
                          : filters.filterDeleted === "false" ? false
-                         : (filters.filterDeleted === true || filters.filterDeleted === false) ? filters.filterDeleted // Si ya es boolean, úsalo
-                         : null; // "both", null, o undefined se convierten en null
+                         : (filters.filterDeleted === true || filters.filterDeleted === false) ? filters.filterDeleted 
+                         : null; // "both"
 
       const variables = {
         categoryId: filters.categoryId ? parseInt(filters.categoryId) : null,

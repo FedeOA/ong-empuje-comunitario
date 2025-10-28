@@ -38,10 +38,8 @@ public class DonationRequestItem implements Serializable {
     @JsonBackReference
     private DonationRequest donationRequest;
     
-    // Constructors
     public DonationRequestItem() {}
     
-    // Getters and Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     

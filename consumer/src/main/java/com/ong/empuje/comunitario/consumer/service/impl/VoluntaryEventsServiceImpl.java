@@ -103,7 +103,6 @@ public class VoluntaryEventsServiceImpl implements VoluntaryEventsService {
         if (voluntaryEvents.getId() == null) {
             throw new IllegalArgumentException("VoluntaryEvents ID is required");
         }
-        // Add additional validation as needed, e.g., checking for required fields like voluntaryId or eventId
         if (voluntaryEvents.getVoluntary() == null || voluntaryEvents.getEvent() == null) {
             throw new IllegalArgumentException("Voluntary ID and Event ID are required");
         }

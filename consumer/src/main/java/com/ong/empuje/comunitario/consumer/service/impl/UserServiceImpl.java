@@ -104,7 +104,6 @@ public class UserServiceImpl implements UserService {
         if (user.getId() == null) {
             throw new IllegalArgumentException("User ID is required");
         }
-        // Add additional validation as needed, e.g., checking for required fields like username or email
         if (user.getUsername() == null || user.getUsername().isEmpty()) {
             throw new IllegalArgumentException("Username is required");
         }

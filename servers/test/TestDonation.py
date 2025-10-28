@@ -58,7 +58,7 @@ def main():
     
     try:
         channel = grpc.insecure_channel('localhost:50051')
-        stub_donation = donation_pb2_grpc.DonationServiceStub(channel)  # Fixed stub name
+        stub_donation = donation_pb2_grpc.DonationServiceStub(channel)
     except Exception as e:
         print(f"Failed to connect to server: {str(e)}")
         return

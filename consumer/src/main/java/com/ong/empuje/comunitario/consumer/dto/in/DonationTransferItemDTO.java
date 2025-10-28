@@ -8,7 +8,6 @@ public record DonationTransferItemDTO(
     @JsonProperty("description") String description,
     @JsonProperty("quantity") Integer quantity
 ) {
-    // Explicit constructor for mapping from DonationTransferItem
     public DonationTransferItemDTO(Integer itemId, Integer categoryId, String description, Integer quantity) {
         this.itemId = itemId;
         this.categoryId = categoryId;

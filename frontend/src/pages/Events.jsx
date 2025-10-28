@@ -7,7 +7,6 @@ import Toast from "../components/Toast";
 import ActionsModal from "../components/ActionsModal.jsx";
 import FiltersModal from "../components/FiltersModal.jsx";
 import DonationEventModal from "../components/DonationEventModal";
-import { useAuth } from '../context/AuthContext';
 
 export default function Events() {
   const [events, setEvents] = useState([]);
@@ -15,6 +14,7 @@ export default function Events() {
   const [eventToEdit, setEventToEdit] = useState(null);
   const [isMembersModalOpen, setIsMembersModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEventId, setSelectedEventId] = useState(null);
   const [toast, setToast] = useState({ message: "", type: "success" });
   const [isActionsModalOpen, setIsActionsModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
@@ -48,12 +48,20 @@ export default function Events() {
       });
       const data = await response.json();
       setEvents(data);
+      return data
     } catch (error) {
       console.error("Error al cargar eventos:", error);
+      return null;
     }
   };
 
   useEffect(() => {
+    if (selectedEvent && events.length > 0) {
+      const updated = events.find(e => e.id === selectedEvent.id);
+      if (updated && JSON.stringify(updated) !== JSON.stringify(selectedEvent)) {
+        setSelectedEvent(updated);
+      }
+    }
     fetchEvents();
   }, []);
 
@@ -67,6 +75,7 @@ export default function Events() {
     if (eventDate > today) {
       setEventToEdit(event);
       setIsEventModalOpen(true);
+      setIsActionsModalOpen(false); 
     } else {
       alert("Solo se pueden modificar eventos futuros.");
     }
@@ -86,7 +95,13 @@ export default function Events() {
       if (!response.ok) throw new Error("Error al agregarse al evento");
 
       showToast("¡Te agregaste al evento con éxito!", "success");
-      await fetchEvents();
+      const newEvents = await fetchEvents(); 
+      if (newEvents) {
+        const updatedEvent = newEvents.find(e => e.id === eventId);
+        if (updatedEvent) {
+          setSelectedEvent(updatedEvent); 
+        }
+      }
     } catch (error) {
       console.error(error);
       showToast("Hubo un problema al agregarte al evento", "error");
@@ -105,9 +120,13 @@ export default function Events() {
       });
 
       if (!response.ok) throw new Error("Error al abandonar el evento");
-
-      showToast("Abandonaste el evento", "success");
-      await fetchEvents();
+      const newEvents = await fetchEvents();
+      if (newEvents) {
+        const updatedEvent = newEvents.find(e => e.id === eventId);
+        if (updatedEvent) {
+          setSelectedEvent(updatedEvent); 
+        }
+      }
     } catch (error) {
       console.error(error);
       showToast("Hubo un problema al abandonar el evento", "error");
@@ -135,6 +154,7 @@ export default function Events() {
 
       await fetchEvents();
       showToast("Evento dado de baja correctamente", "success");
+      setIsActionsModalOpen(false);
     } catch (error) {
       console.error(error);
       alert("Hubo un problema al eliminar el evento.");
@@ -148,6 +168,7 @@ export default function Events() {
         ...formData,
         ...(eventToEdit && { id: eventToEdit.id })
       };
+      const eventId = payload.id;
 
       const response = await fetch(
         payload.id ? `${baseUrl}/events/${payload.id}` : `${baseUrl}/events`,
@@ -168,7 +189,13 @@ export default function Events() {
         "success"
       );
 
-      await fetchEvents();
+      const newEvents = await fetchEvents(); 
+      if (eventId && newEvents) {
+        const updatedEvent = newEvents.find(e => e.id === eventId);
+        if (updatedEvent) {
+          setSelectedEvent(updatedEvent); 
+        }
+      }
       setIsEventModalOpen(false);
       setEventToEdit(null);
     } catch (error) {
@@ -178,10 +205,13 @@ export default function Events() {
   };
 
   const handleUpdateUsers = async () => {
-    await fetchEvents();
-
-    const updated = events.find(e => e.id === selectedEvent.id);
-    if (updated) setSelectedEvent(updated);
+    const newEvents = await fetchEvents();
+    if (newEvents && selectedEvent) {
+      const updated = newEvents.find(e => e.id === selectedEvent.id);
+      if (updated) {
+        setSelectedEvent(updated);
+      }
+    }
   };
 
   const handlePublishEvent = async (event) => {
@@ -214,7 +244,7 @@ export default function Events() {
         },
           
         body: JSON.stringify({
-          organization_id: user?.organization_id, // id de organización fija por ahora
+          organization_id: user?.organization_id, 
           event_id: event.id,
           name: event.name,
           description: event.description,
@@ -225,8 +255,13 @@ export default function Events() {
 
     
     if (!response.ok) throw new Error("Error al publicar el evento");
-    await fetchEvents();
-
+    const newEvents = await fetchEvents();
+    if (newEvents) {
+      const updatedEvent = newEvents.find(e => e.id === event.id);
+      if (updatedEvent) {
+        setSelectedEvent(updatedEvent);
+      }
+    }
     showToast("Evento publicado correctamente", "success");
   } catch (error) {
     console.error(error);
@@ -256,32 +291,29 @@ return (
 
     {/* Table */}
     <div className="bg-white shadow-md rounded-xl overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-empuje-green text-white">
-          <tr>
-            <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
-            <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
-            <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
-            <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
-            <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
-            <th className="px-6 py-3 text-center text-sm font-medium">Donaciones</th>
-          </tr>
-        </thead>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-empuje-green text-white">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-medium">Nombre</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">Descripción</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">Fecha</th>
+              <th className="px-6 py-3 text-center text-sm font-medium">Miembros</th>
+              <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
+              <th className="px-6 py-3 text-center text-sm font-medium">Donaciones</th>
+            </tr>
+          </thead>
 
-        <tbody className="divide-y divide-gray-200">
-          {events.map(event => {
-            const eventDate = new Date(event.datetime);
-            const isFuture = eventDate > today;
-            const isAlreadyJoined = event.users?.includes(user.username);
+          <tbody className="divide-y divide-gray-200">
+            {events.map(event => {
+              const eventDate = new Date(event.datetime);
+              const isFuture = eventDate > today;
+              const isAlreadyJoined = event.users?.includes(user.username);
 
-            return (
-              <React.Fragment key={event.id}>
-                <tr>
+              return (
+                <tr key={event.id}>
                   <td className="px-6 py-4">{event.name}</td>
                   <td className="px-6 py-4">{event.description}</td>
                   <td className="px-6 py-4">{eventDate.toLocaleString("es-AR")}</td>
-
-                  {/* Miembros */}
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       <button
@@ -295,8 +327,6 @@ return (
                       </button>
                     </div>
                   </td>
-
-                  {/* Acciones */}
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       <button
@@ -310,9 +340,6 @@ return (
                       </button>
                     </div>
                   </td>
-
-                  {/* Donaciones */}
-                  
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       <button
@@ -324,27 +351,11 @@ return (
                     </div>
                   </td>
                 </tr>
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
-        {/* Modal de acciones */}
-        {isActionsModalOpen && selectedEvent?.id === event.id && (
-          <ActionsModal
-            event={selectedEvent}
-            user={user}
-            isAlreadyJoined={isAlreadyJoined}
-            isFuture={isFuture}
-            onClose={() => setIsActionsModalOpen(false)}
-            onJoin={handleJoinEvent}
-            onLeave={handleLeaveEvent}
-            onEdit={handleEditEvent}
-            onDelete={handleDeleteEvent}
-            onPublish={handlePublishEvent}
-          />
-        )}
-    </div>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
     {/* Modals */}
     <EventModal
@@ -363,19 +374,19 @@ return (
     />
 
     {isActionsModalOpen && selectedEvent && (
-        <ActionsModal
-          event={selectedEvent}
-          user={user}
-          isAlreadyJoined={selectedEvent.users?.includes(user.username)}
-          isFuture={new Date(selectedEvent.datetime) > today}
-          onClose={() => setIsActionsModalOpen(false)}
-          onJoin={handleJoinEvent}
-          onLeave={handleLeaveEvent}
-          onEdit={handleEditEvent}
-          onDelete={handleDeleteEvent}
-          onPublish={handlePublishEvent}
-        />
-      )}
+      <ActionsModal
+        event={selectedEvent}
+        user={user}
+        isAlreadyJoined={selectedEvent.users?.includes(user.username)}
+        isFuture={new Date(selectedEvent.datetime) > today}
+        onClose={() => setIsActionsModalOpen(false)}
+        onJoin={handleJoinEvent}
+        onLeave={handleLeaveEvent}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+        onPublish={handlePublishEvent}
+      />
+    )}
     
     {donationsModalOpen && (
       <DonationEventModal

@@ -10,5 +10,5 @@ DB_NAME = os.getenv('DB_NAME', 'ong-empuje-comunitario')
 # SMTP configuration
 SMTP_SERVER = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
 SMTP_PORT = os.getenv('SMTP_PORT', '587')
-SMTP_USER = os.getenv('SMTP_USER', 'gastonromero210@gmail.com')  # e.g., 'your-email@gmail.com'
-SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', 'tqsslhzjgujoquof')  # e.g., Gmail App Password
+SMTP_USER = os.getenv('SMTP_USER', 'gastonromero210@gmail.com') 
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD', 'tqsslhzjgujoquof')  

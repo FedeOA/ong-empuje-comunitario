@@ -32,7 +32,7 @@ export default function DonationTransferModal({ isOpen, onClose, onSubmit, trans
     }
     const formData = {
       id: transferToEdit?.id,
-      transferId: transferToEdit?.transferId, // Add for updates
+      transferId: transferToEdit?.transferId, 
       organizationId: parseInt(organizationId),
       items: items.map(item => ({
         categoryId: parseInt(item.categoryId),

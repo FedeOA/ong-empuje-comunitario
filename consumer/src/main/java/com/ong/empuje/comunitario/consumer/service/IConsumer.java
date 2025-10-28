@@ -1,5 +1,3 @@
-// consumer\src\main\java\com\ong\empuje\comunitario\consumer\service\IConsumer.java
-
 package com.ong.empuje.comunitario.consumer.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

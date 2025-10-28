@@ -6,10 +6,8 @@ public class DonationRequestItemDTO {
     private String description;
     private Integer quantity;
 
-    // Constructors
     public DonationRequestItemDTO() {}
 
-    // Getters and Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 
