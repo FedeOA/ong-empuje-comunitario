@@ -326,27 +326,26 @@ return (
                     </div>
                   </td>
                 </tr>
-
-                {/* Modal de acciones */}
-                {isActionsModalOpen && selectedEvent?.id === event.id && (
-                  <ActionsModal
-                    event={selectedEvent}
-                    user={user}
-                    isAlreadyJoined={isAlreadyJoined}
-                    isFuture={isFuture}
-                    onClose={() => setIsActionsModalOpen(false)}
-                    onJoin={handleJoinEvent}
-                    onLeave={handleLeaveEvent}
-                    onEdit={handleEditEvent}
-                    onDelete={handleDeleteEvent}
-                    onPublish={handlePublishEvent}
-                  />
-                )}
               </React.Fragment>
             );
           })}
         </tbody>
       </table>
+      {/* Modal de acciones */}
+      {isActionsModalOpen && selectedEvent?.id === event.id && (
+        <ActionsModal
+          event={selectedEvent}
+          user={user}
+          isAlreadyJoined={isAlreadyJoined}
+          isFuture={isFuture}
+          onClose={() => setIsActionsModalOpen(false)}
+          onJoin={handleJoinEvent}
+          onLeave={handleLeaveEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
+          onPublish={handlePublishEvent}
+        />
+      )}
     </div>
 
     {/* Modals */}
