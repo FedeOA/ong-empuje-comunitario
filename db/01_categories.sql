@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS `categories`;
+
+CREATE TABLE `categories` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `categories` VALUES
+(1,'ALIMENTOS'),
+(2,'ROPA'),
+(3,'JUGUETES'),
+(4,'UTILES_ESCOLARES');
