@@ -10,17 +10,17 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("*") // Permite cualquier origen
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type")
-                .allowCredentials(true)
+                .allowedHeaders("*") // Permite cualquier header
+                .allowCredentials(false) // Desactivado porque "*" no permite credenciales
                 .maxAge(3600);
 
         registry.addMapping("/kafka/publish/**")
-                .allowedOrigins("http://localhost:5173")
+                .allowedOrigins("*")
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type")
-                .allowCredentials(true)
+                .allowedHeaders("*")
+                .allowCredentials(false)
                 .maxAge(3600);
     }
 }

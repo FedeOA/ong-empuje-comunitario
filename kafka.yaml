@@ -35,3 +35,50 @@ services:
       - zookeeper
     networks:
       - default
+  mariadb:
+    image: mariadb:11.1
+    container_name: mariadb
+    restart: always
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: ong-empuje-comunitario
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+  grpc-server:
+    build: ./servers
+    container_name: grpc-server
+    restart: always
+    ports:
+      - "50051:50051"
+    depends_on:
+      - mariadb
+  grpc-client:
+    build: ./cliente
+    container_name: grpc-client
+    depends_on:
+      - grpc-server
+    ports:
+      - "8081:8081"
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/src
+    command: npm run dev -- --host
+  consumer:
+    build: ./consumer
+    container_name: consumer
+    depends_on:
+      - grpc-client
+    ports:
+      - "8092:8092"
+  web_services:
+    build: ./web_services
+    container_name: web_services
+    depends_on:
+      - grpc-client
+    ports:
+      - "8082:8082"

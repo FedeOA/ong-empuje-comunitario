@@ -80,11 +80,11 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
     
-    @KafkaListener(topics = "solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "alta-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
     public void listenDonationRequests(String message) {
         try {
-            logger.info("Received message from solicitud_donaciones: {}", message);
+            logger.info("Received message from alta-solicitud-donacion : {}", message);
             DonationRequestDTO dto = objectMapper.readValue(message, DonationRequestDTO.class);
             logger.debug("Parsed DTO: requestId={}, organizationId={}, items count={}", 
                         dto.getRequestId(), dto.getOrganizationId(), dto.getItems() != null ? dto.getItems().size() : 0);
@@ -141,11 +141,11 @@ public class KafkaConsumerImpl implements IConsumer {
         }
     }
 
-    @KafkaListener(topics = "baja_solicitud_donaciones", groupId = "ong-empuje-comunitario")
+    @KafkaListener(topics = "baja-solicitud-donacion", groupId = "ong-empuje-comunitario")
     @Transactional
     public void listenDonationCancellations(String message) {
         try {
-            logger.info("Received message from baja_solicitud_donaciones: {}", message);
+            logger.info("Received message from baja-solicitud-donacion : {}", message);
             DonationCancellationDTO dto = objectMapper.readValue(message, DonationCancellationDTO.class);
             if (dto.getRequestId() == null || dto.getOrganizationId() == null) {
                 logger.error("Invalid cancellation: requestId or organizationId is null");
