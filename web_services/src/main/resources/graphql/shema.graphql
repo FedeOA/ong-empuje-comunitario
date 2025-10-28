@@ -1,0 +1,27 @@
+type Query {
+    participationEvents(
+        username: String!,
+        startDate: String,
+        endDate: String,
+        distribution: DonationDistributionFilter
+    ): [ParticipationEvent]
+}
+
+type ParticipationEvent {
+    name: String!
+    datetime: String!
+    description: String!
+    donations: [Donation]
+}
+
+type Donation {
+    category: String!
+    description: String!
+    quantity: String!
+}
+
+enum DonationDistributionFilter {
+    YES
+    NO
+    BOTH
+}

@@ -1,8 +1,8 @@
 package com.ong.empuje.comunitario.web_services.controller;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
+import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
+import com.ong.empuje.comunitario.web_services.service.EventService;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,9 +11,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 
-import com.ong.empuje.comunitario.web_services.dto.out.EventsDonationsResponseDTO;
-import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
-import com.ong.empuje.comunitario.web_services.service.EventService;
+import java.util.Collection;
+import java.util.List;
 
 @Controller
 public class EventController {

@@ -1,8 +1,8 @@
 package com.ong.empuje.comunitario.web_services.service;
 
+import com.ong.empuje.comunitario.web_services.dto.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
 import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
-import com.ong.empuje.comunitario.web_services.dto.out.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 
 import java.util.List;

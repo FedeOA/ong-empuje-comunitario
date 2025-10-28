@@ -15,7 +15,7 @@ const PARTICIPATION_EVENTS_QUERY = `
       datetime
       description
       donations {
-        categoryId
+        category
         description
         quantity
       }
@@ -128,19 +128,6 @@ const FiltersModal = ({ onClose, onApplyFilters, onSaveFilter }) => {
     try {
       const token = localStorage.getItem("token");
 
-      // Format dates to ISO_LOCAL_DATE_TIME (e.g., "2025-10-21T00:00:00")
-      const formattedStartDate = filters.startDate
-        ? new Date(filters.startDate).toISOString().split('.')[0]
-        : null;
-      const formattedEndDate = filters.endDate
-        ? new Date(filters.endDate).toISOString().split('.')[0]
-        : null;
-
-      // Ensure distribution matches enum values (YES, NO, BOTH)
-      const validDistribution = ["YES", "NO", "BOTH"].includes(filters.distribution.toUpperCase())
-        ? filters.distribution.toUpperCase()
-        : "BOTH";
-
       const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
@@ -151,39 +138,23 @@ const FiltersModal = ({ onClose, onApplyFilters, onSaveFilter }) => {
           query: PARTICIPATION_EVENTS_QUERY,
           variables: {
             username: filters.searchUsername,
-            startDate: formattedStartDate,
-            endDate: formattedEndDate,
-            distribution: validDistribution,
+            startDate: filters.startDate || null,
+            endDate: filters.endDate || null,
+            distribution: filters.distribution.toUpperCase(),
           },
         }),
       });
 
       const result = await response.json();
-      if (result.errors) {
-        console.error("GraphQL Errors:", JSON.stringify(result.errors, null, 2));
-        showToast(
-          `Error al obtener eventos: ${result.errors.map((e) => e.message).join(", ")}`,
-          "error"
-        );
-        return;
-      }
+      if (result.errors) throw new Error(result.errors[0].message);
 
-      const events = (result.data.participationEvents || []).map((event) => ({
-        ...event,
-        donations: (event.donations || []).map((donation) => ({
-          ...donation,
-          category: donation.categoryId != null
-            ? { id: donation.categoryId, name: `Category ${donation.categoryId}` }
-            : { id: 0, name: "Sin categoría" },
-        })),
-      }));
-      onApplyFilters(events);
+      onApplyFilters(result.data.participationEvents);
     } catch (error) {
       console.error("GraphQL filter error:", error);
-      showToast(`Error al aplicar el filtro: ${error.message}`, "error");
+      showToast("Error al aplicar el filtro", "error");
     }
   };
-  
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl">
