@@ -42,8 +42,7 @@ public class DonationOfferController {
     public ResponseEntity<List<DonationOffer>> listDonationOffers() {
         logger.info("Received GET /api/donation-offers");
         try {
-            LocalDateTime now = LocalDateTime.now();
-            List<DonationOffer> offers = donationOfferService.findByAvailableTrueAndExpiresAtAfter(now);
+            List<DonationOffer> offers = donationOfferService.findAll();
             logger.info("Fetched {} donation offers", offers.size());
             return ResponseEntity.ok(offers);
         } catch (Exception e) {

@@ -113,11 +113,6 @@ export default function DonationOffers() {
       return;
     }
 
-    if (!confirm("¿Está seguro de cancelar esta oferta?")) {
-      console.log("[handleCancelOffer] Cancellation cancelled by user");
-      return;
-    }
-
     const token = localStorage.getItem("token");
     try {
       console.log("[handleCancelOffer] Cancelling offer: offerId={}, orgId={}", offerId, orgId);
