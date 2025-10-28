@@ -260,6 +260,7 @@ export default function DonationTransfer() {
               <th className="px-6 py-3 text-left text-sm font-medium">ID Solicitud</th>
               <th className="px-6 py-3 text-left text-sm font-medium">Fecha Creación</th>
               <th className="px-6 py-3 text-left text-sm font-medium">Ítems</th>
+              <th className="px-6 py-3 text-left text-sm font-medium">Procesado</th>
               <th className="px-6 py-3 text-center text-sm font-medium">Acciones</th>
             </tr>
           </thead>
@@ -290,19 +291,30 @@ export default function DonationTransfer() {
                       )}
                     </ul>
                   </td>
-                  <td className="px-6 py-4 flex justify-center gap-2">
+                  <td className="px-6 py-4">
+                    <span
+                      className={`font-medium ${
+                        transfer.processed ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
+                      {transfer.processed ? "Procesado" : "Sin Procesar"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 flex justify-center items-center gap-2">
                     <button
                       className="bg-empuje-blue text-white px-3 py-1 rounded hover:bg-blue-700 transition"
                       onClick={() => handleEditTransfer(transfer)}
                     >
                       Modificar
                     </button>
-                    <button
-                      className="bg-empuje-orange text-white px-3 py-1 rounded hover:bg-orange-700 transition"
-                      onClick={() => handleDeleteTransfer(transfer)}
-                    >
-                      Procesar
-                    </button>
+                    {!transfer.processed && (
+                      <button
+                        className="bg-empuje-orange text-white px-3 py-1 rounded hover:bg-orange-700 transition"
+                        onClick={() => handleDeleteTransfer(transfer)}
+                      >
+                        Procesar
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

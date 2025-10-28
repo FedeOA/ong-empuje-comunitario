@@ -43,10 +43,7 @@ public class DonationTransferController {
     public ResponseEntity<List<DonationTransfer>> listDonationTransfers() {
         logger.info("Received GET /api/donation-transfers");
         try {
-            List<DonationTransfer> transfers = donationTransferService.findAll()
-                    .stream()
-                    .filter(transfer -> !transfer.isProcessed())
-                    .toList();
+            List<DonationTransfer> transfers = donationTransferService.findAll();
             logger.info("Fetched {} donation transfers", transfers.size());
             return ResponseEntity.ok(transfers);
         } catch (Exception e) {
