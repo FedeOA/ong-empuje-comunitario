@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import DonationReportFilterModal from "../components/DonationReportFilterModal";
-import { baseUrlGraphQL } from "../constants/constants.js";
+import { baseUrlWebServices } from "../constants/constants.js";
 import { useAuth } from "../context/AuthContext";
 
 export default function DonationReport() {
@@ -61,7 +61,7 @@ export default function DonationReport() {
       }
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
+      const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export default function DonationReport() {
       `;
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
+      const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,7 +226,7 @@ export default function DonationReport() {
         return;
       }
 
-      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
+      const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,7 +266,7 @@ export default function DonationReport() {
       `;
 
       const token = localStorage.getItem("token");
-      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
+      const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

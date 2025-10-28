@@ -30,8 +30,8 @@ public class KafkaController {
         logger.debug("Received POST /kafka/publish/donation-request");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to {}: {}", Topic.SOLICITUD_DONACIONES.getName(), message);
-            kafkaTemplate.send(Topic.SOLICITUD_DONACIONES.getName(), message);
+            logger.debug("Publishing message to {}: {}", Topic.ALTA_SOLICITUD_DONACION.getName(), message);
+            kafkaTemplate.send(Topic.ALTA_SOLICITUD_DONACION.getName(), message);
             return ResponseEntity.ok("Donation request published");
         } catch (Exception e) {
             logger.error("Error publishing donation request: {}", e.getMessage(), e);
@@ -44,8 +44,8 @@ public class KafkaController {
         logger.debug("Received POST /kafka/publish/donation-cancellation");
         try {
             String message = objectMapper.writeValueAsString(request);
-            logger.debug("Publishing message to {}: {}", Topic.BAJA_SOLICITUD_DONACIONES.getName(), message);
-            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACIONES.getName(), message);
+            logger.debug("Publishing message to {}: {}", Topic.BAJA_SOLICITUD_DONACION.getName(), message);
+            kafkaTemplate.send(Topic.BAJA_SOLICITUD_DONACION.getName(), message);
             return ResponseEntity.ok("Donation cancellation published");
         } catch (Exception e) {
             logger.error("Error publishing donation cancellation: {}", e.getMessage(), e);
