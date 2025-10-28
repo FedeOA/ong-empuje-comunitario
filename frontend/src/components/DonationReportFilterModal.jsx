@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { baseUrlGraphQL } from "../constants/constants.js";
+import { baseUrlWebServices } from "../constants/constants.js";
 
 export default function DonationReportFilterModal({
   isOpen,
@@ -51,7 +51,7 @@ export default function DonationReportFilterModal({
   const fetchCategories = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`${baseUrlGraphQL}/graphql`, {
+      const response = await fetch(`${baseUrlWebServices}/graphql`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

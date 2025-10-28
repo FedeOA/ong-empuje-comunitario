@@ -1,19 +1,42 @@
-# web_services/src/main/resources/graphql/schema.graphqls
+# ==========================
+# Root Query
+# ==========================
 type Query {
-    donationReport(categoryId: Int, startDate: String, endDate: String, deleted: Boolean): [DonationReportGroup!]!
+    # ---- Reportes y filtros ----
+    donationReport(
+        categoryId: Int,
+        startDate: String,
+        endDate: String,
+        deleted: Boolean
+    ): [DonationReportGroup!]!
+
     savedFilters: [SavedFilter!]!
     savedFilter(id: ID!): SavedFilter
     categories: [Category!]!
     category(id: Int!): Category
     getUserId(usernameOrEmail: String!): ID!
+
+    # ---- Participación ----
+    participationEvents(
+        username: String!,
+        startDate: String,
+        endDate: String,
+        distribution: DonationDistributionFilter
+    ): [ParticipationEvent]
 }
 
+# ==========================
+# Root Mutation
+# ==========================
 type Mutation {
     saveFilter(input: FilterInput!): SavedFilter!
     updateFilter(id: ID!, input: FilterInput!): SavedFilter!
     deleteFilter(id: ID!): Boolean!
 }
 
+# ==========================
+# Tipos relacionados a donaciones
+# ==========================
 type DonationReportGroup {
     categoryId: Int!
     categoryName: String!
@@ -23,14 +46,14 @@ type DonationReportGroup {
 }
 
 type Donation {
-    id: ID!
-    categoryId: Int!
-    categoryName: String!
+    id: ID
+    categoryId: Int
+    categoryName: String
     description: String!
-    quantity: Int!
-    createdAt: String!
+    quantity: String! # Si en uno era Int y en otro String, podés normalizarlo a uno
+    createdAt: String
     updatedAt: String
-    deleted: Boolean!
+    deleted: Boolean
 }
 
 type SavedFilter {
@@ -60,4 +83,17 @@ input FilterInput {
     deleted: Boolean
     filterDeleted: Boolean
     username: String!
+}
+
+type ParticipationEvent {
+    name: String!
+    datetime: String!
+    description: String!
+    donations: [Donation]
+}
+
+enum DonationDistributionFilter {
+    YES
+    NO
+    BOTH
 }
