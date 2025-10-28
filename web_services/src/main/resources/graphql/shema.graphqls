@@ -30,7 +30,7 @@ type ParticipationEvent {
 type Donation {
     id: ID!
     categoryId: Int
-    categoryName: String!
+    categoryName: String
     description: String!
     quantity: Int!
     createdAt: String!
@@ -48,7 +48,7 @@ enum DonationDistributionFilter {
 
 type DonationReportGroup {
     categoryId: Int!
-    categoryName: String!
+    categoryName: String
     deleted: Boolean!
     totalQuantity: Int!
     donations: [Donation!]!

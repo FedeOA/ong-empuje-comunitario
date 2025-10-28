@@ -15,7 +15,7 @@ const PARTICIPATION_EVENTS_QUERY = `
       datetime
       description
       donations {
-        category
+        categoryName
         description
         quantity
       }

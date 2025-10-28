@@ -12,7 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import static com.ong.empuje.comunitario.web_services.constants.Constants.SECRET_KEY_TOKEN;
+import static com.ong.empuje.comunitario.web_services.Constants.Constants.SECRET_KEY_TOKEN;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

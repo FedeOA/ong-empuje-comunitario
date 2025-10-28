@@ -326,27 +326,26 @@ return (
                     </div>
                   </td>
                 </tr>
-
-                {/* Modal de acciones */}
-                {isActionsModalOpen && selectedEvent?.id === event.id && (
-                  <ActionsModal
-                    event={selectedEvent}
-                    user={user}
-                    isAlreadyJoined={isAlreadyJoined}
-                    isFuture={isFuture}
-                    onClose={() => setIsActionsModalOpen(false)}
-                    onJoin={handleJoinEvent}
-                    onLeave={handleLeaveEvent}
-                    onEdit={handleEditEvent}
-                    onDelete={handleDeleteEvent}
-                    onPublish={handlePublishEvent}
-                  />
-                )}
               </React.Fragment>
             );
           })}
         </tbody>
       </table>
+        {/* Modal de acciones */}
+        {isActionsModalOpen && selectedEvent?.id === event.id && (
+          <ActionsModal
+            event={selectedEvent}
+            user={user}
+            isAlreadyJoined={isAlreadyJoined}
+            isFuture={isFuture}
+            onClose={() => setIsActionsModalOpen(false)}
+            onJoin={handleJoinEvent}
+            onLeave={handleLeaveEvent}
+            onEdit={handleEditEvent}
+            onDelete={handleDeleteEvent}
+            onPublish={handlePublishEvent}
+          />
+        )}
     </div>
 
     {/* Modals */}
@@ -365,6 +364,20 @@ return (
       user={user}
     />
 
+    {isActionsModalOpen && selectedEvent && (
+        <ActionsModal
+          event={selectedEvent}
+          user={user}
+          isAlreadyJoined={selectedEvent.users?.includes(user.username)}
+          isFuture={new Date(selectedEvent.datetime) > today}
+          onClose={() => setIsActionsModalOpen(false)}
+          onJoin={handleJoinEvent}
+          onLeave={handleLeaveEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
+          onPublish={handlePublishEvent}
+        />
+      )}
     
     {donationsModalOpen && (
       <DonationEventModal
