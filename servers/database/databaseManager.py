@@ -8,7 +8,13 @@ engine = create_engine(DB_URL, echo=True)
 SessionLocal = sessionmaker(bind=engine)
 
 def get_session():
-    return SessionLocal()
+    try:
+        session = SessionLocal()
+        print(f"Database session created successfully with URL: {DB_URL}")
+        return session
+    except Exception as e:
+        print(f"Error creating database session: {str(e)}")
+        raise
 
 def init_db():
     from .models import Base

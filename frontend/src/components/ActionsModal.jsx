@@ -21,6 +21,8 @@ const ActionsModal = ({
     showAdminActions ||
     (showPublish && !event.is_published);
 
+  console.log("Event published:", event.is_published !== true ? "No Publicado" : "Publicado", event);
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
@@ -63,8 +65,8 @@ const ActionsModal = ({
               )}
 
               {showPublish && (
-                !event.is_published ? (
-                  <button
+                event.is_published !== true ? ( 
+                 <button
                     className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition flex items-center gap-2"
                     onClick={() => onPublish(event)}
                   >

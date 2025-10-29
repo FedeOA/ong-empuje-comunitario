@@ -48,7 +48,10 @@ export default function Events() {
       });
       const data = await response.json();
       setEvents(data);
-      return data
+      const publishedCount = data.filter(event => event.is_published === true).length;
+      const notPublishedCount = data.filter(event => event.is_published !== true).length;
+      console.log(`Eventos cargados: ${publishedCount} publicados, ${notPublishedCount} no publicados.`);
+      return data;
     } catch (error) {
       console.error("Error al cargar eventos:", error);
       return null;
@@ -166,8 +169,10 @@ export default function Events() {
       const token = localStorage.getItem("token");
       const payload = {
         ...formData,
+        organization_id: formData.organization_id || user?.organization_id || 1,
         ...(eventToEdit && { id: eventToEdit.id })
       };
+      console.log("Submitting event payload:", payload);
       const eventId = payload.id;
 
       const response = await fetch(
@@ -215,9 +220,22 @@ export default function Events() {
   };
 
   const handlePublishEvent = async (event) => {
-    
-    try {
+   try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.warn("No auth token found in localStorage");
+        showToast("No autenticado. Inicia sesión e intenta de nuevo.", "error");
+        return;
+      }
+      console.debug("Using token: ", `${token.substring(0,6)}...${token.slice(-6)}`);
+      let existing = events.find(e => e.id === event.id);
+      if (!existing) {
+        const refreshed = await fetchEvents();
+        existing = refreshed ? refreshed.find(e => e.id === event.id) : null;
+      }
+      if (!existing) throw new Error("Evento no encontrado");
+
+      const toUpdate = { ...existing, is_published: true };
 
       const response1 = await fetch(`${baseUrl}/events/${event.id}`, {
         method: "PUT",
@@ -225,49 +243,39 @@ export default function Events() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-
-        body: JSON.stringify({
-          name: event.name,
-          description: event.description,
-          datetime: event.datetime,
-          is_published: true
-        })
+        body: JSON.stringify(toUpdate)
       });
+      if (!response1.ok) {
+        let bodyText = "";
+        try {
+          bodyText = await response1.text();
+        } catch (e) {
+          console.warn("No se pudo leer el body de la respuesta", e);
+        }
 
-      if (!response1.ok) throw new Error("Error al modificar el evento");
-
-      const response = await fetch(`${baseUrl}/events/publish`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-          
-        body: JSON.stringify({
-          organization_id: user?.organization_id, 
-          event_id: event.id,
-          name: event.name,
-          description: event.description,
-          datetime: event.datetime
-        })
-
-      });
-
-    
-    if (!response.ok) throw new Error("Error al publicar el evento");
-    const newEvents = await fetchEvents();
-    if (newEvents) {
-      const updatedEvent = newEvents.find(e => e.id === event.id);
-      if (updatedEvent) {
-        setSelectedEvent(updatedEvent);
+        if (response1.status === 401) {
+          console.error("Publish returned 401, response body:", bodyText);
+          showToast(bodyText || "No autorizado. Por favor inicia sesión.", "error");
+        } else {
+          console.error("Publish failed:", response1.status, bodyText);
+          showToast(bodyText || "Error al modificar el evento", "error");
+        }
+        throw new Error(`Error al modificar el evento: ${response1.status} ${bodyText}`);
       }
+
+      const newEvents = await fetchEvents();
+      if (newEvents) {
+        const updatedEvent = newEvents.find(e => e.id === event.id);
+        if (updatedEvent) {
+          setSelectedEvent(updatedEvent);
+        }
+      }
+      showToast("Evento publicado correctamente", "success");
+    } catch (error) {
+      console.error(error);
+      showToast("Hubo un problema al publicar el evento", "error");
     }
-    showToast("Evento publicado correctamente", "success");
-  } catch (error) {
-    console.error(error);
-    showToast("Hubo un problema al publicar el evento", "error");
-  }
-};
+  };
 return (
   <div className="min-h-screen bg-empuje-bg p-6">
     {/* Header */}
@@ -304,13 +312,13 @@ return (
           </thead>
 
           <tbody className="divide-y divide-gray-200">
-            {events.map(event => {
+            {events.map((event, index) => {
               const eventDate = new Date(event.datetime);
               const isFuture = eventDate > today;
               const isAlreadyJoined = event.users?.includes(user.username);
 
               return (
-                <tr key={event.id}>
+                <tr key={event.id ?? `event-${index}`}>
                   <td className="px-6 py-4">{event.name}</td>
                   <td className="px-6 py-4">{event.description}</td>
                   <td className="px-6 py-4">{eventDate.toLocaleString("es-AR")}</td>

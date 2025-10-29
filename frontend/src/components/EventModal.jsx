@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     datetime: "",
+    is_published: false,
+    organization_id: user?.organization_id || 1
   });
 
   const getLocalISOString = () => {
@@ -21,9 +26,17 @@ export default function EventModal({ isOpen, onClose, onSubmit, eventToEdit }) {
         name: eventToEdit.name || "",
         description: eventToEdit.description || "",
         datetime: formatted,
+        is_published: eventToEdit.is_published || false,
+        organization_id: eventToEdit.organization_id || 1 
       });
     } else {
-      setFormData({ name: "", description: "", datetime: "" });
+      setFormData({
+        name: "",
+        description: "",
+        datetime: "",
+        is_published: false,
+        organization_id: user?.organization_id || 1
+      });
     }
   }, [eventToEdit, isOpen]);
 

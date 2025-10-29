@@ -2,17 +2,18 @@ package com.grpc.demo.mapper.event;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.grpc.demo.dto.in.DonationDTO;
 import com.grpc.demo.dto.out.DonationResponseDTO;
 import com.grpc.demo.dto.out.EventResponseDTO;
-import com.grpc.demo.mapper.IMapper;
-import com.grpc.demo.service.donation.Donation;
-import com.grpc.demo.service.event.Event;
 import static com.grpc.demo.enums.Category.UTILES_ESCOLARES;
 import static com.grpc.demo.enums.Category.fromId;
 import static com.grpc.demo.enums.Category.idFromName;
+import com.grpc.demo.mapper.IMapper;
+import com.grpc.demo.service.donation.Donation;
+import com.grpc.demo.service.event.Event;
 
 @Component
 public class EventMapperImpl implements IMapper <Event, EventResponseDTO>{
@@ -25,12 +26,15 @@ public class EventMapperImpl implements IMapper <Event, EventResponseDTO>{
             users.add(source.getUsers(i));
         }
 
+        System.out.println("Event ID: " + source.getId() + " - Raw is_published value: " + source.getIsPublished());
+        boolean isPublished = source.getIsPublished();
+
         return new EventResponseDTO(
                 source.getId(),
                 source.getName(),
                 source.getDescription(),
                 source.getFechaHora(),
-                source.getIsPublished(),
+                isPublished,
                 users,
                 donations
         );

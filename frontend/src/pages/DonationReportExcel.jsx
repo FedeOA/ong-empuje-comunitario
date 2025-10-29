@@ -9,7 +9,7 @@ const DonationReportExcel = () => {
     categoryId: "",
     startDate: "",
     endDate: "",
-    deleted: false,
+    deleted: "both",
   });
   const [categories, setCategories] = useState([]);
   const [toast, setToast] = useState({ message: "", type: "success" });

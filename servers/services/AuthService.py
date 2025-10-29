@@ -13,7 +13,7 @@ import os
 import secrets
 import string
 
-load_dotenv()  # Carga las variables de entorno del archivo .env
+load_dotenv() 
 
 class AuthService(authorize_pb2_grpc.AuthServiceServicer):
 
@@ -46,7 +46,7 @@ class AuthService(authorize_pb2_grpc.AuthServiceServicer):
                     message="Login successful",
                     role_id=user.role_id,
                     username=user.username,
-                    organization_id=user.organization_id or 0  # Ensure non-null
+                    organization_id=user.organization_id or 1 
                 )
                 print(f"Login success: org_id={user.organization_id}")
                 return response
@@ -56,7 +56,7 @@ class AuthService(authorize_pb2_grpc.AuthServiceServicer):
                     message="Invalid password",
                     role_id=0,
                     username="",
-                    organization_id=0
+                    organization_id=1
                 )
                 print("Login failed: Invalid password")
                 return response
@@ -67,7 +67,7 @@ class AuthService(authorize_pb2_grpc.AuthServiceServicer):
                 message=str(e),
                 role_id=0,
                 username="",
-                organization_id=0
+                organization_id=1 
             )
         finally:
             session.close()

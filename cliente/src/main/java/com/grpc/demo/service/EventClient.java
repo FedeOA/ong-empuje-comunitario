@@ -2,11 +2,20 @@ package com.grpc.demo.service;
 
 import java.util.List;
 
-import com.grpc.demo.dto.in.EventDTO;
-import com.grpc.demo.service.event.*;
 import org.springframework.stereotype.Service;
 
+import com.grpc.demo.dto.in.EventDTO;
 import com.grpc.demo.exception.GrpcClientException;
+import com.grpc.demo.service.event.DonationEventRequest;
+import com.grpc.demo.service.event.Empty;
+import com.grpc.demo.service.event.Event;
+import com.grpc.demo.service.event.EventList;
+import com.grpc.demo.service.event.EventServiceGrpc;
+import com.grpc.demo.service.event.ExternalEvent;
+import com.grpc.demo.service.event.ExternalEventList;
+import com.grpc.demo.service.event.Response;
+import com.grpc.demo.service.event.UserEventRequest;
+
 import net.devh.boot.grpc.client.inject.GrpcClient;
 
 @Service
@@ -61,7 +70,11 @@ public class EventClient {
     public List<Event> listEvents(){
         try {
             EventList list = stub.listEvents(Empty.newBuilder().build());
-            return list.getEventList();
+            List<Event> events = list.getEventList();
+            for (Event event : events) {
+                System.out.println("Event ID: " + event.getId() + " - is_published from gRPC: " + event.getIsPublished());
+            }
+            return events;
         } catch (Exception e) {
             throw new GrpcClientException("Error en la lista de eventos",e);
         }

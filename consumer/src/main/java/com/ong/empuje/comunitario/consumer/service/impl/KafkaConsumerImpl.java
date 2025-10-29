@@ -2,33 +2,49 @@ package com.ong.empuje.comunitario.consumer.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationCancellationDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationOfferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestDTO;
-import com.ong.empuje.comunitario.consumer.dto.in.DonationTransferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.DonationRequestItemDTO;
+import com.ong.empuje.comunitario.consumer.dto.in.DonationTransferDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventDTO;
 import com.ong.empuje.comunitario.consumer.dto.in.EventVoluntaryDTO;
+import com.ong.empuje.comunitario.consumer.enums.Topic;
 import com.ong.empuje.comunitario.consumer.mapper.EventMapper;
 import com.ong.empuje.comunitario.consumer.mapper.VoluntaryMapper;
-import com.ong.empuje.comunitario.consumer.model.*;
-import com.ong.empuje.comunitario.consumer.repository.*;
+import com.ong.empuje.comunitario.consumer.model.DonationOffer;
+import com.ong.empuje.comunitario.consumer.model.DonationOfferItem;
+import com.ong.empuje.comunitario.consumer.model.DonationRequest;
+import com.ong.empuje.comunitario.consumer.model.DonationRequestId;
+import com.ong.empuje.comunitario.consumer.model.DonationRequestItem;
+import com.ong.empuje.comunitario.consumer.model.DonationTransfer;
+import com.ong.empuje.comunitario.consumer.model.DonationTransferItem;
+import com.ong.empuje.comunitario.consumer.model.Event;
+import com.ong.empuje.comunitario.consumer.model.Organization;
+import com.ong.empuje.comunitario.consumer.model.Voluntary;
+import com.ong.empuje.comunitario.consumer.model.VoluntaryEvents;
+import com.ong.empuje.comunitario.consumer.repository.DonationOfferRepository;
+import com.ong.empuje.comunitario.consumer.repository.DonationRequestRepository;
+import com.ong.empuje.comunitario.consumer.repository.DonationTransferRepository;
+import com.ong.empuje.comunitario.consumer.repository.EventRepository;
+import com.ong.empuje.comunitario.consumer.repository.OrganizationRepository;
+import com.ong.empuje.comunitario.consumer.repository.UserEventsRepository;
+import com.ong.empuje.comunitario.consumer.repository.UserRepository;
+import com.ong.empuje.comunitario.consumer.repository.VoluntaryEventsRepository;
+import com.ong.empuje.comunitario.consumer.repository.VoluntaryRepository;
 import com.ong.empuje.comunitario.consumer.service.IConsumer;
-import com.ong.empuje.comunitario.consumer.enums.Topic;
-
-import org.slf4j.Logger;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import java.util.Date;
 
 @Service
 public class KafkaConsumerImpl implements IConsumer {
@@ -259,13 +275,21 @@ public class KafkaConsumerImpl implements IConsumer {
 
     @Override
     @KafkaListener(topics = "adhesion-evento", groupId = "ong-empuje-comunitario")
+    @Transactional
     public void listenAddVoluntary(String message) {
         try {
             EventVoluntaryDTO eventVoluntary = objectMapper.readValue(message, EventVoluntaryDTO.class);
+            logger.info("Received adhesion message: originOrgId={}, remoteId={}, voluntary={}", eventVoluntary.originOrganizationId(), eventVoluntary.remoteId(), eventVoluntary.voluntary());
             Voluntary voluntary = VoluntaryMapper.INSTANCE.toEntity(eventVoluntary.voluntary());
 
             if (eventVoluntary.originOrganizationId() == 1) { // evento de mi organización
                 Optional<Event> event = eventRepository.findById(eventVoluntary.remoteId());
+                if (!event.isPresent()) {
+                    event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
+                    if (event.isPresent()) {
+                        logger.debug("Found event by remote_id={} for originOrganizationId=1 -> event.id={}", eventVoluntary.remoteId(), event.get().getId());
+                    }
+                }
                 Voluntary toSave;
                 Optional<Voluntary> toUpdate = voluntaryRepository
                         .findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
@@ -279,6 +303,7 @@ public class KafkaConsumerImpl implements IConsumer {
                     toSave = voluntaryRepository.save(existing);
                 } else {
                     toSave = voluntaryRepository.save(voluntary);
+                    logger.info("Saved new Voluntary id={} voluntaryId={} org={}", toSave.getId(), toSave.getVoluntaryId(), toSave.getOrganizationId());
                 }
 
                 if (event.isPresent()) {
@@ -286,21 +311,71 @@ public class KafkaConsumerImpl implements IConsumer {
                     voluntaryEvents.setEvent(event.get());
                     voluntaryEvents.setVoluntary(toSave);
                     voluntaryEvents.setRegistrationDate(new Date());
-                    voluntaryEventsRepository.save(voluntaryEvents);
+                    VoluntaryEvents saved = voluntaryEventsRepository.save(voluntaryEvents);
+                    logger.info("Linked Voluntary id={} to Event id={} via VoluntaryEvents id={}", toSave.getId(), event.get().getId(), saved.getId());
                 }
             } else if (voluntary.getOrganizationId() == 1) { // usuario de mi organizacion
-                Optional<Event> event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
-                Optional<User> user = userRepository.findById(voluntary.getVoluntaryId());
-                if (user.isPresent() && event.isPresent()) {
-                    UserEvents userEvents = new UserEvents();
-                    userEvents.setEvent(event.get());
-                    userEvents.setUser(user.get());
-                    userEvents.setRegistrationDate(new Date());
-                    userEventsRepository.save(userEvents);
+                Optional<Event> event = Optional.empty();
+                if (eventVoluntary.remoteId() != null) {
+                    event = eventRepository.findById(eventVoluntary.remoteId());
+                    if (!event.isPresent()) {
+                        event = eventRepository.findByRemoteId(eventVoluntary.remoteId());
+                    } else {
+                        logger.debug("Using frontend-provided event id {} to link voluntary", eventVoluntary.remoteId());
+                    }
+                }
+
+                Optional<Voluntary> voluntaryOpt = voluntaryRepository.findByOrganizationIdAndVoluntaryId(voluntary.getOrganizationId(), voluntary.getVoluntaryId());
+                Voluntary voluntaryToLink = null;
+                if (voluntaryOpt.isPresent()) {
+                    voluntaryToLink = voluntaryOpt.get();
+                } else {
+                    try {
+                        Voluntary newVoluntary = new Voluntary();
+                        newVoluntary.setOrganizationId(voluntary.getOrganizationId());
+                        newVoluntary.setVoluntaryId(voluntary.getVoluntaryId());
+                        if (voluntary.getEmail() != null) {
+                            var userOpt = userRepository.findByEmail(voluntary.getEmail());
+                            if (userOpt.isPresent()) {
+                                var user = userOpt.get();
+                                newVoluntary.setName(user.getFirstName() != null ? user.getFirstName() : voluntary.getName());
+                                newVoluntary.setLastName(user.getLastName() != null ? user.getLastName() : voluntary.getLastName());
+                                newVoluntary.setPhone(user.getPhone() != null ? user.getPhone() : voluntary.getPhone());
+                                newVoluntary.setEmail(user.getEmail() != null ? user.getEmail() : voluntary.getEmail());
+                                logger.debug("Creating Voluntary from existing User id={} email={}", user.getId(), user.getEmail());
+                            } else {
+                                newVoluntary.setName(voluntary.getName());
+                                newVoluntary.setLastName(voluntary.getLastName());
+                                newVoluntary.setPhone(voluntary.getPhone());
+                                newVoluntary.setEmail(voluntary.getEmail());
+                            }
+                        } else {
+                            newVoluntary.setName(voluntary.getName());
+                            newVoluntary.setLastName(voluntary.getLastName());
+                            newVoluntary.setPhone(voluntary.getPhone());
+                            newVoluntary.setEmail(voluntary.getEmail());
+                        }
+
+                        voluntaryToLink = voluntaryRepository.save(newVoluntary);
+                        logger.info("Created new Voluntary id={} voluntaryId={} for org={}", voluntaryToLink.getId(), voluntaryToLink.getVoluntaryId(), voluntaryToLink.getOrganizationId());
+                    } catch (Exception ex) {
+                        logger.error("Failed to create Voluntary: {}", ex.getMessage(), ex);
+                    }
+                }
+
+                if (voluntaryToLink != null && event.isPresent()) {
+                    VoluntaryEvents ve = new VoluntaryEvents();
+                    ve.setEvent(event.get());
+                    ve.setVoluntary(voluntaryToLink);
+                    ve.setRegistrationDate(new Date());
+                    VoluntaryEvents savedVe = voluntaryEventsRepository.save(ve);
+                    logger.info("Linked local Voluntary id={} to Event id={} via VoluntaryEvents id={}", voluntaryToLink.getId(), event.get().getId(), savedVe.getId());
+                } else {
+                    logger.warn("Voluntary or Event not found for remoteId={}, voluntaryId={}, orgId={}", eventVoluntary.remoteId(), voluntary.getVoluntaryId(), voluntary.getOrganizationId());
                 }
             }
         } catch (Exception e) {
-            System.out.println("Exception : " + e.getCause() + e.getMessage());
+            logger.error("Exception while processing adhesion message: {} - {}", e.getCause(), e.getMessage(), e);
         }
     }
 
@@ -309,16 +384,17 @@ public class KafkaConsumerImpl implements IConsumer {
     }
 
     private Event buildEvent(EventDTO message) throws Exception {
-        Optional<Organization> organization = organizationRepository
-                .findById(Integer.valueOf(message.organizationId()));
+        Integer orgId = Integer.valueOf(message.organizationId());
 
-        if (organization.isPresent() && organization.get().getId() != 1) {
-            Event event = EventMapper.INSTANCE.toEntity(message);
-            event.setOrganization(organization.get());
-            return event;
-        } else {
-            throw new Exception("no existe la organizacion");
+        Optional<Organization> organization = organizationRepository.findById(orgId);
+        if (!organization.isPresent()) {
+            logger.error("Organization with ID {} does not exist", orgId);
+            throw new Exception("Organization does not exist: " + orgId);
         }
+
+        Event event = EventMapper.INSTANCE.toEntity(message);
+        event.setOrganization(organization.get());
+        return event;
     }
 
     private DonationRequest buildDonationRequest(DonationRequestDTO dto) {

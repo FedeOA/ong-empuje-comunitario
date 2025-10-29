@@ -35,8 +35,8 @@ class UserService(UserServiceServicer):
             if not SMTP_USER or not SMTP_PASSWORD:
                 raise ValueError("SMTP credentials not configured")
 
-            msg = MIMEText(f"Your account has been created.\n\nUsername: {request.username}\nPassword: {random_password}\n\nPlease change your password after logging in.")
             msg['Subject'] = 'Your New Account Password'
+            msg = MIMEText(f"Your account has been created.\n\nUsername: {request.username}\nPassword: {random_password}\n\nThank you for using our service.")
             msg['From'] = SMTP_USER
             msg['To'] = request.email
 

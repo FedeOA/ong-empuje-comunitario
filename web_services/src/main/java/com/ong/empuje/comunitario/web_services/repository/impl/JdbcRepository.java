@@ -1,17 +1,25 @@
 package com.ong.empuje.comunitario.web_services.repository.impl;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
+
 import com.ong.empuje.comunitario.web_services.dto.in.DonationDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventFilterDTO;
 import com.ong.empuje.comunitario.web_services.dto.in.EventsDonationsResponseDTO;
 import com.ong.empuje.comunitario.web_services.dto.out.EventFilterResponseDTO;
 import com.ong.empuje.comunitario.web_services.enums.DonationDistributionFilter;
 import com.ong.empuje.comunitario.web_services.repository.EventJdbcRepository;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.stereotype.Repository;
-
-import java.time.LocalDate;
-import java.util.*;
 
 @Repository
 public class JdbcRepository implements EventJdbcRepository {
@@ -52,17 +60,23 @@ public class JdbcRepository implements EventJdbcRepository {
         Map<String, Object> params = new HashMap<>();
         params.put("username", username);
 
-        if (startDate != null && endDate != null) {
-            sql.append(" AND e.event_datetime BETWEEN :startDate AND :endDate");
-            params.put("startDate", LocalDate.parse(startDate));
-            params.put("endDate", LocalDate.parse(endDate));
+        if (startDate != null && !startDate.isBlank() && endDate != null && !endDate.isBlank()) {
+            try {
+                LocalDate sd = LocalDate.parse(startDate);
+                LocalDate ed = LocalDate.parse(endDate);
+                sql.append(" AND e.event_datetime BETWEEN :startDate AND :endDate");
+                params.put("startDate", sd);
+                params.put("endDate", ed);
+            } catch (DateTimeParseException dpe) {
+                System.out.println("Invalid date format for startDate/endDate: " + dpe.getMessage());
+            }
         }
 
         if (distribution != null) {
             switch (distribution) {
                 case YES -> sql.append(" AND ed.donation_id IS NOT NULL");
                 case NO -> sql.append(" AND ed.donation_id IS NULL");
-                default -> {} // sin filtro adicional
+                default -> {} 
             }
         }
 
